@@ -1,0 +1,39 @@
+# Local Fedora/Aurora override — persists across git pulls (untracked, created by local/fedora-picker)
+# Host CLI mounts + Fedora glibc + web-native picker host mounts
+name: open-design
+
+services:
+  open-design:
+    cpus: '1.5'
+    ports: !reset []
+    network_mode: host
+    environment:
+      OD_PORT: ${OPEN_DESIGN_PORT:-7456}
+      OD_WEB_PORT: ${OPEN_DESIGN_PORT:-7456}
+      OD_BIND_HOST: 127.0.0.1
+      PATH: /mnt/host-local-bin:/mnt/host-opencode:/usr/local/bin:/usr/bin:/bin
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - amr_data:/home/open-design/.amr
+      - ${HOME}/dev:${HOME}/dev:rw,z
+      - ${HOME}/Documents:${HOME}/Documents:rw,z
+      - ${HOME}/dev/open-design:${HOME}/dev/open-design:rw,z
+      - ${HOME}/.local/bin:/mnt/host-local-bin:ro
+      - ${HOME}/.opencode/bin:/mnt/host-opencode:ro
+      - ${HOME}/.local/share/claude:${HOME}/.local/share/claude:ro
+      - ${HOME}/.claude:/home/open-design/.claude:ro
+      - /usr/lib64:/usr/lib64:ro
+      - /lib64:/lib64:ro
+    tmpfs:
+      - /home/open-design
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:${OPEN_DESIGN_PORT:-7456}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  amr_data:
