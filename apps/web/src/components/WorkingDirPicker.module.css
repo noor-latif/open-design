@@ -277,3 +277,160 @@
   opacity: 0.7;
   white-space: nowrap;
 }
+
+/* Inline browser — non-intrusive, stays inside the same 220px panel. */
+.panelBrowsing {
+  gap: 6px;
+}
+
+.browserHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.browserPath {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-strong);
+  background: var(--bg-subtle, var(--bg));
+  border: 1px solid var(--border-soft, var(--border));
+  border-radius: var(--radius-sm, 6px);
+  padding: 5px 8px;
+}
+
+.browserIconBtn {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-soft, var(--border));
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg, var(--bg-panel));
+  color: var(--text-muted, var(--text));
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1), color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.browserIconBtn:hover:not(:disabled),
+.browserIconBtn:focus-visible:not(:disabled) {
+  outline: none;
+  background: var(--bg-subtle);
+  color: var(--text-strong);
+}
+.browserIconBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.browserList {
+  max-height: 160px;
+  overflow-y: auto;
+  background: var(--bg, var(--bg-panel));
+  border: 1px solid var(--border-soft, var(--border));
+  border-radius: var(--radius, 8px);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.browserHint {
+  padding: 10px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted, var(--text));
+  opacity: 0.75;
+}
+
+.browserError {
+  padding: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--danger, #e5484d);
+  background: color-mix(in srgb, var(--danger, #e5484d) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger, #e5484d) 18%, transparent);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.browserItem {
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.browserItem:hover,
+.browserItem:focus-visible {
+  outline: none;
+  background: var(--bg-subtle);
+}
+.browserItemIcon {
+  flex: 0 0 auto;
+  opacity: 0.7;
+  color: var(--text-muted, var(--text));
+}
+.browserItemName {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browserInputRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.browserInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 30px;
+  box-sizing: border-box;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--text-strong);
+  background: var(--bg, var(--bg-panel));
+  border: 1px solid var(--border, var(--border-soft));
+  border-radius: var(--radius-sm, 6px);
+  padding: 0 8px;
+  outline: none;
+  transition: border-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.browserInput:focus {
+  border-color: var(--border-strong, var(--border));
+}
+.browserInput::placeholder {
+  color: var(--text-muted, var(--text));
+  opacity: 0.6;
+}
+
+.browserActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 2px;
+}
