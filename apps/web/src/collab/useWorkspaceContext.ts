@@ -2057,6 +2057,13 @@ export function useTeamProjects(): TeamProjectsState {
       }
       return;
     }
+    if (read.context.workspaceType !== 'team') {
+      if (mountedRef.current) {
+        setCatalog({ identity: null, projects: [] });
+        setLoading(false);
+      }
+      return;
+    }
     try {
       // `fetchTeamProjectsCatalog` owns the endpoint, the coalescing key, and
       // the array guarantee — see team-projects-catalog.ts for why those three
@@ -2120,6 +2127,7 @@ export function useTeamProjects(): TeamProjectsState {
     const issuedAccountGeneration = currentWorkspaceAccountGeneration();
     const read = beginWorkspaceScopedRead(issuedIdentity?.context);
     if (!read.context) return;
+    if (read.context.workspaceType !== 'team') return;
     const metadataRefresh = beginTeamProjectMetadataRefresh({
       accountGeneration: issuedAccountGeneration,
       context: read.context,
