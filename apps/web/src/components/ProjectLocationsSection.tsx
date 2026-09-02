@@ -308,43 +308,51 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
       )}
 
       {pickerOpen ? (
-        <div className="project-location-card" style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <strong style={{ flex: '1 1 auto', wordBreak: 'break-all' }}>{pickerPath}</strong>
-            <button type="button" className="icon-btn" onClick={handlePickerUp} disabled={!pickerEntries?.parent || pickerLoading}>
-              Up
+        <div className="project-location-card" style={{
+          display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16,
+          background: 'var(--bg-panel)', border: '1px solid var(--border-soft)', borderRadius: 'var(--radius-large)', padding: 16,
+          boxShadow: 'var(--shadow-sm)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <code style={{
+              flex: '1 1 auto', minWidth: 0, wordBreak: 'break-all',
+              fontSize: 13, color: 'var(--text-strong)', background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-soft)', borderRadius: 'var(--radius-sm)', padding: '6px 10px'
+            }}>{pickerPath}</code>
+            <button type="button" className="ghost" onClick={handlePickerUp} disabled={!pickerEntries?.parent || pickerLoading} title="Go up">
+              <Icon name="arrow-up" size={14} /> Up
             </button>
-            <button type="button" className="icon-btn" onClick={() => loadPicker(pickerPath)} disabled={pickerLoading}>
-              Refresh
+            <button type="button" className="ghost" onClick={() => loadPicker(pickerPath)} disabled={pickerLoading} title="Refresh">
+              <Icon name="refresh" size={14} />
             </button>
           </div>
 
-          <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--border, #e5e7eb)', borderRadius: 8, padding: 8 }}>
-            {pickerLoading ? <p className="hint">Loading…</p> : null}
-            {pickerError ? <p className="settings-rescan-status error">{pickerError}</p> : null}
+          <div style={{
+            maxHeight: 240, overflowY: 'auto',
+            background: 'var(--bg)', border: '1px solid var(--border-soft)', borderRadius: 'var(--radius)', padding: 4
+          }}>
+            {pickerLoading ? <p className="hint" style={{ padding: '12px 8px', margin: 0 }}>Loading…</p> : null}
+            {pickerError ? <p className="settings-rescan-status error" style={{ margin: '8px' }}>{pickerError}</p> : null}
             {!pickerLoading && pickerEntries ? (
-              pickerEntries.entries.length === 0 ? (
-                <p className="hint">Empty folder</p>
+              pickerEntries.entries.filter(e => e.isDirectory).length === 0 ? (
+                <p className="hint" style={{ padding: '12px 8px', margin: 0 }}>No subfolders — select this folder or type a path below</p>
               ) : (
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                  {pickerEntries.entries.map((entry) => (
-                    <li key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-                      {entry.isDirectory ? (
-                        <button
-                          type="button"
-                          className="icon-btn"
-                          onClick={() => handlePickerNavigate(entry.name)}
-                          style={{ flex: '1 1 auto', justifyContent: 'flex-start', textAlign: 'left' }}
-                        >
-                          <Icon name="folder" size={14} />
-                          {entry.name}
-                        </button>
-                      ) : (
-                        <span style={{ flex: '1 1 auto', opacity: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Icon name="file" size={14} />
-                          {entry.name}
-                        </span>
-                      )}
+                  {pickerEntries.entries.filter(e => e.isDirectory).map((entry) => (
+                    <li key={entry.name} style={{ padding: '2px 0' }}>
+                      <button
+                        type="button"
+                        className="ghost"
+                        onClick={() => handlePickerNavigate(entry.name)}
+                        style={{
+                          width: '100%', justifyContent: 'flex-start', textAlign: 'left',
+                          height: 32, padding: '0 10px', borderRadius: 'var(--radius-sm)',
+                          fontWeight: 400, color: 'var(--text)', gap: 8
+                        }}
+                      >
+                        <Icon name="folder" size={14} style={{ color: 'var(--text-soft)' }} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.name}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -357,21 +365,27 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
               type="text"
               value={manualPath}
               onChange={(e) => setManualPath(e.target.value)}
-              placeholder="/var/home/noor/dev/my-project-base"
-              style={{ flex: '1 1 auto', minWidth: 0 }}
-              className="project-location-manual-input"
+              placeholder="/var/home/noor/dev/my-project"
+              spellCheck={false}
+              style={{
+                flex: '1 1 auto', minWidth: 0, height: 36,
+                fontFamily: 'var(--font-mono, ui-monospace, monospace)', fontSize: 13,
+                background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '0 10px',
+                color: 'var(--text-strong)'
+              }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="icon-btn" onClick={handleSelectPickerFolder} disabled={saving}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <button type="button" className="primary" onClick={handleSelectPickerFolder} disabled={saving || !manualPath.trim()}>
               Select this folder
             </button>
-            <button type="button" className="icon-btn" onClick={() => setPickerOpen(false)}>
+            <button type="button" className="ghost" onClick={() => setPickerOpen(false)}>
               Cancel
             </button>
-            <button type="button" className="icon-btn" onClick={handleSystemPicker} style={{ marginLeft: 'auto', opacity: 0.7 }}>
-              Use system picker (zenity)
+            <span style={{ flex: '1 1 auto' }} />
+            <button type="button" className="ghost" onClick={handleSystemPicker} style={{ opacity: 0.6, fontSize: 13 }}>
+              System picker
             </button>
           </div>
         </div>
