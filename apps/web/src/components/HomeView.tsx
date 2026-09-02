@@ -82,6 +82,7 @@ import {
   pushRecentLinkedDir,
 } from '../providers/registry';
 import { isOpenDesignHostAvailable, pickHostWorkingDir } from '@open-design/host';
+import { useOpenFolderImport } from './useOpenFolderImport';
 import type {
   DesignSystemSummary,
   Project,
@@ -646,6 +647,24 @@ export function HomeView({
   const [contextWorkspaceItems, setContextWorkspaceItems] = useState<WorkspaceContextItem[]>([]);
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [workingDir, setWorkingDir] = useState<string | null>(null);
+  // Owned import (baseDir) - always available even when host picker is hidden
+  const folderImport = useOpenFolderImport({
+    onImportFolder: async (baseDir: string) => {
+      // Direct owned import via daemon, bypasses linked workingDir flow
+      const resp = await fetch('/api/import/folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baseDir }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
+        throw new Error(err.error?.message ?? 'Import failed');
+      }
+      const data = await resp.json() as { project: { id: string } };
+      // Navigate to the newly imported project
+      window.location.hash = `#project/${data.project.id}`;
+    },
+  });
   // Token paired with `workingDir` when picked through the desktop host's
   // native dialog. Spent on the post-creation working-dir POST so the
   // daemon's desktop-auth gate accepts the path. Null for web picks.
@@ -3195,6 +3214,10 @@ export function HomeView({
         recentDirs={recentDirs}
         onPickWorkingDir={handlePickWorkingDir}
         onPickLocalCodeDir={handlePickLocalCodeDir}
+        onImportFolder={folderImport.openFolder}
+        importFolderAvailable={folderImport.available}
+        importFolderImporting={folderImport.importing}
+        importFolderError={folderImport.error}
         onSelectRecentWorkingDir={(dir) => {
           setWorkingDir(dir);
           // Recents come from the browser-side picker only; they carry no

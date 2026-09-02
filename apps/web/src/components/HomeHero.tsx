@@ -242,6 +242,10 @@ interface Props {
   recentDirs?: string[];
   onPickWorkingDir?: () => Promise<string | null> | string | null | void;
   onPickLocalCodeDir?: () => Promise<string | null> | string | null | void;
+  onImportFolder?: () => void;
+  importFolderAvailable?: boolean;
+  importFolderImporting?: boolean;
+  importFolderError?: { message: string; details?: string | null } | null;
   onSelectRecentWorkingDir?: (dir: string) => void;
   onClearWorkingDir?: () => void;
   onExamplePromptStatusChange?: (info: ExamplePromptInfo | null) => void;
@@ -372,6 +376,10 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
     recentDirs = [],
     onPickWorkingDir,
     onPickLocalCodeDir,
+    onImportFolder,
+    importFolderAvailable,
+    importFolderImporting,
+    importFolderError,
     onSelectRecentWorkingDir,
     onClearWorkingDir,
     onExamplePromptStatusChange,
@@ -2067,7 +2075,7 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
         </div>
       </div>
 
-      {onDesignSystemChange || onPickWorkingDir ? (
+      {onDesignSystemChange || onPickWorkingDir || onImportFolder ? (
         <div className="home-hero__workdir-row">
           {onDesignSystemChange ? (
             <DesignSystemPicker
@@ -2111,6 +2119,25 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
                 onClearWorkingDir?.();
               }}
             />
+          ) : null}
+          {onImportFolder && importFolderAvailable ? (
+            <button
+              type="button"
+              className="ghost home-hero__import-folder"
+              disabled={importFolderImporting}
+              onClick={() => {
+                trackHomeChatComposerClick(analytics.track, {
+                  page_name: 'home',
+                  area: 'chat_composer',
+                  element: 'working_dir',
+                });
+                void onImportFolder();
+              }}
+              title={importFolderError ? importFolderError.message : t('homeHero.chip.folderHint')}
+              data-testid="home-import-folder"
+            >
+              <span>{importFolderImporting ? t('newproj.openingFolder') : t('newproj.openFolder')}</span>
+            </button>
           ) : null}
         </div>
       ) : null}
