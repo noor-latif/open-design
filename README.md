@@ -35,6 +35,7 @@ This is a friendly fork of [`nexu-io/open-design`](https://github.com/nexu-io/op
 
 **What's added in this fork:**
 
+- 📱 **Use from your phone — Tailscale HTTPS.** This fork is tested over `tailscale serve`: run `tailscale serve --bg 7456` and set `OPEN_DESIGN_ALLOWED_ORIGINS=https://<your-tailnet>.ts.net` in `deploy/.env`, then open `https://<your-tailnet>.ts.net` on any phone/tablet on the same Tailnet — no port-forwarding, valid Let's Encrypt cert. Example in this repo: `https://latif.rohu-mirach.ts.net`.
 - 🗂️ **Web-native folder picker — no `zenity` needed.** Both **Project Locations** and **Working directory → Choose folder** now open an inline picker *inside* the existing 220 px panel (no modal, no popup). It lists your real home folders via `GET /api/fs/list` with `Up` / `Refresh`, a typeable path, and **Select this folder** — same tokens and `ghost` / `primary` buttons as the rest of the UI.
 - 🐧 **Fedora / Aurora-friendly runtime.** Runs with `mise` + `pnpm 10.33.2` on Node 24 and `podman` — no `rpm-ostree` layering. A small `deploy/docker-compose.override.yml` mounts host CLIs (`Muse`, `opencode`, `codex`, `vela`) and `~/dev` into the container.
 - 🔧 **Small workflow helper.** `Justfile` + `opendesign` alias (`just update`) to fetch upstream, rebase, rebuild `open-design-local`, restart, and push. `main` stays pristine on `feat/web-native-picker`.
