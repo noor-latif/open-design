@@ -4,10 +4,12 @@ import type { ProjectLocation } from '@open-design/contracts';
 import type { AppConfig } from '../types';
 import {
   fetchProjectLocations,
+  listFsEntries,
   openProjectLocationFolderDialog,
   scanProjectLocations,
   updateProjectLocations,
 } from '../state/project-locations';
+import type { FsListResponse } from '../state/project-locations';
 import { useI18n } from '../i18n';
 import { Icon } from './Icon';
 
@@ -47,6 +49,13 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const draftsRef = useRef<DraftLocation[]>(drafts);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerPath, setPickerPath] = useState('/var/home/noor/dev');
+  const [pickerEntries, setPickerEntries] = useState<FsListResponse | null>(null);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerError, setPickerError] = useState<string | null>(null);
+  const [manualPath, setManualPath] = useState('/var/home/noor/dev');
 
   useEffect(() => {
     draftsRef.current = drafts;
@@ -138,7 +147,36 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
     return result;
   }
 
+  async function loadPicker(targetPath: string) {
+    setPickerLoading(true);
+    setPickerError(null);
+    try {
+      const res = await listFsEntries(targetPath);
+      if (!res) {
+        setPickerError('Could not list that folder. Use manual path.');
+        return;
+      }
+      setPickerEntries(res);
+      setPickerPath(res.path);
+      setManualPath(res.path);
+    } catch {
+      setPickerError('Could not list that folder. Use manual path.');
+    } finally {
+      setPickerLoading(false);
+    }
+  }
+
   async function handleAddFolder() {
+    setError(null);
+    setStatus(null);
+    setPickerOpen(true);
+    setPickerError(null);
+    // ensure manualPath reflects pickerPath even if list fails
+    setManualPath(pickerPath);
+    await loadPicker(pickerPath);
+  }
+
+  async function handleSystemPicker() {
     setError(null);
     setStatus(null);
     const selected = await openProjectLocationFolderDialog();
@@ -156,6 +194,32 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
     const saved = await save(next);
     if (!saved) setDrafts(previous);
     else await runScan();
+  }
+
+  async function handleSelectPickerFolder() {
+    const chosen = manualPath.trim() || pickerPath;
+    if (!chosen) return;
+    if (draftsRef.current.some((draft) => draft.path === chosen)) {
+      setPickerError(t('settings.projectLocationsDuplicate'));
+      return;
+    }
+    const previous = draftsRef.current;
+    const next = [...previous, { path: chosen }];
+    setDrafts(next);
+    setPickerOpen(false);
+    const saved = await save(next);
+    if (!saved) setDrafts(previous);
+    else await runScan();
+  }
+
+  async function handlePickerNavigate(dirName: string) {
+    const nextPath = pickerPath.endsWith('/') ? pickerPath + dirName : pickerPath + '/' + dirName;
+    await loadPicker(nextPath);
+  }
+
+  async function handlePickerUp() {
+    if (!pickerEntries?.parent) return;
+    await loadPicker(pickerEntries.parent);
   }
 
   async function removeDraft(index: number) {
@@ -181,10 +245,6 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
             <strong>{t('newproj.locationDefault')}</strong>
             <code>{builtIn.path}</code>
           </div>
-          {/* #5517 puts "+ add folder" on the built-in row and drops the
-              built-in's default radio. The button moves; the radio stays,
-              because it is the only way back to the built-in location once a
-              custom folder has been made default. */}
           <label className="project-location-default-control">
             <input
               type="radio"
@@ -235,8 +295,6 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
         ))}
       </div>
 
-      {/* Fallback entry point: with no built-in card there is no row to host
-          the button above, and "add folder" must never become unreachable. */}
       {builtIn ? null : (
         <button
           type="button"
@@ -248,6 +306,76 @@ export function ProjectLocationsSection({ cfg, setCfg, onProjectsRefresh }: Prop
           {t('settings.projectLocationsAddFolder')}
         </button>
       )}
+
+      {pickerOpen ? (
+        <div className="project-location-card" style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <strong style={{ flex: '1 1 auto', wordBreak: 'break-all' }}>{pickerPath}</strong>
+            <button type="button" className="icon-btn" onClick={handlePickerUp} disabled={!pickerEntries?.parent || pickerLoading}>
+              Up
+            </button>
+            <button type="button" className="icon-btn" onClick={() => loadPicker(pickerPath)} disabled={pickerLoading}>
+              Refresh
+            </button>
+          </div>
+
+          <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--border, #e5e7eb)', borderRadius: 8, padding: 8 }}>
+            {pickerLoading ? <p className="hint">Loading…</p> : null}
+            {pickerError ? <p className="settings-rescan-status error">{pickerError}</p> : null}
+            {!pickerLoading && pickerEntries ? (
+              pickerEntries.entries.length === 0 ? (
+                <p className="hint">Empty folder</p>
+              ) : (
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                  {pickerEntries.entries.map((entry) => (
+                    <li key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+                      {entry.isDirectory ? (
+                        <button
+                          type="button"
+                          className="icon-btn"
+                          onClick={() => handlePickerNavigate(entry.name)}
+                          style={{ flex: '1 1 auto', justifyContent: 'flex-start', textAlign: 'left' }}
+                        >
+                          <Icon name="folder" size={14} />
+                          {entry.name}
+                        </button>
+                      ) : (
+                        <span style={{ flex: '1 1 auto', opacity: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Icon name="file" size={14} />
+                          {entry.name}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )
+            ) : null}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="text"
+              value={manualPath}
+              onChange={(e) => setManualPath(e.target.value)}
+              placeholder="/var/home/noor/dev/my-project-base"
+              style={{ flex: '1 1 auto', minWidth: 0 }}
+              className="project-location-manual-input"
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" className="icon-btn" onClick={handleSelectPickerFolder} disabled={saving}>
+              Select this folder
+            </button>
+            <button type="button" className="icon-btn" onClick={() => setPickerOpen(false)}>
+              Cancel
+            </button>
+            <button type="button" className="icon-btn" onClick={handleSystemPicker} style={{ marginLeft: 'auto', opacity: 0.7 }}>
+              Use system picker (zenity)
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {status ? <p className="settings-rescan-status">{status}</p> : null}
       {error ? <p className="settings-rescan-status error">{error}</p> : null}

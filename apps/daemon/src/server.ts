@@ -851,6 +851,7 @@ import { registerDesignSystemToolRoutes } from './routes/design-system-tool.js';
 import { registerDeployRoutes, registerDeploymentCheckRoutes } from './routes/deploy.js';
 import { registerMediaRoutes } from './routes/media.js';
 import { registerProjectRoutes, registerProjectArtifactRoutes, registerProjectFileRoutes, registerProjectUploadRoutes, createEnforceWorkspaceProjectMutation } from './routes/project/index.js';
+import { registerFsRoutes } from './routes/fs.js';
 import { registerVelaRoutes } from './routes/vela.js';
 import { registerFinalizeRoutes, registerImportRoutes, registerProjectExportRoutes } from './import-export-routes.js';
 import { registerHandoffRoutes } from './routes/handoff.js';
@@ -8245,6 +8246,7 @@ export async function startServer({
       }
     });
   });
+  registerFsRoutes(app, { paths: pathDeps });
   registerSocialShareRoutes(app, { http: httpDeps });
   registerProjectRoutes(app, {
     db,

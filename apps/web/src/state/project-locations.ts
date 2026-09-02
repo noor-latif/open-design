@@ -43,6 +43,24 @@ export async function scanProjectLocations(): Promise<ScanProjectLocationsRespon
   }
 }
 
+export interface FsListResponse {
+  path: string;
+  parent: string | null;
+  entries: Array<{ name: string; isDirectory: boolean; isFile: boolean }>;
+}
+
+export async function listFsEntries(inputPath: string): Promise<FsListResponse | null> {
+  try {
+    const resp = await fetch('/api/fs/list?path=' + encodeURIComponent(inputPath));
+    if (!resp.ok) return null;
+    const json = (await resp.json()) as FsListResponse;
+    if (!json || typeof json.path !== 'string' || !Array.isArray(json.entries)) return null;
+    return json;
+  } catch {
+    return null;
+  }
+}
+
 export async function openProjectLocationFolderDialog(): Promise<string | null> {
   try {
     const resp = await fetch('/api/dialog/open-folder', { method: 'POST' });
