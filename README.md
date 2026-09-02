@@ -1,3 +1,18 @@
+<!-- FORK-BANNER:START — keep this block at the very top so `git rebase upstream/main` never conflicts -->
+> **👋 Friendly fork — `noor-latif/open-design`**
+>
+> This fork tracks upstream [`nexu-io/open-design`](https://github.com/nexu-io/open-design) closely and just adds a few small, practical fixes so it runs nicely on **Fedora / Aurora (Universal Blue)** with containers. Everything below this banner is the original upstream README, left untouched.
+>
+> **What this fork adds:**
+> - **Web-native folder picker — no `zenity` needed.** Both **Project Locations** and the **Working directory → Choose folder** button open an inline picker *inside* the existing panel (no modal, no popup). It lists your real home folders via `GET /api/fs/list`, with `Up` / `Refresh`, a typeable path, and **Select this folder** — same look as the rest of OpenDesign.
+> - **Fedora / Aurora-friendly runtime.** Works with `mise` + `pnpm 10.33.2` on Node 24, and `podman` — no `rpm-ostree` layering. `deploy/` gets a small override that mounts your host CLIs (`Muse`, `opencode`, `codex`, `vela`) and `~/dev` into the container.
+> - **Tiny helper workflow.** A `Justfile` + `opendesign` alias (`just update`) to fetch upstream, rebase, rebuild the local image (`open-design-local`), restart, and push — `main` stays pristine on `feat/web-native-picker`.
+>
+> If you just want upstream, ignore this box. If you're on Aurora/Fedora and want the picker + container setup, you're in the right place. 🙂
+>
+> ---
+<!-- FORK-BANNER:END -->
+
 <h1 align="center">OpenDesign: The open-source Claude Design alternative</h1>
 
 > ⚡ **[OpenDesign Cloud — the official model service.](https://open-design.ai/zh/pricing/)** One recharge to use both agent and image models inside OpenDesign: GPT, Claude, and DeepSeek for agents; GPT Image 2.0, Seedream 5.0 Pro, and Nano Banana 2.0 for images.
