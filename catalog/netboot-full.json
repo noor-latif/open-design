@@ -1,13 +1,13 @@
 {
   "version": 1,
   "updated": "2026-09-03",
-  "source": "https://github.com/noor/airboot (generated from netboot.xyz endpoints.yml)",
+  "source": "https://github.com/noor/airboot (generated from netboot.xyz endpoints.yml + upstream ISOs)",
   "counts": {
     "total": 172,
     "ventoy_bootable_iso": 13,
     "netboot_squashfs": 159
   },
-  "notes": "Full netboot.xyz roster re-shaped for AirBoot search. Only entries with ventoy_bootable:true and a url are direct ISOs Ventoy can boot. Others are squashfs/netboot (kernel+initrd+squashfs) \u2014 not single ISOs. Curated Ventoy ISOs live in catalog/manifest.json (small MVP). Use `abt catalog --full list | grep omarchy` to search.",
+  "notes": "Full roster for `abt catalog list` (always). Each image has a provider: upstream official ISOs (iso.omarchy.org, cdimage.debian.org, releases.ubuntu.com, etc.) are Ventoy-bootable single .iso (CD001); netboot.xyz entries (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) are mostly iPXE netboot bundles \u2014 separate files (vmlinuz + initrd + filesystem.squashfs/airootfs.sfs) chainloaded by iPXE, not a monolithic ISO, so Ventoy cannot boot them. Example: Omarchy exists both ways \u2014 iso.omarchy.org/omarchy-4.0.2.iso (5.8G, Ventoy yes, provider omarchy.org) and netboot.xyz asset-mirror 4.0.2 (airootfs.sfs+vmlinuz+initrd, Ventoy no, provider netboot.xyz). YUMI/Ventoy have no central ISO catalog; they list tested ISOs but don't host a download catalog. AirBoot's provider field is authoritative: upstream for ISOs, netboot.xyz for bundles.",
   "images": [
     {
       "id": "debian-12-netinst",
@@ -17,13 +17,14 @@
       "version": "12.11.0",
       "size_human": "700M",
       "homepage": "https://www.debian.org/distrib/",
+      "provider": "Debian (cdimage.debian.org) \u2014 official netinst ISO",
+      "ventoy_bootable": true,
       "tags": [
         "mvp",
         "small",
         "netinst"
       ],
       "os": "debian",
-      "ventoy_bootable": true,
       "description": "Debian 12 (Bookworm) netinst"
     },
     {
@@ -34,11 +35,12 @@
       "version": "2025.09.01",
       "size_human": "1.2G",
       "homepage": "https://archlinux.org/download/",
+      "provider": "Arch Linux (geo.mirror.pkgbuild.com) \u2014 official",
+      "ventoy_bootable": true,
       "tags": [
         "arch"
       ],
       "os": "arch",
-      "ventoy_bootable": true,
       "description": "Arch Linux 2025.09"
     },
     {
@@ -49,17 +51,18 @@
       "version": "42",
       "size_human": "2.3G",
       "homepage": "https://fedoraproject.org/workstation/download",
+      "provider": "Fedora (download.fedoraproject.org) \u2014 official",
+      "ventoy_bootable": true,
       "tags": [
         "fedora"
       ],
       "os": "fedora",
-      "ventoy_bootable": true,
       "description": "Fedora 42 Workstation"
     },
     {
       "id": "cachyos-260809",
       "name": "CachyOS 260809 (Arch-optimized)",
-      "description": "netboot.xyz endpoint \u2014 cachyos 260809  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 cachyos 260809  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": "https://mirror.cachyos.org/iso/cachyos-260809.iso",
       "arch": "x86_64",
       "version": "260809",
@@ -75,12 +78,13 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": "2.5G",
+      "provider": "CachyOS (mirror.cachyos.org) \u2014 official",
+      "homepage": "https://cachyos.org",
       "tags": [
         "arch",
         "cachyos"
       ],
       "ventoy_bootable": true,
-      "homepage": "https://cachyos.org",
       "netboot_endpoint": "cachyos"
     },
     {
@@ -92,13 +96,14 @@
       "size_human": "5.8G",
       "sha256": "2ef8e624aa1bec7e277e28056b8535a6c9373ba48d7ede3f1a01cb6d2373cfb8",
       "homepage": "https://omarchy.org",
+      "provider": "Omarchy (iso.omarchy.org, GitHub omacom/omarchy) \u2014 official monolithic ISO",
+      "ventoy_bootable": true,
       "netboot_endpoint": "omarchy",
       "tags": [
         "omarchy",
         "arch"
       ],
       "os": "omarchy",
-      "ventoy_bootable": true,
       "description": "Omarchy 4.0.2 (Arch + Hyprland)"
     },
     {
@@ -109,12 +114,13 @@
       "version": "24.04.3",
       "size_human": "6.0G",
       "homepage": "https://ubuntu.com/download/desktop",
+      "provider": "Ubuntu (releases.ubuntu.com) \u2014 official desktop ISO",
+      "ventoy_bootable": true,
       "tags": [
         "ubuntu",
         "large"
       ],
       "os": "ubuntu",
-      "ventoy_bootable": true,
       "description": "Ubuntu 24.04.3 LTS (Noble) Desktop"
     },
     {
@@ -125,18 +131,19 @@
       "version": "13.6.0",
       "size_human": "700M",
       "homepage": "https://www.debian.org/distrib/",
+      "provider": "Debian (cdimage.debian.org) \u2014 official",
+      "ventoy_bootable": true,
       "tags": [
         "debian",
         "netinst"
       ],
       "os": "debian",
-      "ventoy_bootable": true,
       "description": "Debian 13 (Trixie) netinst \u2014 testing"
     },
     {
       "id": "proxmox-backup-server",
       "name": "proxmox-backup-server 4.2-1",
-      "description": "netboot.xyz endpoint \u2014 proxmox-backup-server 4.2-1  (x86_64) \u2014 ISO",
+      "description": "netboot.xyz endpoint \u2014 proxmox-backup-server 4.2-1  (x86_64) \u2014 single ISO, Ventoy-bootable",
       "url": "https://github.com/netbootxyz/asset-mirror/releases/download/4.2-1-ca8b9126/proxmox.iso",
       "arch": "x86_64",
       "version": "4.2-1",
@@ -151,6 +158,8 @@
       "netboot_iso_file": "proxmox.iso",
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror) \u2014 ISO mirrored from upstream",
+      "homepage": null,
       "tags": [
         "netboot",
         "iso",
@@ -161,7 +170,7 @@
     {
       "id": "proxmox-datacenter-manager",
       "name": "proxmox-datacenter-manager 1.1-1",
-      "description": "netboot.xyz endpoint \u2014 proxmox-datacenter-manager 1.1-1  (x86_64) \u2014 ISO",
+      "description": "netboot.xyz endpoint \u2014 proxmox-datacenter-manager 1.1-1  (x86_64) \u2014 single ISO, Ventoy-bootable",
       "url": "https://github.com/netbootxyz/asset-mirror/releases/download/1.1-1-c313fdaf/proxmox.iso",
       "arch": "x86_64",
       "version": "1.1-1",
@@ -176,6 +185,8 @@
       "netboot_iso_file": "proxmox.iso",
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror) \u2014 ISO mirrored from upstream",
+      "homepage": null,
       "tags": [
         "netboot",
         "iso",
@@ -186,7 +197,7 @@
     {
       "id": "proxmox-mailgateway",
       "name": "proxmox-mailgateway 9.1-1",
-      "description": "netboot.xyz endpoint \u2014 proxmox-mailgateway 9.1-1  (x86_64) \u2014 ISO",
+      "description": "netboot.xyz endpoint \u2014 proxmox-mailgateway 9.1-1  (x86_64) \u2014 single ISO, Ventoy-bootable",
       "url": "https://github.com/netbootxyz/asset-mirror/releases/download/9.1-1-fdfe5b69/proxmox.iso",
       "arch": "x86_64",
       "version": "9.1-1",
@@ -201,6 +212,8 @@
       "netboot_iso_file": "proxmox.iso",
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror) \u2014 ISO mirrored from upstream",
+      "homepage": null,
       "tags": [
         "netboot",
         "iso",
@@ -211,7 +224,7 @@
     {
       "id": "proxmox-ve",
       "name": "proxmox-ve 9.2-1",
-      "description": "netboot.xyz endpoint \u2014 proxmox-ve 9.2-1  (x86_64) \u2014 ISO",
+      "description": "netboot.xyz endpoint \u2014 proxmox-ve 9.2-1  (x86_64) \u2014 single ISO, Ventoy-bootable",
       "url": "https://github.com/netbootxyz/asset-mirror/releases/download/9.2-1-4bbcc809/proxmox.iso",
       "arch": "x86_64",
       "version": "9.2-1",
@@ -226,6 +239,8 @@
       "netboot_iso_file": "proxmox.iso",
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror) \u2014 ISO mirrored from upstream",
+      "homepage": null,
       "tags": [
         "netboot",
         "iso",
@@ -236,7 +251,7 @@
     {
       "id": "proxmox-ve-arm64",
       "name": "proxmox-ve 9.2-1",
-      "description": "netboot.xyz endpoint \u2014 proxmox-ve 9.2-1  (arm64) \u2014 ISO",
+      "description": "netboot.xyz endpoint \u2014 proxmox-ve 9.2-1  (arm64) \u2014 single ISO, Ventoy-bootable",
       "url": "https://github.com/netbootxyz/asset-mirror/releases/download/9.2-1-ab708b5c/proxmox.iso",
       "arch": "arm64",
       "version": "9.2-1",
@@ -251,6 +266,8 @@
       "netboot_iso_file": "proxmox.iso",
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror) \u2014 ISO mirrored from upstream",
+      "homepage": null,
       "tags": [
         "netboot",
         "iso",
@@ -261,7 +278,7 @@
     {
       "id": "tails",
       "name": "tails 7.11",
-      "description": "netboot.xyz endpoint \u2014 tails 7.11  (amd64) \u2014 ISO",
+      "description": "netboot.xyz endpoint \u2014 tails 7.11  (amd64) \u2014 single ISO, Ventoy-bootable",
       "url": "https://github.com/netbootxyz/asset-mirror/releases/download/7.11-9a1a16cf/tails-amd64.iso",
       "arch": "amd64",
       "version": "7.11",
@@ -277,6 +294,8 @@
       "netboot_iso_file": "tails-amd64.iso",
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror) \u2014 ISO mirrored from upstream",
+      "homepage": null,
       "tags": [
         "netboot",
         "iso",
@@ -287,7 +306,7 @@
     {
       "id": "4mlinux",
       "name": "4mlinux current full",
-      "description": "netboot.xyz endpoint \u2014 4mlinux current full (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current full (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -301,6 +320,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -311,7 +332,7 @@
     {
       "id": "4mlinux-antivirus",
       "name": "4mlinux current AntivirusLiveCD",
-      "description": "netboot.xyz endpoint \u2014 4mlinux current AntivirusLiveCD (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current AntivirusLiveCD (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -325,6 +346,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -335,7 +358,7 @@
     {
       "id": "4mlinux-bakandimg",
       "name": "4mlinux current BakAndImg",
-      "description": "netboot.xyz endpoint \u2014 4mlinux current BakAndImg (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current BakAndImg (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -349,6 +372,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -359,7 +384,7 @@
     {
       "id": "4mlinux-thesss",
       "name": "4mlinux current TheSSS",
-      "description": "netboot.xyz endpoint \u2014 4mlinux current TheSSS (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current TheSSS (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -373,6 +398,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -383,7 +410,7 @@
     {
       "id": "archlinux-32",
       "name": "archlinux 2024.07.10",
-      "description": "netboot.xyz endpoint \u2014 archlinux 2024.07.10  (i686) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 archlinux 2024.07.10  (i686) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "i686",
       "version": "2024.07.10",
@@ -398,6 +425,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -408,7 +437,7 @@
     {
       "id": "backbox-default-squash",
       "name": "BackBox 8.1 desktop",
-      "description": "netboot.xyz endpoint \u2014 BackBox 8.1 desktop (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 BackBox 8.1 desktop (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "8.1",
@@ -423,6 +452,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -433,7 +464,7 @@
     {
       "id": "blackarch-installer",
       "name": "blackarch current",
-      "description": "netboot.xyz endpoint \u2014 blackarch current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 blackarch current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -448,6 +479,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -458,7 +491,7 @@
     {
       "id": "bluestar",
       "name": "bluestar current",
-      "description": "netboot.xyz endpoint \u2014 bluestar current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 bluestar current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -473,6 +506,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -483,7 +518,7 @@
     {
       "id": "bodhi-apppack",
       "name": "bodhi 7.0.0 apppack",
-      "description": "netboot.xyz endpoint \u2014 bodhi 7.0.0 apppack (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 bodhi 7.0.0 apppack (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "7.0.0",
@@ -498,6 +533,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -508,7 +545,7 @@
     {
       "id": "bodhi-standard",
       "name": "bodhi 7.0.0 standard",
-      "description": "netboot.xyz endpoint \u2014 bodhi 7.0.0 standard (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 bodhi 7.0.0 standard (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "7.0.0",
@@ -523,6 +560,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -533,7 +572,7 @@
     {
       "id": "bootrepair",
       "name": "bootrepair current",
-      "description": "netboot.xyz endpoint \u2014 bootrepair current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 bootrepair current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -548,6 +587,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -558,7 +599,7 @@
     {
       "id": "breakin",
       "name": "breakin 4.26.1",
-      "description": "netboot.xyz endpoint \u2014 breakin 4.26.1  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 breakin 4.26.1  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "4.26.1",
@@ -572,6 +613,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -582,7 +625,7 @@
     {
       "id": "caine",
       "name": "caine 13.0",
-      "description": "netboot.xyz endpoint \u2014 caine 13.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 caine 13.0  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.0",
@@ -597,6 +640,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -607,7 +652,7 @@
     {
       "id": "clonezilla-debian-stable-amd64",
       "name": "clonezilla 3.3.3-15 stable",
-      "description": "netboot.xyz endpoint \u2014 clonezilla 3.3.3-15 stable (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 3.3.3-15 stable (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "3.3.3-15",
@@ -622,6 +667,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -632,7 +679,7 @@
     {
       "id": "clonezilla-debian-testing-amd64",
       "name": "clonezilla 3.3.3-32 testing",
-      "description": "netboot.xyz endpoint \u2014 clonezilla 3.3.3-32 testing (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 3.3.3-32 testing (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "3.3.3-32",
@@ -647,6 +694,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -657,7 +706,7 @@
     {
       "id": "clonezilla-ubuntu-stable-amd64",
       "name": "clonezilla 20260705-resolute stable",
-      "description": "netboot.xyz endpoint \u2014 clonezilla 20260705-resolute stable (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 20260705-resolute stable (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "20260705-resolute",
@@ -672,6 +721,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -682,7 +733,7 @@
     {
       "id": "clonezilla-ubuntu-testing-amd64",
       "name": "clonezilla 20260812-stonking testing",
-      "description": "netboot.xyz endpoint \u2014 clonezilla 20260812-stonking testing (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 20260812-stonking testing (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "20260812-stonking",
@@ -697,6 +748,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -707,7 +760,7 @@
     {
       "id": "dban",
       "name": "dban 2.3.0",
-      "description": "netboot.xyz endpoint \u2014 dban 2.3.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 dban 2.3.0  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2.3.0",
@@ -720,6 +773,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -730,7 +785,7 @@
     {
       "id": "debian-13-cinnamon-squash",
       "name": "debian 13.6.0 cinnamon",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 cinnamon (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -743,6 +798,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -753,7 +810,7 @@
     {
       "id": "debian-13-default-squash",
       "name": "debian 13.6.0 core",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 core (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 core (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -766,6 +823,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -776,7 +835,7 @@
     {
       "id": "debian-13-gnome-squash",
       "name": "debian 13.6.0 gnome",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 gnome (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -789,6 +848,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -799,7 +860,7 @@
     {
       "id": "debian-13-kde-squash",
       "name": "debian 13.6.0 kde",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 kde (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 kde (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -812,6 +873,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -822,7 +885,7 @@
     {
       "id": "debian-13-live-kernel",
       "name": "debian 13",
-      "description": "netboot.xyz endpoint \u2014 debian 13  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13",
@@ -836,6 +899,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -846,7 +911,7 @@
     {
       "id": "debian-13-lxde-squash",
       "name": "debian 13.6.0 lxde",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 lxde (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 lxde (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -859,6 +924,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -869,7 +936,7 @@
     {
       "id": "debian-13-lxqt-squash",
       "name": "debian 13.6.0 lxqt",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 lxqt (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 lxqt (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -882,6 +949,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -892,7 +961,7 @@
     {
       "id": "debian-13-mate-squash",
       "name": "debian 13.6.0 mate",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 mate (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -905,6 +974,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -915,7 +986,7 @@
     {
       "id": "debian-13-xfce-squash",
       "name": "debian 13.6.0 xfce",
-      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "13.6.0",
@@ -928,6 +999,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -938,7 +1011,7 @@
     {
       "id": "deepin-20-squash",
       "name": "Deepin 20.9",
-      "description": "netboot.xyz endpoint \u2014 Deepin 20.9  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 Deepin 20.9  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.9",
@@ -953,6 +1026,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -963,7 +1038,7 @@
     {
       "id": "devuan-ascii",
       "name": "devuan 2 ascii",
-      "description": "netboot.xyz endpoint \u2014 devuan 2 ascii (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 devuan 2 ascii (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2",
@@ -978,6 +1053,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -988,7 +1065,7 @@
     {
       "id": "dts",
       "name": "dts 2.7.1",
-      "description": "netboot.xyz endpoint \u2014 dts 2.7.1  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 dts 2.7.1  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2.7.1",
@@ -1002,6 +1079,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1012,7 +1091,7 @@
     {
       "id": "elementaryos-6-default-squash",
       "name": "elementary-os 6",
-      "description": "netboot.xyz endpoint \u2014 elementary-os 6  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 elementary-os 6  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6",
@@ -1027,6 +1106,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1037,7 +1118,7 @@
     {
       "id": "elementaryos-7-default-squash",
       "name": "elementary-os 7",
-      "description": "netboot.xyz endpoint \u2014 elementary-os 7  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 elementary-os 7  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "7",
@@ -1052,6 +1133,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1062,7 +1145,7 @@
     {
       "id": "endeavouros",
       "name": "endeavouros Titan-Nova-2026.08.15",
-      "description": "netboot.xyz endpoint \u2014 endeavouros Titan-Nova-2026.08.15  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 endeavouros Titan-Nova-2026.08.15  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "Titan-Nova-2026.08.15",
@@ -1077,6 +1160,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1087,7 +1172,7 @@
     {
       "id": "fatdog",
       "name": "fatdog current",
-      "description": "netboot.xyz endpoint \u2014 fatdog current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 fatdog current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -1101,6 +1186,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1111,7 +1198,7 @@
     {
       "id": "fedora-40-gnome",
       "name": "fedora 40 GNOME",
-      "description": "netboot.xyz endpoint \u2014 fedora 40 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 fedora 40 GNOME (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "40",
@@ -1126,6 +1213,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1136,7 +1225,7 @@
     {
       "id": "garuda-cinnamon",
       "name": "garuda 250801 cinnamon",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 cinnamon (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1156,6 +1245,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1166,7 +1257,7 @@
     {
       "id": "garuda-dr460nized",
       "name": "garuda 250801 dr460nized",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 dr460nized (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 dr460nized (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1186,6 +1277,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1196,7 +1289,7 @@
     {
       "id": "garuda-dr460nized-gaming",
       "name": "garuda 250801 dr460nized-gaming",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 dr460nized-gaming (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 dr460nized-gaming (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1216,6 +1309,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1226,7 +1321,7 @@
     {
       "id": "garuda-gnome",
       "name": "garuda 250801 gnome",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 gnome (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1246,6 +1341,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1256,7 +1353,7 @@
     {
       "id": "garuda-i3wm",
       "name": "garuda 250801 i3wm",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 i3wm (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 i3wm (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1276,6 +1373,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1286,7 +1385,7 @@
     {
       "id": "garuda-kde-barebones",
       "name": "garuda 220329 kde-barebones",
-      "description": "netboot.xyz endpoint \u2014 garuda 220329 kde-barebones (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 220329 kde-barebones (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "220329",
@@ -1306,6 +1405,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1316,7 +1417,7 @@
     {
       "id": "garuda-lxqt-kwin",
       "name": "garuda 230501 lxqt-kwin",
-      "description": "netboot.xyz endpoint \u2014 garuda 230501 lxqt-kwin (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 230501 lxqt-kwin (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "230501",
@@ -1336,6 +1437,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1346,7 +1449,7 @@
     {
       "id": "garuda-mate",
       "name": "garuda 230501 mate",
-      "description": "netboot.xyz endpoint \u2014 garuda 230501 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 230501 mate (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "230501",
@@ -1366,6 +1469,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1376,7 +1481,7 @@
     {
       "id": "garuda-qtile",
       "name": "garuda 231029 qtile",
-      "description": "netboot.xyz endpoint \u2014 garuda 231029 qtile (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 231029 qtile (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "231029",
@@ -1396,6 +1501,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1406,7 +1513,7 @@
     {
       "id": "garuda-sway",
       "name": "garuda 250801 sway",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 sway (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 sway (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1426,6 +1533,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1436,7 +1545,7 @@
     {
       "id": "garuda-wayfire",
       "name": "garuda 230501 wayfire",
-      "description": "netboot.xyz endpoint \u2014 garuda 230501 wayfire (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 230501 wayfire (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "230501",
@@ -1456,6 +1565,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1466,7 +1577,7 @@
     {
       "id": "garuda-xfce",
       "name": "garuda 250801 xfce",
-      "description": "netboot.xyz endpoint \u2014 garuda 250801 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "250801",
@@ -1486,6 +1597,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1496,7 +1609,7 @@
     {
       "id": "gentoo-amd64",
       "name": "gentoo 20260811T083102Z",
-      "description": "netboot.xyz endpoint \u2014 gentoo 20260811T083102Z  (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 gentoo 20260811T083102Z  (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "20260811T083102Z",
@@ -1511,6 +1624,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1521,7 +1636,7 @@
     {
       "id": "gentoo-arm64",
       "name": "gentoo 20260816T204555Z",
-      "description": "netboot.xyz endpoint \u2014 gentoo 20260816T204555Z  (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 gentoo 20260816T204555Z  (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "20260816T204555Z",
@@ -1536,6 +1651,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1546,7 +1663,7 @@
     {
       "id": "gentoo-x86",
       "name": "gentoo 20260804T163056Z",
-      "description": "netboot.xyz endpoint \u2014 gentoo 20260804T163056Z  (x86) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 gentoo 20260804T163056Z  (x86) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86",
       "version": "20260804T163056Z",
@@ -1561,6 +1678,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1571,7 +1690,7 @@
     {
       "id": "gparted-stable",
       "name": "gparted stable",
-      "description": "netboot.xyz endpoint \u2014 gparted stable  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 gparted stable  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "stable",
@@ -1586,6 +1705,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1596,7 +1717,7 @@
     {
       "id": "grml-full-amd64",
       "name": "grml 2026.04 full",
-      "description": "netboot.xyz endpoint \u2014 grml 2026.04 full (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 full (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "2026.04",
@@ -1611,6 +1732,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1621,7 +1744,7 @@
     {
       "id": "grml-full-arm64",
       "name": "grml 2026.04 full",
-      "description": "netboot.xyz endpoint \u2014 grml 2026.04 full (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 full (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "2026.04",
@@ -1636,6 +1759,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1646,7 +1771,7 @@
     {
       "id": "grml-small-amd64",
       "name": "grml 2026.04 small",
-      "description": "netboot.xyz endpoint \u2014 grml 2026.04 small (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 small (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "2026.04",
@@ -1661,6 +1786,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1671,7 +1798,7 @@
     {
       "id": "grml-small-arm64",
       "name": "grml 2026.04 small",
-      "description": "netboot.xyz endpoint \u2014 grml 2026.04 small (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 small (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "2026.04",
@@ -1686,6 +1813,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1696,7 +1825,7 @@
     {
       "id": "harvester",
       "name": "harvester v1.7.3",
-      "description": "netboot.xyz endpoint \u2014 harvester v1.7.3  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 harvester v1.7.3  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "v1.7.3",
@@ -1713,6 +1842,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1723,7 +1854,7 @@
     {
       "id": "hrmpf",
       "name": "hrmpf 20231124",
-      "description": "netboot.xyz endpoint \u2014 hrmpf 20231124  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 hrmpf 20231124  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20231124",
@@ -1738,6 +1869,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1748,7 +1881,7 @@
     {
       "id": "kali-xfce-squash",
       "name": "kali 2026.2 xfce",
-      "description": "netboot.xyz endpoint \u2014 kali 2026.2 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 kali 2026.2 xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2026.2",
@@ -1763,6 +1896,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1773,7 +1908,7 @@
     {
       "id": "kaspersky-rescue",
       "name": "kaspersky 18",
-      "description": "netboot.xyz endpoint \u2014 kaspersky 18  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 kaspersky 18  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "18",
@@ -1796,6 +1931,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1806,7 +1943,7 @@
     {
       "id": "kde-neon-user",
       "name": "neon 20260604-1324 user",
-      "description": "netboot.xyz endpoint \u2014 neon 20260604-1324 user (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 neon 20260604-1324 user (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20260604-1324",
@@ -1821,6 +1958,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1831,7 +1970,7 @@
     {
       "id": "kodachi-6",
       "name": "kodachi 6",
-      "description": "netboot.xyz endpoint \u2014 kodachi 6  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 kodachi 6  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6",
@@ -1846,6 +1985,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1856,7 +1997,7 @@
     {
       "id": "kodachi-7",
       "name": "kodachi 7",
-      "description": "netboot.xyz endpoint \u2014 kodachi 7  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 kodachi 7  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "7",
@@ -1871,6 +2012,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1881,7 +2024,7 @@
     {
       "id": "kodachi-8",
       "name": "kodachi 8",
-      "description": "netboot.xyz endpoint \u2014 kodachi 8  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 kodachi 8  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "8",
@@ -1896,6 +2039,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1906,7 +2051,7 @@
     {
       "id": "linux-lite-5-squash",
       "name": "lite 5.8",
-      "description": "netboot.xyz endpoint \u2014 lite 5.8  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 lite 5.8  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "5.8",
@@ -1921,6 +2066,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1931,7 +2078,7 @@
     {
       "id": "linux-lite-6-squash",
       "name": "lite 6.4",
-      "description": "netboot.xyz endpoint \u2014 lite 6.4  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 lite 6.4  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6.4",
@@ -1946,6 +2093,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1956,7 +2105,7 @@
     {
       "id": "lxle",
       "name": "lxle current",
-      "description": "netboot.xyz endpoint \u2014 lxle current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 lxle current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -1971,6 +2120,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -1981,7 +2132,7 @@
     {
       "id": "manjaro-gnome-current",
       "name": "manjaro current gnome",
-      "description": "netboot.xyz endpoint \u2014 manjaro current gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 manjaro current gnome (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -1999,6 +2150,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2009,7 +2162,7 @@
     {
       "id": "manjaro-kde-current",
       "name": "manjaro current kde",
-      "description": "netboot.xyz endpoint \u2014 manjaro current kde (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 manjaro current kde (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2027,6 +2180,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2037,7 +2192,7 @@
     {
       "id": "manjaro-xfce-current",
       "name": "manjaro current xfce",
-      "description": "netboot.xyz endpoint \u2014 manjaro current xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 manjaro current xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2055,6 +2210,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2065,7 +2222,7 @@
     {
       "id": "memtest86",
       "name": "memtest86-free 11.7",
-      "description": "netboot.xyz endpoint \u2014 memtest86-free 11.7  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 memtest86-free 11.7  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "11.7",
@@ -2078,6 +2235,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2088,7 +2247,7 @@
     {
       "id": "memtest86plus",
       "name": "memtest86-plus 8.00",
-      "description": "netboot.xyz endpoint \u2014 memtest86-plus 8.00  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 memtest86-plus 8.00  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "8.00",
@@ -2107,6 +2266,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2117,7 +2278,7 @@
     {
       "id": "mfsbsd-14",
       "name": "freebsd 14",
-      "description": "netboot.xyz endpoint \u2014 freebsd 14  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 freebsd 14  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "14",
@@ -2131,6 +2292,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2141,7 +2304,7 @@
     {
       "id": "mint-20-cinnamon-squash",
       "name": "mint 20.3 Cinnamon",
-      "description": "netboot.xyz endpoint \u2014 mint 20.3 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 20.3 Cinnamon (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.3",
@@ -2156,6 +2319,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2166,7 +2331,7 @@
     {
       "id": "mint-20-mate-squash",
       "name": "mint 20.3 mate",
-      "description": "netboot.xyz endpoint \u2014 mint 20.3 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 20.3 mate (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.3",
@@ -2181,6 +2346,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2191,7 +2358,7 @@
     {
       "id": "mint-20-xfce-squash",
       "name": "mint 20.3 xfce",
-      "description": "netboot.xyz endpoint \u2014 mint 20.3 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 20.3 xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.3",
@@ -2206,6 +2373,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2216,7 +2385,7 @@
     {
       "id": "mint-21-cinnamon-squash",
       "name": "mint 21 Cinnamon",
-      "description": "netboot.xyz endpoint \u2014 mint 21 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 21 Cinnamon (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "21",
@@ -2231,6 +2400,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2241,7 +2412,7 @@
     {
       "id": "mint-21-mate-squash",
       "name": "mint 21 mate",
-      "description": "netboot.xyz endpoint \u2014 mint 21 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 21 mate (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "21",
@@ -2256,6 +2427,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2266,7 +2439,7 @@
     {
       "id": "mint-21-xfce-squash",
       "name": "mint 21 xfce",
-      "description": "netboot.xyz endpoint \u2014 mint 21 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 21 xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "21",
@@ -2281,6 +2454,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2291,7 +2466,7 @@
     {
       "id": "mint-22-cinnamon-squash",
       "name": "mint 22 Cinnamon",
-      "description": "netboot.xyz endpoint \u2014 mint 22 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 22 Cinnamon (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22",
@@ -2306,6 +2481,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2316,7 +2493,7 @@
     {
       "id": "mint-22-mate-squash",
       "name": "mint 22 mate",
-      "description": "netboot.xyz endpoint \u2014 mint 22 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 22 mate (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22",
@@ -2331,6 +2508,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2341,7 +2520,7 @@
     {
       "id": "mint-22-xfce-squash",
       "name": "mint 22 xfce",
-      "description": "netboot.xyz endpoint \u2014 mint 22 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 22 xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22",
@@ -2356,6 +2535,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2366,7 +2547,7 @@
     {
       "id": "mint-lmde-cinnamon-squash",
       "name": "mint 6 Cinnamon",
-      "description": "netboot.xyz endpoint \u2014 mint 6 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 mint 6 Cinnamon (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6",
@@ -2381,6 +2562,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2391,7 +2574,7 @@
     {
       "id": "nitrux-release",
       "name": "nitrux 2022.02.28",
-      "description": "netboot.xyz endpoint \u2014 nitrux 2022.02.28  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 nitrux 2022.02.28  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2022.02.28",
@@ -2406,6 +2589,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2416,7 +2601,7 @@
     {
       "id": "nixos-20.03",
       "name": "nixos 20.03",
-      "description": "netboot.xyz endpoint \u2014 nixos 20.03  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 nixos 20.03  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.03",
@@ -2431,6 +2616,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2441,7 +2628,7 @@
     {
       "id": "omarchy",
       "name": "omarchy 4.0.2",
-      "description": "netboot.xyz endpoint \u2014 omarchy 4.0.2  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 omarchy 4.0.2  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "4.0.2",
@@ -2457,6 +2644,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2489,7 +2678,7 @@
     {
       "id": "oracle-8",
       "name": "oracle 8",
-      "description": "netboot.xyz endpoint \u2014 oracle 8  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 oracle 8  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "8",
@@ -2504,6 +2693,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2514,7 +2705,7 @@
     {
       "id": "oracle-9-aarch64",
       "name": "oracle 9",
-      "description": "netboot.xyz endpoint \u2014 oracle 9  (aarch64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 oracle 9  (aarch64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "aarch64",
       "version": "9",
@@ -2529,6 +2720,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2539,7 +2732,7 @@
     {
       "id": "oracle-9-x86_64",
       "name": "oracle 9",
-      "description": "netboot.xyz endpoint \u2014 oracle 9  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 oracle 9  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "9",
@@ -2554,6 +2747,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2564,7 +2759,7 @@
     {
       "id": "parrot-home",
       "name": "parrot 6.3.2 home",
-      "description": "netboot.xyz endpoint \u2014 parrot 6.3.2 home (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 parrot 6.3.2 home (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6.3.2",
@@ -2579,6 +2774,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2589,7 +2786,7 @@
     {
       "id": "parrot-security",
       "name": "parrot 6.3.2 security",
-      "description": "netboot.xyz endpoint \u2014 parrot 6.3.2 security (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 parrot 6.3.2 security (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6.3.2",
@@ -2604,6 +2801,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2614,7 +2813,7 @@
     {
       "id": "pop-20.04-default-squash",
       "name": "pop 20.04 intel-amd",
-      "description": "netboot.xyz endpoint \u2014 pop 20.04 intel-amd (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 pop 20.04 intel-amd (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -2629,6 +2828,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2639,7 +2840,7 @@
     {
       "id": "pop-20.04-nvidia-squash",
       "name": "pop 20.04 nvidia",
-      "description": "netboot.xyz endpoint \u2014 pop 20.04 nvidia (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 pop 20.04 nvidia (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -2654,6 +2855,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2664,7 +2867,7 @@
     {
       "id": "pop-22.04-default-squash",
       "name": "pop 22.04 intel-amd",
-      "description": "netboot.xyz endpoint \u2014 pop 22.04 intel-amd (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 pop 22.04 intel-amd (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -2679,6 +2882,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2689,7 +2894,7 @@
     {
       "id": "pureos-gnome",
       "name": "pureos current gnome",
-      "description": "netboot.xyz endpoint \u2014 pureos current gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 pureos current gnome (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2704,6 +2909,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2714,7 +2921,7 @@
     {
       "id": "q4os-default-squash",
       "name": "Q4OS 6.8 trinity",
-      "description": "netboot.xyz endpoint \u2014 Q4OS 6.8 trinity (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 Q4OS 6.8 trinity (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6.8",
@@ -2729,6 +2936,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2739,7 +2948,7 @@
     {
       "id": "q4os-plasma-squash",
       "name": "Q4OS 6.8 plasma",
-      "description": "netboot.xyz endpoint \u2014 Q4OS 6.8 plasma (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 Q4OS 6.8 plasma (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "6.8",
@@ -2752,6 +2961,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2762,7 +2973,7 @@
     {
       "id": "raizo",
       "name": "raizo current",
-      "description": "netboot.xyz endpoint \u2014 raizo current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 raizo current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2777,6 +2988,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2787,7 +3000,7 @@
     {
       "id": "redorescue",
       "name": "redorescue 4.0.0",
-      "description": "netboot.xyz endpoint \u2014 redorescue 4.0.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 redorescue 4.0.0  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "4.0.0",
@@ -2802,6 +3015,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2812,7 +3027,7 @@
     {
       "id": "regolith-current",
       "name": "regolith current ubuntu",
-      "description": "netboot.xyz endpoint \u2014 regolith current ubuntu (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 regolith current ubuntu (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2827,6 +3042,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2837,7 +3054,7 @@
     {
       "id": "rescatux",
       "name": "rescatux current",
-      "description": "netboot.xyz endpoint \u2014 rescatux current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 rescatux current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2852,6 +3069,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2862,7 +3081,7 @@
     {
       "id": "rescuezilla",
       "name": "rescuezilla 2.6.1",
-      "description": "netboot.xyz endpoint \u2014 rescuezilla 2.6.1  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 rescuezilla 2.6.1  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2.6.1",
@@ -2877,6 +3096,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2887,7 +3108,7 @@
     {
       "id": "septor",
       "name": "septor current",
-      "description": "netboot.xyz endpoint \u2014 septor current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 septor current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -2902,6 +3123,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2912,7 +3135,7 @@
     {
       "id": "shredos-i686",
       "name": "shredos 0.34_32-bit_20221231",
-      "description": "netboot.xyz endpoint \u2014 shredos 0.34_32-bit_20221231  (i686) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 shredos 0.34_32-bit_20221231  (i686) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "i686",
       "version": "0.34_32-bit_20221231",
@@ -2925,6 +3148,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2935,7 +3160,7 @@
     {
       "id": "shredos-x86_64",
       "name": "shredos 2025.11_31_x86-64_0.42",
-      "description": "netboot.xyz endpoint \u2014 shredos 2025.11_31_x86-64_0.42  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 shredos 2025.11_31_x86-64_0.42  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2025.11_31_x86-64_0.42",
@@ -2948,6 +3173,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2958,7 +3185,7 @@
     {
       "id": "sparky-rolling-gui",
       "name": "sparky rolling xfce",
-      "description": "netboot.xyz endpoint \u2014 sparky rolling xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 sparky rolling xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "rolling",
@@ -2973,6 +3200,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -2983,7 +3212,7 @@
     {
       "id": "sparky-rolling-lxqt",
       "name": "sparky rolling lxqt",
-      "description": "netboot.xyz endpoint \u2014 sparky rolling lxqt (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 sparky rolling lxqt (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "rolling",
@@ -2998,6 +3227,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3008,7 +3239,7 @@
     {
       "id": "sparky-rolling-mingui",
       "name": "sparky rolling xfce-min",
-      "description": "netboot.xyz endpoint \u2014 sparky rolling xfce-min (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 sparky rolling xfce-min (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "rolling",
@@ -3023,6 +3254,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3033,7 +3266,7 @@
     {
       "id": "sparky-stable-gui",
       "name": "sparky stable xfce",
-      "description": "netboot.xyz endpoint \u2014 sparky stable xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 sparky stable xfce (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "stable",
@@ -3048,6 +3281,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3058,7 +3293,7 @@
     {
       "id": "sparky-stable-lxqt",
       "name": "sparky stable lxqt",
-      "description": "netboot.xyz endpoint \u2014 sparky stable lxqt (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 sparky stable lxqt (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "stable",
@@ -3073,6 +3308,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3083,7 +3320,7 @@
     {
       "id": "sparky-stable-mingui",
       "name": "sparky stable xfce-min",
-      "description": "netboot.xyz endpoint \u2014 sparky stable xfce-min (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 sparky stable xfce-min (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "stable",
@@ -3098,6 +3335,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3108,7 +3347,7 @@
     {
       "id": "supergrubdisk",
       "name": "supergrubdisk 2.06s4",
-      "description": "netboot.xyz endpoint \u2014 supergrubdisk 2.06s4  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 supergrubdisk 2.06s4  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2.06s4",
@@ -3121,6 +3360,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3131,7 +3372,7 @@
     {
       "id": "systemrescue-amd64",
       "name": "systemrescue 13.02",
-      "description": "netboot.xyz endpoint \u2014 systemrescue 13.02  (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 systemrescue 13.02  (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "13.02",
@@ -3147,6 +3388,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3157,7 +3400,7 @@
     {
       "id": "systemrescue-i686",
       "name": "systemrescue 9.03",
-      "description": "netboot.xyz endpoint \u2014 systemrescue 9.03  (i686) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 systemrescue 9.03  (i686) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "i686",
       "version": "9.03",
@@ -3172,6 +3415,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3182,7 +3427,7 @@
     {
       "id": "ubuntu-20.04-Budgie-squash",
       "name": "ubuntu 20.04 Budgie",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 Budgie (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 Budgie (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3197,6 +3442,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3207,7 +3454,7 @@
     {
       "id": "ubuntu-20.04-KDE-squash",
       "name": "ubuntu 20.04 KDE",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 KDE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 KDE (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3222,6 +3469,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3232,7 +3481,7 @@
     {
       "id": "ubuntu-20.04-LXQT-squash",
       "name": "ubuntu 20.04 LXQT",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 LXQT (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 LXQT (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3247,6 +3496,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3257,7 +3508,7 @@
     {
       "id": "ubuntu-20.04-MATE-squash",
       "name": "ubuntu 20.04 MATE",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 MATE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 MATE (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3272,6 +3523,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3282,7 +3535,7 @@
     {
       "id": "ubuntu-20.04-XFCE-squash",
       "name": "ubuntu 20.04 XFCE",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 XFCE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 XFCE (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3297,6 +3550,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3307,7 +3562,7 @@
     {
       "id": "ubuntu-20.04-default-squash",
       "name": "ubuntu 20.04 GNOME",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 GNOME (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3322,6 +3577,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3332,7 +3589,7 @@
     {
       "id": "ubuntu-20.04-kylin-squash",
       "name": "ubuntu 20.04 kylin",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 kylin (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 kylin (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "20.04",
@@ -3347,6 +3604,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3357,7 +3616,7 @@
     {
       "id": "ubuntu-22.04-Budgie-squash",
       "name": "ubuntu 22.04 Budgie",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 Budgie (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 Budgie (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3372,6 +3631,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3382,7 +3643,7 @@
     {
       "id": "ubuntu-22.04-KDE-squash",
       "name": "ubuntu 22.04 KDE",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 KDE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 KDE (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3397,6 +3658,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3407,7 +3670,7 @@
     {
       "id": "ubuntu-22.04-LXQT-squash",
       "name": "ubuntu 22.04 LXQT",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 LXQT (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 LXQT (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3422,6 +3685,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3432,7 +3697,7 @@
     {
       "id": "ubuntu-22.04-MATE-squash",
       "name": "ubuntu 22.04 MATE",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 MATE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 MATE (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3447,6 +3712,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3457,7 +3724,7 @@
     {
       "id": "ubuntu-22.04-XFCE-squash",
       "name": "ubuntu 22.04 XFCE",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 XFCE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 XFCE (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3472,6 +3739,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3482,7 +3751,7 @@
     {
       "id": "ubuntu-22.04-default-squash",
       "name": "ubuntu 22.04 GNOME",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 GNOME (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3497,6 +3766,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3507,7 +3778,7 @@
     {
       "id": "ubuntu-22.04-kylin-squash",
       "name": "ubuntu 22.04 kylin",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 kylin (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 kylin (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "22.04",
@@ -3522,6 +3793,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3532,7 +3805,7 @@
     {
       "id": "ubuntu-24.04-default-squash",
       "name": "ubuntu 24.04 GNOME",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04 GNOME (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "24.04",
@@ -3550,6 +3823,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3560,7 +3835,7 @@
     {
       "id": "ubuntu-netboot-20.04-amd64",
       "name": "ubuntu 20.04.6 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04.6 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04.6 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "20.04.6",
@@ -3574,6 +3849,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3584,7 +3861,7 @@
     {
       "id": "ubuntu-netboot-20.04-arm64",
       "name": "ubuntu 20.04.5 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04.5 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04.5 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "20.04.5",
@@ -3598,6 +3875,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3608,7 +3887,7 @@
     {
       "id": "ubuntu-netboot-22.04-amd64",
       "name": "ubuntu 22.04.5 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04.5 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04.5 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "22.04.5",
@@ -3622,6 +3901,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3632,7 +3913,7 @@
     {
       "id": "ubuntu-netboot-22.04-arm64",
       "name": "ubuntu 22.04.5 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04.5 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04.5 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "22.04.5",
@@ -3646,6 +3927,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3656,7 +3939,7 @@
     {
       "id": "ubuntu-netboot-24.04-amd64",
       "name": "ubuntu 24.04.4 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "24.04.4",
@@ -3670,6 +3953,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3680,7 +3965,7 @@
     {
       "id": "ubuntu-netboot-24.04-arm64",
       "name": "ubuntu 24.04.4 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "24.04.4",
@@ -3694,6 +3979,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3704,7 +3991,7 @@
     {
       "id": "ubuntu-netboot-24.10-amd64",
       "name": "ubuntu 24.10 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.10 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.10 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "24.10",
@@ -3718,6 +4005,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3728,7 +4017,7 @@
     {
       "id": "ubuntu-netboot-24.10-arm64",
       "name": "ubuntu 24.10 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.10 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.10 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "24.10",
@@ -3742,6 +4031,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3752,7 +4043,7 @@
     {
       "id": "ubuntu-netboot-25.04-amd64",
       "name": "ubuntu 25.04 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 25.04 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.04 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "25.04",
@@ -3766,6 +4057,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3776,7 +4069,7 @@
     {
       "id": "ubuntu-netboot-25.04-arm64",
       "name": "ubuntu 25.04 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 25.04 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.04 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "25.04",
@@ -3790,6 +4083,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3800,7 +4095,7 @@
     {
       "id": "ubuntu-netboot-25.10-amd64",
       "name": "ubuntu 25.10 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 25.10 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.10 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "25.10",
@@ -3814,6 +4109,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3824,7 +4121,7 @@
     {
       "id": "ubuntu-netboot-25.10-arm64",
       "name": "ubuntu 25.10 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 25.10 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.10 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "25.10",
@@ -3838,6 +4135,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3848,7 +4147,7 @@
     {
       "id": "ubuntu-netboot-26.04-amd64",
       "name": "ubuntu 26.04 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 26.04 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 26.04 netboot (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "26.04",
@@ -3862,6 +4161,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3872,7 +4173,7 @@
     {
       "id": "ubuntu-netboot-26.04-arm64",
       "name": "ubuntu 26.04 netboot",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 26.04 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 26.04 netboot (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "26.04",
@@ -3886,6 +4187,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3896,7 +4199,7 @@
     {
       "id": "ubuntu-netboot-hwe-24.04-amd64",
       "name": "ubuntu 24.04.4 netboot-hwe",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot-hwe (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot-hwe (amd64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "amd64",
       "version": "24.04.4",
@@ -3910,6 +4213,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3920,7 +4225,7 @@
     {
       "id": "ubuntu-netboot-hwe-24.04-arm64",
       "name": "ubuntu 24.04.4 netboot-hwe",
-      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot-hwe (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot-hwe (arm64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "arm64",
       "version": "24.04.4",
@@ -3934,6 +4239,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3944,7 +4251,7 @@
     {
       "id": "ubuntu-spins",
       "name": "ubuntu-spins 0.0.5",
-      "description": "netboot.xyz endpoint \u2014 ubuntu-spins 0.0.5  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 ubuntu-spins 0.0.5  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "0.0.5",
@@ -3958,6 +4265,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3968,7 +4277,7 @@
     {
       "id": "uefi-shell-x64",
       "name": "uefi-shell-x64 edk2-stable202002",
-      "description": "netboot.xyz endpoint \u2014 uefi-shell-x64 edk2-stable202002  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 uefi-shell-x64 edk2-stable202002  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "edk2-stable202002",
@@ -3981,6 +4290,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -3991,7 +4302,7 @@
     {
       "id": "uefishell",
       "name": "uefi-shell edk2-stable202002",
-      "description": "netboot.xyz endpoint \u2014 uefi-shell edk2-stable202002  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 uefi-shell edk2-stable202002  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "edk2-stable202002",
@@ -4006,6 +4317,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4016,7 +4329,7 @@
     {
       "id": "vanilla-os",
       "name": "vanilla-os 2-20240728",
-      "description": "netboot.xyz endpoint \u2014 vanilla-os 2-20240728  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 vanilla-os 2-20240728  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "2-20240728",
@@ -4031,6 +4344,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4041,7 +4356,7 @@
     {
       "id": "vmware-photon-aarch64",
       "name": "vmware-photon 4.0",
-      "description": "netboot.xyz endpoint \u2014 vmware-photon 4.0  (aarch64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 vmware-photon 4.0  (aarch64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "aarch64",
       "version": "4.0",
@@ -4055,6 +4370,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4065,7 +4382,7 @@
     {
       "id": "vmware-photon-x86_64",
       "name": "vmware-photon 4.0",
-      "description": "netboot.xyz endpoint \u2014 vmware-photon 4.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 vmware-photon 4.0  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "4.0",
@@ -4079,6 +4396,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4089,7 +4408,7 @@
     {
       "id": "voyager-bullseye-squash",
       "name": "Voyager bullseye bullseye",
-      "description": "netboot.xyz endpoint \u2014 Voyager bullseye bullseye (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 Voyager bullseye bullseye (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "bullseye",
@@ -4104,6 +4423,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4114,7 +4435,7 @@
     {
       "id": "voyager-focal-squash",
       "name": "Voyager focal focal",
-      "description": "netboot.xyz endpoint \u2014 Voyager focal focal (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 Voyager focal focal (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "focal",
@@ -4129,6 +4450,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4139,7 +4462,7 @@
     {
       "id": "voyager-jammy-squash",
       "name": "Voyager jammy jammy",
-      "description": "netboot.xyz endpoint \u2014 Voyager jammy jammy (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 Voyager jammy jammy (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "jammy",
@@ -4154,6 +4477,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4164,7 +4489,7 @@
     {
       "id": "vyos-rolling",
       "name": "vyos rolling rolling",
-      "description": "netboot.xyz endpoint \u2014 vyos rolling rolling (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 vyos rolling rolling (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "rolling",
@@ -4179,6 +4504,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4189,7 +4516,7 @@
     {
       "id": "xcp-ng",
       "name": "xcp-ng 8.2",
-      "description": "netboot.xyz endpoint \u2014 xcp-ng 8.2  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 xcp-ng 8.2  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "8.2",
@@ -4204,6 +4531,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4214,7 +4543,7 @@
     {
       "id": "zeninstall",
       "name": "zeninstall current",
-      "description": "netboot.xyz endpoint \u2014 zeninstall current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 zeninstall current  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "current",
@@ -4229,6 +4558,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4239,7 +4570,7 @@
     {
       "id": "zfsbootmenu",
       "name": "zfsbootmenu 3.1.0",
-      "description": "netboot.xyz endpoint \u2014 zfsbootmenu 3.1.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 zfsbootmenu 3.1.0  (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "3.1.0",
@@ -4252,6 +4583,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",
@@ -4262,7 +4595,7 @@
     {
       "id": "zorin-core-squash",
       "name": "zorin 18.1 Core",
-      "description": "netboot.xyz endpoint \u2014 zorin 18.1 Core (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "description": "netboot.xyz endpoint \u2014 zorin 18.1 Core (x86_64) \u2014 kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)",
       "url": null,
       "arch": "x86_64",
       "version": "18.1",
@@ -4277,6 +4610,8 @@
       "netboot_iso_file": null,
       "sha256": null,
       "size_human": null,
+      "provider": "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) \u2014 iPXE netboot bundle",
+      "homepage": null,
       "tags": [
         "netboot",
         "squashfs",

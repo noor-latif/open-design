@@ -170,17 +170,17 @@ Deploy AirBoot as `/ISO/airboot.iso`; optionally default via static `ventoy.json
 
 ```
 airboot/
-├── abt                       # host CLI (shell)
+├── abt                       # host CLI (shell) — `catalog list` always full (172)
 ├── plan.md / readme.md / REFERENCE.md
 ├── build.sh / Dockerfile     # Docker build driver (alpine:3.20)
 ├── scripts/
 │   ├── abt-menu.sh           # fetcher (runs inside micro-OS) — MVP default: debian-12-netinst (700M)
 │   ├── genapkovl-abt.sh      # overlay generator (/etc/local.d)
-│   └── generate-catalog.py   # netboot endpoints.yml → catalog/netboot-full.json + curated manifest
+│   └── generate-catalog.py   # endpoints.yml → catalog/netboot-full.json + manifest
 ├── aports-patch/mkimg.abt.sh # build profile (linux-firmware-other + sof-firmware)
 ├── catalog/
-│   ├── manifest.json         # curated Ventoy-bootable ISOs (7 entries, debian first, includes omarchy)
-│   └── netboot-full.json     # full 172-entry netboot.xyz roster re-shaped (only 13 ventoy_bootable)
+│   ├── manifest.json         # 7-entry MVP subset (fallback offline) with provider fields
+│   └── netboot-full.json     # 172-entry full roster (netboot.xyz + upstream ISOs, provider + ventoy_bootable)
 └── reference/                # cloned for interface study (gitignored)
     ├── netboot.xyz (endpoints.yml, templates)
     ├── Ventoy (grub.cfg, ventoy_cmd.c)
@@ -194,12 +194,14 @@ airboot/
 - WPA-Enterprise deferred to Phase 4.
 - Secure Boot: MVP assumes disabled or Ventoy MOK enrolled.
 
-## Catalog strategy (2026-09-03 update)
+## Catalog strategy (2026-09-03 update, --full removed)
 
-- **MVP default**: `debian-12-netinst` (700M, mobile/metered friendly) — not Ubuntu 6G. `CATALOG_FALLBACK` in `abt-menu.sh` ordered small→large for the same reason.
-- **Full roster**: `scripts/generate-catalog.py` reads `reference/netboot.xyz/endpoints.yml` (~165 endpoints, 130+ unique OS) and emits `catalog/netboot-full.json` (172 entries including curated ISO overrides). Only 13 are single-file ISOs Ventoy can boot directly (proxmox, tails, plus curated debian/ubuntu/fedora/arch/cachyos/omarchy). The rest are netboot squashfs (kernel+initrd+filesystem.squashfs) — not Ventoy ISOs, kept for search completeness.
-- **Omarchy**: present in both places. Netboot endpoint `omarchy: {path: /asset-mirror/.../4.0.2/, os: omarchy}` is the squashfs netboot flavor; AirBoot's curated `omarchy-4.0.2` is the real Ventoy ISO at `https://iso.omarchy.org/omarchy-4.0.2.iso` (SHA256 `2ef8e624…`), verified 6227752960 bytes via `curl -I`.
-- Host search: `abt catalog list --full | grep omarchy`, `abt catalog search omarchy`, `abt catalog search --full debian`.
+- **MVP default download**: `debian-12-netinst` (700M, mobile/metered friendly) — not Ubuntu 6G. `CATALOG_FALLBACK` in `abt-menu.sh` ordered small→large.
+- **`abt catalog list` always full**: 172 entries from `catalog/netboot-full.json` (generated from `reference/netboot.xyz/endpoints.yml` + upstream ISO overrides via `scripts/generate-catalog.py`). No `--full` flag — list is full by default; `--full` is silently ignored for compat. `catalog/manifest.json` (7 entries) is just the offline fallback.
+- **Provider (not "curated")**: each image has `provider` — the authoritative host, not AirBoot's opinion. Examples: `Debian (cdimage.debian.org)`, `Omarchy (iso.omarchy.org, GitHub omacom/omarchy)`, `Ubuntu (releases.ubuntu.com)`, `CachyOS (mirror.cachyos.org)` for monolithic Ventoy ISOs; `netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz)` for netboot bundles. YUMI/Ventoy themselves don't host a download catalog — YUMI is a multiboot installer that now reuses Ventoy's bootloader, Ventoy lists 1300+ *tested* ISOs but not downloads; netboot.xyz is the only broad download catalog, but for Ventoy you need its single-file ISOs, not its bundles.
+- **Squashfs vs Ventoy ISO — what it means**: netboot.xyz mostly doesn't host single ISOs. For each OS it stores separate files (`vmlinuz` + `initrd` + `filesystem.squashfs` or `airootfs.sfs`) on GitHub Releases (`asset-mirror`) and at `boot.netboot.xyz`. iPXE boots them with `kernel vmlinuz … archiso_http_srv=…` + `initrd initrd` + `initrd airootfs.sfs` (see `reference/netboot.xyz/roles/.../live-omarchy.ipxe.j2`). Ventoy can't boot that — it expects one `.iso` with ISO9660 magic `CD001` at 32769 and El Torito. Copying the three files together doesn't make an ISO. Omarchy therefore has two representations: `iso.omarchy.org/omarchy-4.0.2.iso` (5.8G, `ventoy_bootable: true`, provider omarchy.org) for Ventoy, and `asset-mirror 4.0.2: airootfs.sfs+vmlinuz+initrd` (`ventoy_bootable: false`, provider netboot.xyz) for iPXE.
+- **Omarchy search**: `abt catalog search omarchy` now hits 3 rows: 1 Ventoy ISO + 2 netboot bundles. `abt catalog show omarchy-4.0.2` shows `provider: Omarchy (iso.omarchy.org …)`; `abt catalog show omarchy` explains `ventoy_bootable: false`.
+- **Full list columns**: `ID  NAME  ARCH  SIZE  PROVIDER  BOOTABLE (iso/netboot)` — provider truncated to 24 chars, `iso` = Ventoy.`
 
 ## Definition of Done (MVP)
 

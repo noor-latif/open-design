@@ -39,6 +39,8 @@ ISO_OVERRIDES = {
         "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso",
         "arch": "x86_64", "version": "12.11.0", "size_human": "700M",
         "homepage": "https://www.debian.org/distrib/",
+        "provider": "Debian (cdimage.debian.org) — official netinst ISO",
+        "ventoy_bootable": True,
         "tags": ["mvp", "small", "netinst"], "os": "debian"
     },
     "debian-13-netinst": {
@@ -47,6 +49,8 @@ ISO_OVERRIDES = {
         "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso",
         "arch": "x86_64", "version": "13.6.0", "size_human": "700M",
         "homepage": "https://www.debian.org/distrib/",
+        "provider": "Debian (cdimage.debian.org) — official",
+        "ventoy_bootable": True,
         "tags": ["debian", "netinst"], "os": "debian"
     },
     "omarchy-4.0.2": {
@@ -56,6 +60,8 @@ ISO_OVERRIDES = {
         "arch": "x86_64", "version": "4.0.2", "size_human": "5.8G",
         "sha256": "2ef8e624aa1bec7e277e28056b8535a6c9373ba48d7ede3f1a01cb6d2373cfb8",
         "homepage": "https://omarchy.org",
+        "provider": "Omarchy (iso.omarchy.org, GitHub omacom/omarchy) — official monolithic ISO",
+        "ventoy_bootable": True,
         "netboot_endpoint": "omarchy",
         "tags": ["omarchy", "arch"], "os": "omarchy"
     },
@@ -75,6 +81,8 @@ ISO_OVERRIDES = {
         "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
         "arch": "x86_64", "version": "24.04.3", "size_human": "6.0G",
         "homepage": "https://ubuntu.com/download/desktop",
+        "provider": "Ubuntu (releases.ubuntu.com) — official desktop ISO",
+        "ventoy_bootable": True,
         "tags": ["ubuntu", "large"], "os": "ubuntu"
     },
     "arch-2025.09": {
@@ -83,6 +91,8 @@ ISO_OVERRIDES = {
         "url": "https://geo.mirror.pkgbuild.com/iso/2025.09.01/archlinux-2025.09.01-x86_64.iso",
         "arch": "x86_64", "version": "2025.09.01", "size_human": "1.2G",
         "homepage": "https://archlinux.org/download/",
+        "provider": "Arch Linux (geo.mirror.pkgbuild.com) — official",
+        "ventoy_bootable": True,
         "tags": ["arch"], "os": "arch"
     },
     "fedora-42-workstation": {
@@ -91,6 +101,8 @@ ISO_OVERRIDES = {
         "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-42-1.1.iso",
         "arch": "x86_64", "version": "42", "size_human": "2.3G",
         "homepage": "https://fedoraproject.org/workstation/download",
+        "provider": "Fedora (download.fedoraproject.org) — official",
+        "ventoy_bootable": True,
         "tags": ["fedora"], "os": "fedora"
     },
     "cachyos": {
@@ -99,6 +111,8 @@ ISO_OVERRIDES = {
         "url": "https://mirror.cachyos.org/iso/cachyos-260809.iso",
         "arch": "x86_64", "version": "260809", "size_human": "2.5G",
         "homepage": "https://cachyos.org",
+        "provider": "CachyOS (mirror.cachyos.org) — official",
+        "ventoy_bootable": True,
         "netboot_endpoint": "cachyos",
         "tags": ["arch", "cachyos"], "os": "cachyos"
     },
@@ -115,7 +129,11 @@ def load_endpoints():
 
 def endpoint_to_entry(key, val):
     # Map netboot endpoint to AirBoot-ish entry.
-    # Most are squashfs netboot, not single ISOs — mark accordingly.
+    # Most are squashfs netboot: separate files (vmlinuz + initrd + filesystem.squashfs)
+    # fetched by iPXE via kernel/initrd commands — not a single ISO. Ventoy cannot boot
+    # that bundle; it needs a monolithic ISO9660 with CD001 + El Torito. Only entries
+    # with a .iso file (proxmox.iso, tails-amd64.iso) plus curated upstream ISOs are
+    # ventoy_bootable. Explanation is in manifest notes and README.
     os_name = val.get("os", "?")
     version = str(val.get("version", ""))
     flavor = val.get("flavor", "")
@@ -124,24 +142,23 @@ def endpoint_to_entry(key, val):
     files = val.get("files", [])
     # Prefer ISO file if endpoint already has one (e.g. tails, proxmox.iso)
     iso_file = next((f for f in files if f.endswith(".iso")), None)
-    # Build URL: if there's an .iso in files, it's at boot.netboot.xyz's github mirror
-    # path is like /asset-mirror/releases/download/4.0.2-abf09efd/
-    # full url would be https://github.com/netbootxyz/asset-mirror/releases/download/... + file
-    # but netboot's live_endpoint is https://github.com/netbootxyz  — path is under that.
     url = None
     if iso_file and path:
-        # Use github asset-mirror for iso-bearing endpoints
         url = f"https://github.com/netbootxyz/asset-mirror/releases/download/{path.strip('/').split('/')[-1]}/{iso_file}" if "/asset-mirror/" in path else None
-        # Fallback: many iso endpoints have direct path, try to reconstruct
-        # For proxmox, path is /asset-mirror/.../proxmox.iso — that is the iso itself
-    # Otherwise, no single ISO — keep as netboot-only
     name = f"{os_name} {version} {flavor}".strip()
     if not name or name == os_name:
         name = f"{os_name} {key}"
+    ventoy_bootable = bool(iso_file)
+    if ventoy_bootable:
+        provider = "netboot.xyz (github.com/netbootxyz/asset-mirror) — ISO mirrored from upstream"
+        desc = f"netboot.xyz endpoint — {os_name} {version} {flavor} ({arch}) — single ISO, Ventoy-bootable"
+    else:
+        provider = "netboot.xyz (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) — iPXE netboot bundle"
+        desc = f"netboot.xyz endpoint — {os_name} {version} {flavor} ({arch}) — kernel+initrd+squashfs bundle, not a single Ventoy ISO (iPXE chainloads files separately)"
     return {
         "id": key,
         "name": name,
-        "description": f"netboot.xyz endpoint — {os_name} {version} {flavor} ({arch}) — {'ISO' if iso_file else 'squashfs/netboot (not Ventoy single ISO)'}",
+        "description": desc,
         "url": url,
         "arch": arch,
         "version": version,
@@ -152,8 +169,10 @@ def endpoint_to_entry(key, val):
         "netboot_iso_file": iso_file,
         "sha256": None,
         "size_human": None,
+        "provider": provider,
+        "homepage": None,
         "tags": ["netboot", "squashfs" if not iso_file else "iso"] + ([os_name] if os_name != "?" else []),
-        "ventoy_bootable": bool(iso_file),
+        "ventoy_bootable": ventoy_bootable,
     }
 
 def main():
@@ -219,13 +238,13 @@ def main():
     full = {
         "version": 1,
         "updated": "2026-09-03",
-        "source": "https://github.com/noor/airboot (generated from netboot.xyz endpoints.yml)",
+        "source": "https://github.com/noor/airboot (generated from netboot.xyz endpoints.yml + upstream ISOs)",
         "counts": {
             "total": len(deduped),
             "ventoy_bootable_iso": sum(1 for e in deduped if e.get("ventoy_bootable")),
             "netboot_squashfs": sum(1 for e in deduped if not e.get("ventoy_bootable")),
         },
-        "notes": "Full netboot.xyz roster re-shaped for AirBoot search. Only entries with ventoy_bootable:true and a url are direct ISOs Ventoy can boot. Others are squashfs/netboot (kernel+initrd+squashfs) — not single ISOs. Curated Ventoy ISOs live in catalog/manifest.json (small MVP). Use `abt catalog --full list | grep omarchy` to search.",
+        "notes": "Full roster for `abt catalog list` (always). Each image has a provider: upstream official ISOs (iso.omarchy.org, cdimage.debian.org, releases.ubuntu.com, etc.) are Ventoy-bootable single .iso (CD001); netboot.xyz entries (github.com/netbootxyz/asset-mirror / boot.netboot.xyz) are mostly iPXE netboot bundles — separate files (vmlinuz + initrd + filesystem.squashfs/airootfs.sfs) chainloaded by iPXE, not a monolithic ISO, so Ventoy cannot boot them. Example: Omarchy exists both ways — iso.omarchy.org/omarchy-4.0.2.iso (5.8G, Ventoy yes, provider omarchy.org) and netboot.xyz asset-mirror 4.0.2 (airootfs.sfs+vmlinuz+initrd, Ventoy no, provider netboot.xyz). YUMI/Ventoy have no central ISO catalog; they list tested ISOs but don't host a download catalog. AirBoot's provider field is authoritative: upstream for ISOs, netboot.xyz for bundles.",
         "images": deduped,
     }
 

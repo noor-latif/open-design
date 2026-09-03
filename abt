@@ -46,10 +46,10 @@ ${C_YELLOW}COMMANDS${C_RESET}
   ${C_GREEN}validate${C_RESET}  Validate an ISO file (CD001 magic at 32769)
                 <file>
 
-  ${C_GREEN}catalog${C_RESET}   Manage the image catalog
-                catalog list [--full]         # list curated (or full netboot roster with --full)
-                catalog search <term>         # grep ids/names (e.g. omarchy, ubuntu, debian)
-                catalog show <id>             # show one entry (checks curated then full)
+  ${C_GREEN}catalog${C_RESET}   Manage the image catalog (full netboot.xyz roster + Ventoy ISOs)
+                catalog list                  # list all images (full, 170+ entries)
+                catalog search <term>         # search ids/names/provider (e.g. omarchy)
+                catalog show <id>             # show one entry
                 catalog fetch                 # fetch remote manifest (if ABT_CATALOG_URL set)
 
   ${C_GREEN}ventoy${C_RESET}    Ventoy USB helpers
@@ -64,7 +64,7 @@ ${C_YELLOW}EXAMPLES${C_RESET}
   $PROG build
   $PROG fetch https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso --out /tmp/ubuntu.iso
   $PROG validate /tmp/ubuntu.iso
-  $PROG catalog list --full | grep -i omarchy
+  $PROG catalog list | grep -i omarchy
   $PROG catalog search omarchy
   $PROG catalog search debian
   $PROG ventoy --copy /dev/sdb
@@ -211,17 +211,15 @@ cmd_fetch() {
 # ---------- catalog ----------
 cmd_catalog() {
 	sub="${1:-list}"; shift 2>/dev/null || true
-	# handle --full flag for list/search: use full netboot roster
-	full_flag=0
-	if [ "$sub" = "--full" ]; then full_flag=1; sub="list"; fi
-	# also allow: catalog list --full
-	if [ "${1:-}" = "--full" ]; then full_flag=1; shift 2>/dev/null || true; fi
-	# allow: catalog search --full <term>
-	if [ "$sub" = "search" ] && [ "${1:-}" = "--full" ]; then full_flag=1; shift 2>/dev/null || true; fi
-	if [ "$full_flag" -eq 1 ]; then
+	# --full is deprecated (list is now always full); strip it silently for compat
+	if [ "$sub" = "--full" ]; then sub="list"; shift 2>/dev/null || true; fi
+	if [ "${1:-}" = "--full" ]; then shift 2>/dev/null || true; fi
+	if [ "$sub" = "search" ] && [ "${1:-}" = "--full" ]; then shift 2>/dev/null || true; fi
+	# Full roster is now the default: netboot-full.json (172 entries) with upstream ISO
+	# providers + netboot.xyz asset-mirror entries. Fall back to manifest.json only if
+	# the full file hasn't been generated yet (e.g. fresh clone without python run).
+	if [ -f "$ROOT/catalog/netboot-full.json" ]; then
 		catfile="$ROOT/catalog/netboot-full.json"
-		# fallback to manifest if full not yet generated
-		if [ ! -f "$catfile" ]; then warn "full catalog not found — run ./scripts/generate-catalog.py"; catfile="$CATALOG_FILE"; fi
 	else
 		catfile="$CATALOG_FILE"
 	fi
@@ -253,55 +251,53 @@ cmd_catalog() {
 
 	case "$sub" in
 		list|"")
-			printf "${C_YELLOW}%-22s %-40s %-8s %-6s %s${C_RESET}\n" "ID" "NAME" "ARCH" "SIZE" "BOOTABLE"
-			jq -r '.images[] | "\(.id)\t\(.name)\t\(.arch // "?")\t\(.size_human // "?")\t\(.version // "?")\t\(.ventoy_bootable // true)"' "$catfile" | while IFS="$(printf '\t')" read -r id name arch size ver bootable; do
-				# bootable flag: true/false or null
-				flag="${bootable}"
-				if [ "$flag" = "true" ] || [ "$flag" = "null" ]; then flag="✔"; else flag="netboot"; fi
-				printf "%-22s %-40s %-8s %-6s %-8s ${C_DIM}%s${C_RESET}\n" "$id" "$(printf '%s' "$name" | cut -c1-40)" "$arch" "$size" "$flag" "$ver"
+			printf "${C_YELLOW}%-22s %-40s %-8s %-6s %-10s %s${C_RESET}\n" "ID" "NAME" "ARCH" "SIZE" "PROVIDER" "BOOTABLE"
+			jq -r '.images[] | "\(.id)\t\(.name)\t\(.arch // "?")\t\(.size_human // "?")\t\(.provider // .os // "?")\t\(.version // "?")\t\(.ventoy_bootable)"' "$catfile" | while IFS="$(printf '\t')" read -r id name arch size provider ver bootable; do
+				# ventoy_bootable is true/false/null — null/empty means true (fallback)
+				if [ "$bootable" = "false" ]; then flag="netboot"; else flag="iso"; fi
+				prov_short="$(printf '%s' "$provider" | cut -c1-24)"
+				printf "%-22s %-40s %-8s %-6s %-10s %-8s ${C_DIM}%s${C_RESET}\n" "$id" "$(printf '%s' "$name" | cut -c1-40)" "$arch" "$size" "$prov_short" "$flag" "$ver"
 			done
-			printf "\n${C_DIM}%s images — %s${C_RESET}\n" "$(jq '.images | length' "$catfile")" "$(jq -r '.updated // .version' "$catfile" 2>/dev/null || echo "?")"
-			if [ "$full_flag" -eq 1 ]; then
-				printf "${C_DIM}Full roster: netboot.xyz endpoints + curated ISOs. Only ✔ are Ventoy-bootable single ISOs. Others are netboot squashfs.${C_RESET}\n"
-			else
-				printf "${C_DIM}Curated Ventoy ISOs (debian-12-netinst first for mobile). Use --full for 172-entry netboot roster.${C_RESET}\n"
-			fi
-			printf "${C_DIM}Use: $PROG catalog show <id>  |  $PROG catalog search <term>  |  $PROG fetch <url>${C_RESET}\n"
+			printf "\n${C_DIM}%s images — %s  •  iso = Ventoy-bootable single .iso (CD001); netboot = kernel+initrd+squashfs bundle (iPXE only, not Ventoy)${C_RESET}\n" "$(jq '.images | length' "$catfile")" "$(jq -r '.updated // .version // "?"' "$catfile" 2>/dev/null || echo "?")"
+			printf "${C_DIM}Providers: upstream (cdimage.debian.org, iso.omarchy.org, releases.ubuntu.com …) + netboot.xyz asset-mirror (github.com/netbootxyz/asset-mirror). See catalog/*.json provider fields.${C_RESET}\n"
+			printf "${C_DIM}Use: $PROG catalog search <term>  |  $PROG catalog show <id>  |  $PROG fetch <url>${C_RESET}\n"
 			;;
 		search)
 			term="${1:-}"; [ -n "$term" ] || die "catalog search: missing <term> — usage: $PROG catalog search <term>"
-			printf "${C_YELLOW}Search: %s (%s)${C_RESET}\n" "$term" "$([ "$full_flag" -eq 1 ] && echo "full" || echo "curated")"
-			jq --arg q "$term" -r '.images[] | select((.id | test($q; "i")) or (.name | test($q; "i")) or (.os // "" | test($q; "i"))) | "\(.id)\t\(.name)\t\(.arch // "?")\t\(.size_human // "?")\t\(.url // "(no iso)")"' "$catfile" 2>/dev/null | while IFS="$(printf '\t')" read -r id name arch size url; do
-				printf "${C_GREEN}%-22s${C_RESET} %-35s %-8s %-6s ${C_DIM}%s${C_RESET}\n" "$id" "$(printf '%s' "$name" | cut -c1-35)" "$arch" "$size" "$url"
+			printf "${C_YELLOW}Search: %s${C_RESET}\n" "$term"
+			jq --arg q "$term" -r '.images[] | select((.id | test($q; "i")) or (.name | test($q; "i")) or (.os // "" | test($q; "i")) or (.provider // "" | test($q; "i"))) | "\(.id)\t\(.name)\t\(.provider // .os // "?")\t\(.url // "(no single iso — netboot bundle)")"' "$catfile" 2>/dev/null | while IFS="$(printf '\t')" read -r id name provider url; do
+				printf "${C_GREEN}%-22s${C_RESET} %-35s %-20s ${C_DIM}%s${C_RESET}\n" "$id" "$(printf '%s' "$name" | cut -c1-35)" "$(printf '%s' "$provider" | cut -c1-20)" "$url"
 			done
-			hits="$(jq --arg q "$term" '[.images[] | select((.id | test($q; "i")) or (.name | test($q; "i")) or (.os // "" | test($q; "i")))] | length' "$catfile" 2>/dev/null || echo 0)"
-			printf "\n${C_DIM}%s hits${C_RESET}\n" "$hits"
-			if [ "$hits" -eq 0 ] && [ "$full_flag" -eq 0 ]; then
-				printf "${C_DIM}Try: $PROG catalog search --full %s  (172-entry roster)${C_RESET}\n" "$term"
-			fi
+			hits="$(jq --arg q "$term" '[.images[] | select((.id | test($q; "i")) or (.name | test($q; "i")) or (.os // "" | test($q; "i")) or (.provider // "" | test($q; "i")))] | length' "$catfile" 2>/dev/null || echo 0)"
+			printf "\n${C_DIM}%s hits — provider shows upstream (iso.omarchy.org, cdimage.debian.org …) vs netboot.xyz asset-mirror${C_RESET}\n" "$hits"
 			;;
 		show)
 			id="${1:-}"; [ -n "$id" ] || die "catalog show: missing <id>"
 			entry="$(jq --arg id "$id" '.images[] | select(.id==$id)' "$catfile")"
-			# fallback: try other file
+			# fallback: try alternate file
 			if [ -z "$entry" ] || [ "$entry" = "null" ]; then
 				other="$([ "$catfile" = "$CATALOG_FILE" ] && echo "$ROOT/catalog/netboot-full.json" || echo "$CATALOG_FILE")"
 				if [ -f "$other" ]; then
 					entry="$(jq --arg id "$id" '.images[] | select(.id==$id)' "$other" 2>/dev/null || true)"
-					if [ -n "$entry" ] && [ "$entry" != "null" ]; then warn "found in ${other##*/} (not curated)"; catfile="$other"; fi
+					if [ -n "$entry" ] && [ "$entry" != "null" ]; then catfile="$other"; fi
 				fi
 			fi
-			[ -n "$entry" ] && [ "$entry" != "null" ] || die "no such id: $id (try $PROG catalog search $id or --full)"
+			[ -n "$entry" ] && [ "$entry" != "null" ] || die "no such id: $id (try $PROG catalog search $id)"
 			echo "$entry" | jq .
 			url="$(echo "$entry" | jq -r '.url // empty')"
+			provider="$(echo "$entry" | jq -r '.provider // .os // empty')"
+			bootable="$(echo "$entry" | jq -r '.ventoy_bootable // true')"
+			if [ -n "$provider" ]; then printf "${C_DIM}Provider: %s${C_RESET}\n" "$provider"; fi
+			if [ "$bootable" = "false" ]; then
+				printf "${C_YELLOW}This is a netboot bundle (kernel + initrd + squashfs), not a single Ventoy ISO.${C_RESET}\n"
+				printf "${C_DIM}Ventoy needs a monolithic .iso (CD001 at 32769). Use a provider with iso=single file or the curated Ventoy ISO list.${C_RESET}\n"
+			fi
 			if [ -n "$url" ] && [ "$url" != "null" ]; then
-				printf "\n${C_DIM}Fetch with:${C_RESET} $PROG fetch \"$url\"\n"
-			else
-				printf "\n${C_YELLOW}No single ISO url — netboot squashfs endpoint (not Ventoy-bootable). See curated manifest.${C_RESET}\n"
+				printf "${C_DIM}Fetch with:${C_RESET} $PROG fetch \"$url\"\n"
 			fi
 			;;
 		*)
-			die "catalog: unknown subcommand $sub — use list [--full], search <term> [--full], show <id>, fetch"
+			die "catalog: unknown subcommand $sub — use list, search <term>, show <id>, fetch"
 			;;
 	esac
 }
