@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.6
 # AirBoot builder — Alpine 3.20 with ISO mastering toolchain
 # Mirrors the Phase 0 spec:
 #   alpine-sdk xorriso syslinux grub-efi squashfs-tools mtools dosfstools abuild
@@ -5,9 +6,10 @@
 
 FROM alpine:3.20
 
-# Install ISO mastering toolchain + build deps
-RUN apk update && apk add --no-cache \
+# Install ISO mastering toolchain + build deps (BuildKit cache for fast rebuilds)
+RUN --mount=type=cache,target=/var/cache/apk apk update && apk add --no-cache \
 		alpine-sdk \
+		alpine-conf \
 		xorriso \
 		syslinux \
 		grub-efi \
@@ -23,9 +25,7 @@ RUN apk update && apk add --no-cache \
 		git \
 		curl \
 		jq \
-		ca-certificates \
-		abuild-sign \
-	&& rm -rf /var/cache/apk/*
+		ca-certificates
 
 # Create unprivileged builder user (aports builds must not run as root for abuild)
 RUN adduser -D -G abuild builder && \

@@ -66,35 +66,35 @@ mkdir -p "$tmp"/etc/local.d
 makefile root:root 0755 "$tmp"/etc/local.d/abt-menu.start <<'EOS'
 #!/bin/sh
 # /etc/local.d/abt-menu.start — AirBoot autostart
-# OpenRC runs this at the end of boot (local service). We want the menu on tty1
-# without fighting getty. Strategy: if we're on the first boot and abt-menu.sh exists,
-# exec it on the console. On failure, drop to shell.
+# OpenRC local.d hook. Tries tty1 first (real hardware + QEMU gtk), falls back to ttyS0 for headless/QEMU -nographic troubleshooting.
+# console=tty0 console=ttyS0,115200 in kernel_cmdline makes both available.
 
-# Only run on real console (not during mkimage chroot)
-if [ ! -c /dev/tty1 ]; then
+# Not in mkimage chroot? need at least one console device
+if [ ! -c /dev/tty1 ] && [ ! -c /dev/ttyS0 ]; then
 	exit 0
 fi
-
-# Prevent re-entry if user already cancelled and is at a shell
 if [ -f /run/abt-menu.done ]; then
 	exit 0
 fi
-
-# Ensure dialog + deps are present; otherwise log and exit
 if ! command -v dialog >/dev/null 2>&1; then
 	echo "[abt] dialog not found; skipping autostart" >&2
 	exit 0
 fi
-
 if [ -x /usr/local/bin/abt-menu.sh ]; then
-	# Run on tty1 so dialog renders correctly even if local.d was started without a tty
-	# openvt is not always present in minimal Alpine; fall back to direct exec
-	if command -v openvt >/dev/null 2>&1; then
-		openvt -c 1 -sw -- /usr/local/bin/abt-menu.sh
-	else
-		# Ensure we have a sane TERM
-		export TERM="${TERM:-linux}"
-		/usr/local/bin/abt-menu.sh < /dev/tty1 > /dev/tty1 2>&1 || true
+	export TERM="${TERM:-linux}"
+	# Prefer tty1 (framebuffer), fallback to serial for QEMU -nographic / troubleshooting
+	if [ -c /dev/tty1 ]; then
+		if command -v openvt >/dev/null 2>&1; then
+			openvt -c 1 -sw -- /usr/local/bin/abt-menu.sh 2>&1 | tee /tmp/abt.log || true
+		else
+			/usr/local/bin/abt-menu.sh < /dev/tty1 > /dev/tty1 2>&1 | tee /tmp/abt.log || true
+		fi
+	fi
+	# Also mirror to serial if present and tty1 failed or for headless visibility (console=ttyS0)
+	if [ -c /dev/ttyS0 ] && [ ! -f /run/abt-menu.done ]; then
+		# If tty1 path already ran and created done, skip; else try serial
+		# Run with timeout so dialog doesn't hang forever on headless without input
+		timeout 30 /usr/local/bin/abt-menu.sh < /dev/ttyS0 > /dev/ttyS0 2>&1 | tee -a /tmp/abt.log || true
 	fi
 	touch /run/abt-menu.done
 fi

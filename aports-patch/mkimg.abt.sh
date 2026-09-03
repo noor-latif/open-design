@@ -18,8 +18,8 @@ profile_abt() {
 	image_ext="iso"
 	output_format="iso"
 	# Keep initrd small but functional; sd-mod + usb-storage for Ventoy USB, loop + squashfs for Alpine
-	kernel_cmdline="modules=loop,squashfs,sd-mod,usb-storage quiet"
-	apkovl="/work/genapkovl-abt.sh"
+	kernel_cmdline="console=tty0 console=ttyS0,115200 modules=loop,squashfs,sd-mod,usb-storage"
+	apkovl="genapkovl-abt.sh"
 	# Keep in sync with readme / plan runtime manifest
 	apks="$apks linux-lts linux-firmware linux-firmware-other sof-firmware \
 		wpa_supplicant dialog aria2 efibootmgr util-linux exfatprogs jq iw \

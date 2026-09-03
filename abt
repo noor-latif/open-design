@@ -3,7 +3,7 @@
 # Like netboot.xyz, but works over Wi-Fi and boots via Ventoy.
 #
 # Host-side companion to the AirBoot micro-OS (scripts/abt-menu.sh).
-# Provides: build, fetch, validate, catalog, ventoy, version
+# Provides: build, fetch, validate, catalog, ventoy, wifi, version
 #
 # POSIX sh — runs on Alpine, Fedora/Aurora, macOS (without bashisms).
 # Install: sudo install -m755 abt /usr/local/bin/abt
@@ -27,6 +27,42 @@ ok()    { printf "${C_GREEN}✔${C_RESET} %s\n" "$*"; }
 warn()  { printf "${C_YELLOW}⚠${C_RESET} %s\n" "$*" >&2; }
 err()   { printf "${C_RED}✘${C_RESET} %s\n" "$*" >&2; }
 die()   { err "$*"; exit 1; }
+
+# ---------- shared helpers (DRY, POSIX, no bashisms) ----------
+# portable file size (GNU/BSD stat fallback)
+file_size() { stat -c%s "$1" 2>/dev/null || stat -f%z "$1" 2>/dev/null || wc -c < "$1" 2>/dev/null || echo 0; }
+# ISO9660 magic at 32769 — returns "CD001" or "" (uses hexdump or od)
+iso_magic_at() {
+	f="$1"
+	if command -v hexdump >/dev/null 2>&1; then
+		hexdump -s 32769 -n 5 -e '5/1 "%_c"' "$f" 2>/dev/null || hexdump -s 32769 -n 5 -e '5/1 "%c"' "$f" 2>/dev/null || true
+	elif command -v od >/dev/null 2>&1; then
+		od -An -j 32769 -N 5 -t c "$f" 2>/dev/null | tr -d ' \n' || true
+	fi
+}
+iso_is_valid() { # quiet: 0=valid, 1=invalid (size>=33k + CD001)
+	[ -f "$1" ] || return 1
+	[ "$(file_size "$1")" -ge 33000 ] || return 1
+	[ "$(iso_magic_at "$1")" = "CD001" ]
+}
+# Ventoy auto-detect (single source of truth)
+ventoy_auto_dev() { blkid -L Ventoy 2>/dev/null || true; }
+ventoy_mnt_for_dev() { findmnt -n -o TARGET "$1" 2>/dev/null || true; }
+# common --device extractor: scans "$@", sets _DEVICE (caller must eval)
+# usage: device=""; parse_device_arg "$@"; device="$_DEVICE"
+_DEVICE=""
+parse_device_arg() {
+	_DEVICE=""; _next=0
+	for a in "$@"; do
+		if [ "$_next" -eq 1 ]; then _DEVICE="$a"; _next=0; continue; fi
+		case "$a" in --device) _next=1 ;; --device=*) _DEVICE="${a#--device=}" ;; esac
+	done
+}
+# temp file tracking + trap cleanup (Google style guide, effective-shell)
+_TMP_FILES=""
+mk_tmp() { t="$(mktemp)"; _TMP_FILES="$_TMP_FILES $t"; printf '%s' "$t"; }
+_cleanup_tmp() { for f in $_TMP_FILES; do rm -f "$f" 2>/dev/null || true; done; }
+trap _cleanup_tmp EXIT INT TERM
 
 usage() {
 	cat <<EOF
@@ -53,9 +89,18 @@ ${C_YELLOW}COMMANDS${C_RESET}
                 catalog fetch                 # fetch remote manifest (if ABT_CATALOG_URL set)
 
   ${C_GREEN}ventoy${C_RESET}    Ventoy USB helpers
-                ventoy --copy <device|mountpoint>   # copy out/airboot.iso to Ventoy USB
-                ventoy --list                       # list Ventoy USBs
-                ventoy --help                       # Ventoy layout docs
+                ventoy --init <disk> [--force] [--gpt]     # bootstrap Ventoy to whole disk (destructive!)
+                ventoy --copy <device|mountpoint>          # copy out/airboot.iso to Ventoy USB
+                ventoy --add-iso <file> [device|mountpoint] # copy local ISO (no download, validates CD001)
+                ventoy --list                              # list Ventoy USBs
+                ventoy --help                              # Ventoy layout docs
+
+  ${C_GREEN}wifi${C_RESET}      Preseed Wi-Fi (like Raspberry Pi Imager — multiple networks)
+                wifi list [--device <dev|mount>]            # show preseeded networks
+                wifi add --ssid <SSID> [--psk <pass>] [--open] [--country XX] [--device <dev|mount>]
+                wifi remove --ssid <SSID> [--device <dev|mount>]
+                wifi clear [--device <dev|mount>]           # remove all preseeds
+                wifi set-country <XX> [--device <dev|mount>]
 
   ${C_GREEN}version${C_RESET}   Show version
   ${C_GREEN}help${C_RESET}      Show this help
@@ -65,9 +110,12 @@ ${C_YELLOW}EXAMPLES${C_RESET}
   $PROG fetch https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso --out /tmp/ubuntu.iso
   $PROG validate /tmp/ubuntu.iso
   $PROG catalog list | grep -i omarchy
-  $PROG catalog search omarchy
-  $PROG catalog search debian
+  $PROG ventoy --init /dev/sdb --force              # wipe + install Ventoy (use whole disk, not partition)
   $PROG ventoy --copy /dev/sdb
+  $PROG ventoy --add-iso ~/Downloads/omarchy-4.0.2.iso /run/media/\$USER/Ventoy
+  $PROG wifi add --ssid MyHome --psk secret123 --device /run/media/\$USER/Ventoy
+  $PROG wifi add --ssid Phone --psk 12345678 --device /dev/sda1   # second network, fallback
+  $PROG wifi list --device /dev/sda1
 
 ${C_YELLOW}ENV${C_RESET}
   ABT_CATALOG_URL   Override remote catalog URL (Phase 3 OTA)
@@ -83,35 +131,22 @@ cmd_validate() {
 	file="${1:-}"
 	[ -n "$file" ] || die "validate: missing <file> — usage: $PROG validate <file>"
 	[ -f "$file" ] || die "not found: $file"
-
-	size="$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || wc -c < "$file" 2>/dev/null || echo 0)"
+	size="$(file_size "$file")"
 	if [ "$size" -lt 33000 ]; then
 		err "too small ($size bytes) — likely HTML error page, not an ISO"
-		if head -c 1024 "$file" 2>/dev/null | grep -qi "<html"; then
-			err "file starts with <html — captive portal?"
-		fi
+		if head -c 1024 "$file" 2>/dev/null | grep -qi "<html"; then err "file starts with <html — captive portal?"; fi
 		head -c 300 "$file" 2>/dev/null | cat -v | head -5 || true
 		exit 1
 	fi
-
-	magic=""
-	if command -v hexdump >/dev/null 2>&1; then
-		magic="$(hexdump -s 32769 -n 5 -e '5/1 "%_c"' "$file" 2>/dev/null || hexdump -s 32769 -n 5 -e '5/1 "%c"' "$file" 2>/dev/null || true)"
-	elif command -v od >/dev/null 2>&1; then
-		magic="$(od -An -j 32769 -N 5 -t c "$file" 2>/dev/null | tr -d ' \n' || true)"
-	fi
-
-	if [ "$magic" = "CD001" ]; then
-		ok "valid ISO 9660 (CD001 at 32769) — $file ($size bytes)"
-		exit 0
-	else
+	magic="$(iso_magic_at "$file")"
+	if [ "$magic" = "CD001" ]; then ok "valid ISO 9660 (CD001 at 32769) — $file ($size bytes)"; exit 0; else
 		err "invalid ISO — expected CD001 at offset 32769, got [${magic:-<unreadable>}]"
-		if head -c 1024 "$file" 2>/dev/null | grep -qi "<html"; then
-			err "file starts with <html — captive portal HTML, not an ISO"
-		fi
+		if head -c 1024 "$file" 2>/dev/null | grep -qi "<html"; then err "file starts with <html — captive portal HTML, not an ISO"; fi
 		exit 1
 	fi
 }
+# kept for compat (calls shared helper)
+validate_iso_quiet() { iso_is_valid "$1"; }
 
 # ---------- fetch ----------
 cmd_fetch() {
@@ -184,14 +219,10 @@ cmd_fetch() {
 
 	if [ -n "$sha256" ]; then
 		info "verifying sha256…"
-		actual=""
-		if command -v sha256sum >/dev/null 2>&1; then actual="$(sha256sum "$out" | awk '{print $1}')"; 
-		elif command -v shasum >/dev/null 2>&1; then actual="$(shasum -a 256 "$out" | awk '{print $1}')"; fi
+		actual=""; if command -v sha256sum >/dev/null 2>&1; then actual="$(sha256sum "$out" | awk '{print $1}')"; elif command -v shasum >/dev/null 2>&1; then actual="$(shasum -a 256 "$out" | awk '{print $1}')"; fi
 		if [ -n "$actual" ]; then
 			if [ "$actual" = "$sha256" ]; then ok "sha256 OK"; else err "sha256 MISMATCH — expected $sha256, got $actual"; exit 1; fi
-		else
-			warn "no sha256 tool — skipping check"
-		fi
+		else warn "no sha256 tool — skipping check"; fi
 	fi
 
 	if [ "$validate" -eq 1 ]; then
@@ -302,75 +333,286 @@ cmd_catalog() {
 	esac
 }
 
+# ---------- ventoy helpers ----------
+# Resolve Ventoy mount from device or directory; sets VENTOY_MNT_RESOLVED globally and tracks umount flag
+VENTOY_MNT_RESOLVED=""
+VENTOY_NEEDS_UMOUNT=0
+ventoy_resolve_mnt() {
+	target="${1:-}"
+	[ -n "$target" ] || die "missing <device|mountpoint> — pass /dev/sdX1 or /run/media/\$USER/Ventoy"
+	VENTOY_MNT_RESOLVED=""
+	VENTOY_NEEDS_UMOUNT=0
+	if [ -b "$target" ]; then
+		lbl="$(blkid -o value -s LABEL "$target" 2>/dev/null || true)"
+		if [ "$lbl" != "Ventoy" ]; then
+			real_dev="$(ventoy_auto_dev)"
+			if [ -n "$real_dev" ] && [ "$real_dev" = "$target" ]; then lbl="Ventoy"; else die "$target label is [$lbl], expected Ventoy — is this the Ventoy USB data partition? Try $PROG ventoy --list"; fi
+		fi
+		existing="$(ventoy_mnt_for_dev "$target")"
+		if [ -n "$existing" ]; then
+			VENTOY_MNT_RESOLVED="$existing"
+			info "Ventoy partition already mounted at $VENTOY_MNT_RESOLVED"
+		else
+			VENTOY_MNT_RESOLVED="/tmp/abt_ventoy_mnt_$$"
+			mkdir -p "$VENTOY_MNT_RESOLVED"
+			info "mounting $target at $VENTOY_MNT_RESOLVED"
+			if ! mount -t exfat "$target" "$VENTOY_MNT_RESOLVED" 2>/dev/null; then mount "$target" "$VENTOY_MNT_RESOLVED" || die "mount failed for $target"; fi
+			VENTOY_NEEDS_UMOUNT=1
+		fi
+	elif [ -d "$target" ]; then
+		dev="$(findmnt -n -o SOURCE "$target" 2>/dev/null || true)"
+		if [ -n "$dev" ]; then
+			lbl="$(blkid -o value -s LABEL "$dev" 2>/dev/null || true)"
+			if [ "$lbl" = "Ventoy" ]; then VENTOY_MNT_RESOLVED="$target"
+			else
+				if [ -d "$target/ISO" ] || [ -d "$target/ISOS" ] || [ -d "$target/iso" ] || [ -d "$target/isos" ]; then
+					warn "label is [$lbl] not Ventoy, but $target looks like Ventoy (has ISO dir) — proceeding"
+					VENTOY_MNT_RESOLVED="$target"
+				else die "$target is on $dev label [$lbl], expected Ventoy"; fi
+			fi
+		else VENTOY_MNT_RESOLVED="$target"; fi
+	else
+		auto="$(ventoy_auto_dev)"
+		if [ -n "$auto" ]; then
+			existing="$(ventoy_mnt_for_dev "$auto")"
+			if [ -n "$existing" ]; then VENTOY_MNT_RESOLVED="$existing"
+			else
+				VENTOY_MNT_RESOLVED="/tmp/abt_ventoy_mnt_$$"
+				mkdir -p "$VENTOY_MNT_RESOLVED"
+				mount -t exfat "$auto" "$VENTOY_MNT_RESOLVED" 2>/dev/null || mount "$auto" "$VENTOY_MNT_RESOLVED" || die "auto-mount $auto failed"
+				VENTOY_NEEDS_UMOUNT=1
+			fi
+		else die "not a block device or directory: $target (no Ventoy auto-detect)"; fi
+	fi
+	[ -n "$VENTOY_MNT_RESOLVED" ] || die "failed to resolve Ventoy mount for $target"
+}
+
+ventoy_cleanup_mnt() {
+	if [ "$VENTOY_NEEDS_UMOUNT" -eq 1 ] && [ -n "$VENTOY_MNT_RESOLVED" ]; then
+		umount "$VENTOY_MNT_RESOLVED" 2>/dev/null || true
+		rmdir "$VENTOY_MNT_RESOLVED" 2>/dev/null || true
+	fi
+}
+
+# Detect Ventoy ISO directory (handles user having ISOS vs ISO)
+ventoy_iso_dir() {
+	mnt="$1"
+	# Prefer existing directory (case variations). Ventoy recurses so any works, but we prefer the one already populated.
+	for cand in "ISO" "ISOS" "iso" "isos" "Isos"; do
+		if [ -d "$mnt/$cand" ]; then
+			printf '%s' "$mnt/$cand"
+			return 0
+		fi
+	done
+	# Default: ISO
+	printf '%s' "$mnt/ISO"
+}
+
 # ---------- ventoy ----------
 cmd_ventoy() {
 	case "${1:-}" in
 		--copy)
 			target="${2:-}"; [ -n "$target" ] || die "ventoy --copy: missing <device|mountpoint>"
 			iso_src="$ROOT/out/airboot.iso"
-			# Also check ./out and $ROOT
 			if [ ! -f "$iso_src" ]; then iso_src="./out/airboot.iso"; fi
 			if [ ! -f "$iso_src" ]; then iso_src="$ROOT/out/airboot.iso"; fi
-			# Search more broadly
 			if [ ! -f "$iso_src" ]; then
-				found="$(find "$ROOT" -name "airboot.iso" -type f 2>/dev/null | head -1 || true)"
-				if [ -n "$found" ]; then iso_src="$found"; fi
-			fi
-			[ -f "$iso_src" ] || die "airboot.iso not found — run $PROG build first (looked at $iso_src)"
-
-			# Resolve target to mountpoint
-			mnt=""
-			if [ -b "$target" ]; then
-				# It's a block device — find its Ventoy mount or mount it
-				lbl="$(blkid -o value -s LABEL "$target" 2>/dev/null || true)"
-				if [ "$lbl" = "Ventoy" ]; then
-					mnt="/tmp/abt_ventoy_mnt"
-					mkdir -p "$mnt"
-					# Check if already mounted
-					existing="$(findmnt -n -o TARGET "$target" 2>/dev/null || true)"
-					if [ -n "$existing" ]; then
-						mnt="$existing"
-						info "Ventoy partition already mounted at $mnt"
-					else
-						info "mounting $target at $mnt"
-						if ! mount -t exfat "$target" "$mnt" 2>/dev/null; then mount "$target" "$mnt" || die "mount failed"; fi
-					fi
+				found="$(find "$ROOT/out" -maxdepth 1 -name "*.iso" -type f 2>/dev/null | sort | head -1 || true)"
+				if [ -n "$found" ]; then iso_src="$found";
 				else
-					die "$target label is [$lbl], expected Ventoy — is this the Ventoy USB data partition?"
+					found="$(find "$ROOT" -name "airboot.iso" -type f 2>/dev/null | head -1 || true)"
+					if [ -n "$found" ]; then iso_src="$found"; fi
 				fi
-			elif [ -d "$target" ]; then
-				# Directory — assume it's the mountpoint or Ventoy root
-				if [ -d "$target/ISO" ]; then mnt="$target"
-				elif [ -d "$(dirname "$target")/ISO" ]; then mnt="$(dirname "$target")"
-				else
-					# Check label of underlying device
-					dev="$(findmnt -n -o SOURCE "$target" 2>/dev/null || true)"
-					if [ -n "$dev" ]; then
-						lbl="$(blkid -o value -s LABEL "$dev" 2>/dev/null || true)"
-						if [ "$lbl" = "Ventoy" ]; then mnt="$target"; fi
-					fi
-					[ -n "$mnt" ] || mnt="$target"
-				fi
-			else
-				die "not a block device or directory: $target"
 			fi
+			[ -f "$iso_src" ] || die "airboot.iso not found — run $PROG build first (out/*.iso: $iso_src)"
 
-			info "copying $iso_src → $mnt/ISO/airboot.iso"
-			mkdir -p "$mnt/ISO"
-			cp -v "$iso_src" "$mnt/ISO/airboot.iso"
+			ventoy_resolve_mnt "$target"
+			mnt="$VENTOY_MNT_RESOLVED"
+			iso_dir="$(ventoy_iso_dir "$mnt")"
+			info "copying $iso_src → $iso_dir/airboot.iso"
+			mkdir -p "$iso_dir"
+			cp -v "$iso_src" "$iso_dir/airboot.iso"
 			sync
-			ok "done — $mnt/ISO/airboot.iso ($(du -h "$mnt/ISO/airboot.iso" | awk '{print $1}'))"
+			ok "done — $iso_dir/airboot.iso ($(du -h "$iso_dir/airboot.iso" 2>/dev/null | awk '{print $1}' || echo "?"))"
 			printf "\n${C_DIM}Next: boot the Ventoy USB → select airboot.iso${C_RESET}\n"
-			# If we mounted tmp, unmount
-			if [ "$mnt" = "/tmp/abt_ventoy_mnt" ]; then
-				umount "$mnt" 2>/dev/null || true
-				rmdir "$mnt" 2>/dev/null || true
+			ventoy_cleanup_mnt
+			;;
+		--add-iso)
+			iso_file="${2:-}"; [ -n "$iso_file" ] || die "ventoy --add-iso: missing <file> — usage: $PROG ventoy --add-iso <file> [device|mount]"
+			# Support --device flag or positional
+			target="${3:-}"
+			# Also handle --device=<path> style
+			if [ "$target" = "--device" ]; then target="${4:-}"; fi
+			if [ -z "$target" ]; then
+				auto="$(ventoy_auto_dev)"
+				if [ -n "$auto" ]; then target="$auto"; else
+					for cand in /run/media/"$USER"/Ventoy /media/"$USER"/Ventoy /mnt/ventoy; do if [ -d "$cand" ]; then target="$cand"; break; fi; done
+				fi
 			fi
+			# Re-parse if second arg was --device value
+			if [ "${2:-}" = "--device" ]; then
+				iso_file="${3:-}"; target="${4:-}"
+				[ -n "$iso_file" ] || die "ventoy --add-iso --device: missing <file>"
+			fi
+			# Handle GNU-style --add-iso <file> --device <dev>
+			# Scan args more robustly
+			_iso=""; _dev=""
+			_args="$*"
+			# simple re-parse
+			shift
+			while [ $# -gt 0 ]; do
+				case "$1" in
+					--device) _dev="$2"; shift 2 ;;
+					--device=*) _dev="${1#--device=}"; shift ;;
+					-*) die "ventoy --add-iso: unknown flag $1" ;;
+					*) if [ -z "$_iso" ]; then _iso="$1"; else _dev="$1"; fi; shift ;;
+				esac
+			done
+			if [ -n "$_iso" ]; then iso_file="$_iso"; fi
+			if [ -n "$_dev" ]; then target="$_dev"; fi
+			[ -n "$target" ] || die "ventoy --add-iso: could not auto-detect Ventoy USB — pass [device|mount] explicitly (try $PROG ventoy --list)"
+
+			[ -f "$iso_file" ] || die "ISO not found: $iso_file"
+			info "validating $iso_file (CD001 at 32769)…"
+			if ! validate_iso_quiet "$iso_file"; then
+				err "validation failed — no CD001 at 32769 (is this an ISO?)"
+				if head -c 1024 "$iso_file" 2>/dev/null | grep -qi "<html"; then
+					err "file starts with <html — not an ISO"
+				fi
+				die "refusing to copy invalid ISO (use $PROG validate for details)"
+			else
+				size="$(du -h "$iso_file" 2>/dev/null | awk '{print $1}' || echo "?")"
+				ok "valid ISO — $size"
+			fi
+
+			# Optional sha256 check if catalog knows this file (e.g. omarchy)
+			if command -v jq >/dev/null 2>&1 && [ -f "$ROOT/catalog/manifest.json" ]; then
+				base="$(basename "$iso_file")"
+				expected="$(jq -r --arg b "$base" '.images[] | select((.url | split("/") | last) == $b) | .sha256 // empty' "$ROOT/catalog/manifest.json" 2>/dev/null | head -1 || true)"
+				if [ -n "$expected" ] && [ "$expected" != "null" ]; then
+					info "verifying sha256 against catalog ($base)…"
+					actual="$(sha256sum "$iso_file" 2>/dev/null | awk '{print $1}' || shasum -a 256 "$iso_file" 2>/dev/null | awk '{print $1}' || true)"
+					if [ -n "$actual" ]; then
+						if [ "$actual" = "$expected" ]; then ok "sha256 OK (catalog)"; else warn "sha256 MISMATCH — catalog $expected vs file $actual (copying anyway, Ventoy will still list it)"; fi
+					fi
+				fi
+			fi
+
+			ventoy_resolve_mnt "$target"
+			mnt="$VENTOY_MNT_RESOLVED"
+			iso_dir="$(ventoy_iso_dir "$mnt")"
+			mkdir -p "$iso_dir"
+			# Sanitize basename but preserve original if sane
+			base="$(basename "$iso_file")"
+			# strip query, keep .iso
+			base_sane="$(printf '%s' "$base" | tr ' ' '_' | tr -cd 'a-zA-Z0-9._-' | sed 's/__*/_/g')"
+			case "$base_sane" in *.iso|*.ISO) ;; *) base_sane="${base_sane}.iso" ;; esac
+			[ -n "$base_sane" ] && [ "$base_sane" != ".iso" ] || base_sane="custom.iso"
+			# If sanitized differs, warn
+			if [ "$base" != "$base_sane" ]; then warn "sanitized $base → $base_sane"; fi
+			dest="$iso_dir/$base_sane"
+			if [ -f "$dest" ]; then
+				size_h="$(du -h "$dest" 2>/dev/null | awk '{print $1}' || echo "?")"
+				warn "exists already: $dest ($size_h) — overwriting"
+			fi
+			info "copying $iso_file → $dest"
+			cp -v "$iso_file" "$dest"
+			sync
+			# Validate dest
+			if validate_iso_quiet "$dest"; then ok "copied and validated — $dest ($(du -h "$dest" 2>/dev/null | awk '{print $1}'))"
+			else warn "copied but dest validation failed — check $dest"; fi
+			printf "\n${C_DIM}Ventoy will list it as /%s/%s — no reboot needed until you want to boot it${C_RESET}\n" "$(basename "$iso_dir")" "$base_sane"
+			ventoy_cleanup_mnt
+			;;
+		--init)
+			shift
+			# ventoy --init /dev/sdX [--force] [--gpt] [-r MB] [-L LABEL] [--no-secureboot]
+			disk=""; force=0; gpt=0; reserve=""; vlabel="Ventoy"; secure=""; yes=0
+			while [ $# -gt 0 ]; do
+				case "$1" in
+					--force|-I|--force=*) force=1; shift ;;
+					--gpt|-g) gpt=1; shift ;;
+					--reserve|-r) reserve="$2"; shift 2 ;;
+					--reserve=*) reserve="${1#--reserve=}"; shift ;;
+					--label|-L) vlabel="$2"; shift 2 ;;
+					--label=*) vlabel="${1#--label=}"; shift ;;
+					--no-secureboot|-S) secure="-S"; shift ;;
+					--secureboot|-s) secure="-s"; shift ;;
+					--yes|-y) yes=1; shift ;;
+					--help|-h) cat <<EOH
+Usage: $PROG ventoy --init /dev/sdX [--force] [--gpt] [--reserve MB] [--label Ventoy] [--no-secureboot]
+  Bootstrap Ventoy to a whole disk (DESTRUCTIVE — wipes all data).
+  Uses reference/Ventoy/INSTALL/Ventoy2Disk.sh if present, else expects downloaded Ventoy release at /tmp/ventoy or \$VENTOY_SRC.
+  Examples:
+    sudo $PROG ventoy --init /dev/sdb              # MBR, asks double y/n (Ventoy default)
+    sudo $PROG ventoy --init /dev/sdb --force --gpt  # GPT + force (no prompts from abt, Ventoy still confirms)
+EOH
+						return 0 ;;
+					-*) die "ventoy --init: unknown flag $1" ;;
+					*) if [ -z "$disk" ]; then disk="$1"; else die "ventoy --init: unexpected arg $1"; fi; shift ;;
+				esac
+			done
+			[ -n "$disk" ] || die "ventoy --init: missing <disk> — usage: $PROG ventoy --init /dev/sdX [--force]"
+			[ -b "$disk" ] || die "not a block device: $disk"
+			# reject partitions (has /sys/.../start)
+			if [ -e "/sys/class/block/${disk#/dev/}/start" ]; then
+				die "$disk is a partition, use the whole disk (e.g. /dev/sdb not /dev/sdb1) — see $PROG ventoy --list"
+			fi
+			# guard: refuse root disk
+			root_src="$(findmnt -n -o SOURCE / 2>/dev/null | sed 's/\[.*\]//')"
+			root_disk="$(lsblk -no PKNAME "$root_src" 2>/dev/null || echo "")"
+			if [ -n "$root_disk" ] && [ "/dev/$root_disk" = "$disk" ]; then
+				die "refusing to wipe root disk $disk (contains /)"
+			fi
+			if [ "$(id -u)" -ne 0 ]; then
+				die "ventoy --init needs root — run: sudo $PROG ventoy --init $disk"${force:+" --force"}
+			fi
+			# locate Ventoy2Disk.sh
+			ventoy_src="${VENTOY_SRC:-}"
+			cands="$ROOT/reference/Ventoy/INSTALL/Ventoy2Disk.sh /tmp/ventoy/INSTALL/Ventoy2Disk.sh /tmp/Ventoy2Disk.sh"
+			if [ -n "$ventoy_src" ] && [ -f "$ventoy_src/Ventoy2Disk.sh" ]; then cands="$ventoy_src/Ventoy2Disk.sh $cands"; fi
+			if [ -n "$ventoy_src" ] && [ -f "$ventoy_src/INSTALL/Ventoy2Disk.sh" ]; then cands="$ventoy_src/INSTALL/Ventoy2Disk.sh $cands"; fi
+			vdir=""
+			for c in $cands; do if [ -f "$c" ]; then vdir="$(dirname "$c")"; break; fi; done
+			if [ -z "$vdir" ]; then
+				err "Ventoy2Disk.sh not found."
+				err "  clone refs: ./build.sh --clone-refs   (creates reference/Ventoy)"
+				err "  or download release: curl -L https://github.com/ventoy/Ventoy/releases/latest/download/ventoy-*-linux.tar.gz | tar -xz -C /tmp"
+				err "  then: VENTOY_SRC=/tmp/ventoy-*/ sudo $PROG ventoy --init $disk"
+				exit 1
+			fi
+			info "Ventoy source: $vdir"
+			# build args: -i vs -I
+			mode="-i"; if [ "$force" -eq 1 ]; then mode="-I"; fi
+			set -- "$mode" ; [ "$gpt" -eq 1 ] && set -- "$@" -g ; [ -n "$reserve" ] && set -- "$@" -r "$reserve" ; [ -n "$vlabel" ] && [ "$vlabel" != "Ventoy" ] && set -- "$@" -L "$vlabel" ; [ -n "$secure" ] && set -- "$@" "$secure"
+			set -- "$@" "$disk"
+			info "Running: (cd $vdir && sh Ventoy2Disk.sh $*)"
+			warn "This will WIPE $disk — all data lost!"
+			if [ "$yes" -eq 0 ]; then
+				printf "Continue with Ventoy install to %s? [y/N]: " "$disk"
+				read -r ans || true
+				case "$ans" in y|Y|yes|YES) ;; *) info "aborted"; exit 0 ;; esac
+			fi
+			( cd "$vdir" && sh Ventoy2Disk.sh "$@" )
+			ret=$?
+			if [ $ret -ne 0 ]; then err "Ventoy2Disk.sh failed (exit $ret) — check $vdir/log.txt"; exit $ret; fi
+			ok "Ventoy installed to $disk (${vlabel}, $([ "$gpt" -eq 1 ] && echo GPT || echo MBR))"
+			# auto-copy airboot.iso if built
+			iso_src="$ROOT/out/airboot.iso"; [ -f "$iso_src" ] || iso_src="./out/airboot.iso"
+			if [ -f "$iso_src" ]; then
+				info "copying airboot.iso to new Ventoy..."
+				# Ventoy partition appears as ${disk}1 — wait for kernel
+				sleep 2; partprobe "$disk" 2>/dev/null || partx -u "$disk" 2>/dev/null || true; sleep 1
+				part="${disk}1"; [ -b "$part" ] || part="$(blkid -L "$vlabel" 2>/dev/null || echo "${disk}1")"
+				if [ -b "$part" ]; then
+					"$0" ventoy --copy "$part" || warn "auto-copy failed — run manually: $PROG ventoy --copy $part"
+				else warn "Ventoy partition $part not found yet — run: $PROG ventoy --copy $part after replug"; fi
+			else warn "no out/airboot.iso found — build first: $PROG build"; fi
 			;;
 		--list)
 			info "scanning for Ventoy USBs (label Ventoy)…"
 			found=0
-			for dev in /dev/sd* /dev/nvme* /dev/mmcblk* /dev/vd*; do
+			for dev in /dev/sd* /dev/nvme* /dev/mmcblk* /dev/vd* /dev/disk/by-label/Ventoy; do
 				[ -b "$dev" ] || continue
 				lbl="$(blkid -o value -s LABEL "$dev" 2>/dev/null || true)"
 				if [ "$lbl" = "Ventoy" ]; then
@@ -379,11 +621,10 @@ cmd_ventoy() {
 					found=1
 				fi
 			done
-			# Also try blkid -L
 			if [ "$found" -eq 0 ]; then
-				dev="$(blkid -L Ventoy 2>/dev/null || true)"
+				dev="$(ventoy_auto_dev)"
 				if [ -n "$dev" ]; then
-					mnt="$(findmnt -n -o TARGET "$dev" 2>/dev/null || echo "not mounted")"
+					mnt="$(ventoy_mnt_for_dev "$dev" 2>/dev/null || echo "not mounted")"
 					printf "  ${C_GREEN}%s${C_RESET}  mount=%s\n" "$dev" "$mnt"
 					found=1
 				fi
@@ -391,32 +632,367 @@ cmd_ventoy() {
 			if [ "$found" -eq 0 ]; then
 				warn "no Ventoy USB found (looked for label Ventoy)"
 				printf "${C_DIM}Create one: https://www.ventoy.net/en/doc_start.html${C_RESET}\n"
+			else
+				dev="$(ventoy_auto_dev)"
+				if [ -n "$dev" ]; then
+					mnt="$(ventoy_mnt_for_dev "$dev" 2>/dev/null || true)"
+					if [ -n "$mnt" ] && [ -d "$mnt" ]; then
+						printf "\n${C_DIM}ISO directories on $mnt:${C_RESET}\n"
+						ls -ld "$mnt"/ISO "$mnt"/ISOS "$mnt"/iso 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}' || true
+						printf "${C_DIM}ISOs:${C_RESET}\n"
+						find "$mnt" -maxdepth 3 -name "*.iso" -type f 2>/dev/null | while read -r f; do printf "  %s (%s)\n" "$f" "$(du -h "$f" 2>/dev/null | awk '{print $1}')"; done | head -n 20
+					fi
+				fi
 			fi
 			;;
 		--help|help|"")
 			cat <<EOF
 ${C_YELLOW}Ventoy USB layout${C_RESET}
   /dev/sdX (GPT)
-   ├── Part 1 (exFAT, label "Ventoy")  ← ISO/ + ventoy/
+   ├── Part 1 (exFAT, label "Ventoy")  ← ISO/ or ISOS/ + ventoy/
    └── Part 2 (FAT, signed UEFI boot)
 
-AirBoot is deployed as ${C_GREEN}ISO/airboot.iso${C_RESET} on Part 1.
-Ventoy lists any .iso there — no formatting, no extraction.
+AirBoot is deployed as ${C_GREEN}ISO/airboot.iso${C_RESET} (or ISOS/ if that exists) on Part 1.
+Ventoy lists any .iso there — no formatting, no extraction. ISOS vs ISO case is auto-detected.
 
 ${C_YELLOW}Usage${C_RESET}
-  $PROG ventoy --list                    # find Ventoy USBs
-  $PROG ventoy --copy /dev/sdX1          # copy airboot.iso (block device)
-  $PROG ventoy --copy /run/media/\$USER/Ventoy  # copy via mountpoint
-  cp out/airboot.iso /run/media/\$USER/Ventoy/ISO/airboot.iso  # manual
+  $PROG ventoy --init /dev/sdX [--force] [--gpt]          # bootstrap Ventoy (wipes disk! whole disk, not partition)
+  $PROG ventoy --list                                    # find Ventoy USBs + list ISOs
+  $PROG ventoy --copy /dev/sdX1                          # copy airboot.iso (block device)
+  $PROG ventoy --copy /run/media/\$USER/Ventoy           # copy via mountpoint
+  $PROG ventoy --add-iso <file> [device|mount]           # copy local ISO (validates, no download)
+  $PROG ventoy --add-iso ~/Downloads/omarchy-4.0.2.iso /dev/sda1  # example (your case)
+  cp out/airboot.iso /run/media/\$USER/Ventoy/ISO/airboot.iso   # manual
 
 ${C_YELLOW}Notes${C_RESET}
   • Create Ventoy USB first: https://www.ventoy.net/en/doc_start.html
   • AirBoot never writes ventoy.json VTOYDEFAULTIMAGE (boot-loop risk)
   • After AirBoot fetches an ISO, reboot and select it manually in Ventoy's menu
   • Keep Secure Boot disabled or enroll Ventoy's MOK
+  • ventoy --add-iso validates CD001 and sha256 (catalog) before copying — no mobile data used
 EOF
 			;;
 		*) die "ventoy: unknown flag $1 — see $PROG ventoy --help" ;;
+	esac
+}
+
+# ---------- wifi preseed (Pi Imager style, multiple networks) ----------
+# Config file: $mnt/airboot.json (primary) + $mnt/ventoy/airboot.json (mirror)
+# Format: {"version":1,"country":"SE","networks":[{"ssid":"...","psk":"..."}, ...]}
+# open network: {"ssid":"Hotel","key_mgmt":"NONE"}
+wifi_config_primary() { printf '%s/airboot.json' "$1"; }
+wifi_config_mirror()  { printf '%s/ventoy/airboot.json' "$1"; }
+
+wifi_ensure_json() {
+	mnt="$1"
+	primary="$(wifi_config_primary "$mnt")"
+	if [ -f "$primary" ]; then
+		# validate json
+		if command -v jq >/dev/null 2>&1; then
+			if jq -e '.networks' "$primary" >/dev/null 2>&1; then
+				return 0
+			else
+				warn "existing $primary invalid — resetting"
+			fi
+		else
+			return 0
+		fi
+	fi
+	# create default (only called for add/set-country, not for list — avoids empty template on every wifi list)
+	cat > "$primary" <<'EOF'
+{
+  "version": 1,
+  "country": "SE",
+  "networks": []
+}
+EOF
+	chmod 600 "$primary" 2>/dev/null || true
+	# also mirror if ventoy dir exists (create it)
+	mirror="$(wifi_config_mirror "$mnt")"
+	mkdir -p "$(dirname "$mirror")" 2>/dev/null || true
+	cp "$primary" "$mirror" 2>/dev/null || true
+}
+
+wifi_sync_mirror() {
+	mnt="$1"
+	primary="$(wifi_config_primary "$mnt")"
+	mirror="$(wifi_config_mirror "$mnt")"
+	mkdir -p "$(dirname "$mirror")" 2>/dev/null || true
+	mkdir -p "$mnt/ventoy" 2>/dev/null || true
+	if [ -f "$primary" ]; then
+		cp "$primary" "$mirror" 2>/dev/null || true
+		cp "$primary" "$mnt/airboot.conf" 2>/dev/null || true
+		cp "$primary" "$mnt/ventoy/airboot.conf" 2>/dev/null || true
+	fi
+}
+
+cmd_wifi() {
+	sub="${1:-list}"; shift 2>/dev/null || true
+	case "$sub" in --device) set -- "$sub" "$@"; sub="list" ;; --help|-h|help) sub="--help" ;; esac
+
+	# parse common --device via shared helper (keeps SSID spaces intact)
+	# help needs no device/mount or jq
+	if [ "$sub" = "--help" ] || [ "$sub" = "help" ]; then
+		cat <<EOF
+${C_YELLOW}wifi preseed — like Raspberry Pi Imager${C_RESET}
+Preseeds Wi-Fi credentials on the Ventoy USB so the micro-OS auto-connects without typing.
+
+${C_YELLOW}Usage${C_RESET}
+  $PROG wifi list [--device <dev|mount>]                     # show preseeded networks
+  $PROG wifi add --ssid <SSID> [--psk <pass>] [--open] [--country XX] [--device <path>]
+  $PROG wifi remove --ssid <SSID> [--device <path>]
+  $PROG wifi clear [--device <path>]
+  $PROG wifi set-country <XX> [--device <path>]
+
+${C_YELLOW}Multiple networks (fallback order matters)${C_RESET}
+  # Pi Imager style — first is tried first, second is fallback:
+  $PROG wifi add --ssid Home --psk secret --device /run/media/\$USER/Ventoy
+  $PROG wifi add --ssid PhoneHotspot --psk 12345678 --device /run/media/\$USER/Ventoy
+  $PROG wifi add --ssid Hotel --open --device /run/media/\$USER/Ventoy
+  $PROG wifi list --device /run/media/\$USER/Ventoy
+
+${C_YELLOW}Storage${C_RESET}
+  JSON at Ventoy partition: ${C_GREEN}airboot.json${C_RESET} (and ${C_GREEN}ventoy/airboot.json${C_RESET} mirror)
+  Checked by micro-OS before scanning. Format:
+    {"version":1,"country":"SE","networks":[{"ssid":"Home","psk":"..."},...]}
+
+${C_YELLOW}Notes${C_RESET}
+  • Country is global (like Pi Imager). Default SE — change with wifi set-country US
+  • Order is priority — add Home first, Phone second for fallback
+  • psk is stored plaintext on the USB (chmod 600) — same as Pi Imager. Physical access == ownership.
+  • Micro-OS will still show manual scan if no preseeded network succeeds
+EOF
+		exit 0
+	fi
+	parse_device_arg "$@"; device="$_DEVICE"
+	if [ -z "$device" ]; then
+		auto="$(ventoy_auto_dev)"
+		if [ -n "$auto" ]; then device="$auto"; else
+			for cand in /run/media/"$USER"/Ventoy /media/"$USER"/Ventoy /mnt/ventoy; do
+				if [ -d "$cand" ]; then device="$cand"; break; fi
+			done
+		fi
+	fi
+	[ -n "$device" ] || die "wifi: no Ventoy device found — pass --device /dev/sdX1 or --device /run/media/\$USER/Ventoy (try $PROG ventoy --list)"
+
+	ventoy_resolve_mnt "$device"
+	mnt="$VENTOY_MNT_RESOLVED"
+
+	if ! command -v jq >/dev/null 2>&1; then die "wifi: need jq — install with: sudo dnf install jq  /  sudo apt install jq"; fi
+
+	primary="$(wifi_config_primary "$mnt")"
+	mirror="$(wifi_config_mirror "$mnt")"
+	# prefer primary if exists, else mirror
+	config="$primary"
+	if [ ! -f "$config" ] && [ -f "$mirror" ]; then config="$mirror"; fi
+	# only ensure file exists for mutating commands; list just reports missing
+	if [ "$sub" != "list" ] && [ "$sub" != "" ] && [ "$sub" != "--help" ] && [ "$sub" != "help" ]; then
+		wifi_ensure_json "$mnt"
+		# re-resolve after ensure
+		config="$primary"
+		if [ ! -f "$config" ] && [ -f "$mirror" ]; then config="$mirror"; fi
+	fi
+
+	case "$sub" in
+		list|"")
+			info "preseeded Wi-Fi on $mnt"
+			printf "  ${C_DIM}config${C_RESET} %s\n" "$config"
+			if [ -f "$mirror" ] && [ "$mirror" != "$config" ]; then printf "  ${C_DIM}mirror${C_RESET} %s\n" "$mirror"; fi
+			country="$(jq -r '.country // "SE"' "$config" 2>/dev/null || echo "SE")"
+			printf "  ${C_DIM}country${C_RESET} %s\n" "$country"
+			count="$(jq '.networks | length' "$config" 2>/dev/null || echo 0)"
+			if [ "$count" -eq 0 ]; then
+				warn "no networks preseeded — add with: $PROG wifi add --ssid <SSID> --psk <pass> --device $mnt"
+				printf "${C_DIM}Example (multiple, Pi Imager style):${C_RESET}\n"
+				printf "  $PROG wifi add --ssid Home --psk secret --device $mnt\n"
+				printf "  $PROG wifi add --ssid Phone --psk 12345678 --device $mnt\n"
+			else
+				printf "\n${C_YELLOW}%-3s %-30s %-10s %s${C_RESET}\n" "#" "SSID" "AUTH" "PRIORITY"
+				jq -r '.networks | to_entries[] | "\(.key)\t\(.value.ssid)\t\(.value.psk // .value.key_mgmt // "NONE")\t\(.value.priority // .key)"' "$config" 2>/dev/null | while IFS="$(printf '\t')" read -r idx ssid psk prio; do
+					if [ "$psk" = "NONE" ] || [ "$psk" = "null" ]; then auth="open"; else auth="psk"; fi
+					# mask psk
+					printf "%-3s %-30s %-10s %s\n" "$((idx+1))" "$(printf '%s' "$ssid" | cut -c1-30)" "$auth" "$prio"
+				done
+				printf "\n${C_DIM}%s network(s), country %s — micro-OS will try in order before scanning${C_RESET}\n" "$count" "$country"
+				printf "${C_DIM}Files: $primary (and $mirror mirror) — both checked by abt-menu.sh${C_RESET}\n"
+			fi
+			ventoy_cleanup_mnt
+			;;
+		add)
+			# parse add args (use "$@" directly to preserve SSID spaces)
+			ssid=""; psk=""; open=0; country=""
+			while [ $# -gt 0 ]; do
+				case "$1" in
+					--ssid) ssid="$2"; shift 2 ;;
+					--ssid=*) ssid="${1#--ssid=}"; shift ;;
+					--psk) psk="$2"; shift 2 ;;
+					--psk=*) psk="${1#--psk=}"; shift ;;
+					--open) open=1; shift ;;
+					--country) country="$2"; shift 2 ;;
+					--country=*) country="${1#--country=}"; shift ;;
+					--device|--device=*) shift; if [ "${1:-}" != "" ] && [ "${1#--}" = "$1" ]; then shift 2>/dev/null || shift; fi; ;;
+					--help|-h) echo "Usage: $PROG wifi add --ssid <SSID> [--psk <pass>] [--open] [--country XX] [--device <path>]"; ventoy_cleanup_mnt; exit 0 ;;
+					--*) die "wifi add: unknown flag $1" ;;
+					*) shift ;;
+				esac
+			done
+			# Interactive fallback
+			if [ -z "$ssid" ]; then
+				printf "SSID: "
+				read -r ssid || true
+				[ -n "$ssid" ] || die "wifi add: missing --ssid"
+			fi
+			if [ "$open" -eq 0 ] && [ -z "$psk" ]; then
+				# prompt securely if tty
+				if [ -t 0 ]; then
+					printf "PSK for [%s] (leave empty for open, or --open): " "$ssid"
+					stty -echo 2>/dev/null || true
+					read -r psk || true
+					stty echo 2>/dev/null || true
+					printf "\n"
+					if [ -z "$psk" ]; then
+						printf "No PSK entered — treat as open? [y/N]: "
+						read -r ans || true
+						case "$ans" in y|Y|yes|YES) open=1 ;; *) ;; esac
+					fi
+				else
+					# non-tty: leave empty
+					psk=""
+				fi
+			fi
+			if [ "$open" -eq 1 ]; then psk=""; fi
+
+			# Validate country if given
+			if [ -n "$country" ]; then
+				country="$(printf '%s' "$country" | tr 'a-z' 'A-Z')"
+				case "$country" in [A-Z][A-Z]|[A-Z][A-Z][A-Z]) ;; *) die "country must be 2-letter code like SE, US, DE (got $country)" ;; esac
+				# Update config country
+				tmp="$(mktemp)"
+				jq --arg c "$country" '.country = $c' "$config" > "$tmp" && cat "$tmp" > "$config" || die "failed to set country"
+				rm -f "$tmp"
+				ok "country set to $country"
+			fi
+
+			# Check existing
+			exists="$(jq --arg s "$ssid" '.networks | map(select(.ssid==$s)) | length' "$config" 2>/dev/null || echo 0)"
+			tmp="$(mktemp)"
+			if [ "$exists" -gt 0 ]; then
+				# update existing
+				if [ "$open" -eq 1 ]; then
+					jq --arg s "$ssid" '(.networks[] | select(.ssid==$s) | .psk) |= null | (.networks[] | select(.ssid==$s) | .key_mgmt) = "NONE" | del(.networks[] | select(.ssid==$s) | .psk)' "$config" > "$tmp" 2>/dev/null || \
+					jq --arg s "$ssid" '(.networks[] | select(.ssid==$s)) |= {"ssid":$s,"key_mgmt":"NONE"}' "$config" > "$tmp"
+				else
+					jq --arg s "$ssid" --arg p "$psk" '(.networks[] | select(.ssid==$s) | .psk) = $p | del(.networks[] | select(.ssid==$s) | .key_mgmt)' "$config" > "$tmp"
+				fi
+				cat "$tmp" > "$config"
+				rm -f "$tmp"
+				ok "updated [$ssid] (was already preseeded)"
+			else
+				if [ "$open" -eq 1 ]; then
+					jq --arg s "$ssid" '.networks += [{"ssid":$s,"key_mgmt":"NONE"}]' "$config" > "$tmp" && cat "$tmp" > "$config" || die "jq failed"
+				else
+					jq --arg s "$ssid" --arg p "$psk" '.networks += [{"ssid":$s,"psk":$p}]' "$config" > "$tmp" && cat "$tmp" > "$config" || die "jq failed"
+				fi
+				rm -f "$tmp"
+				ok "added [$ssid]"
+			fi
+			chmod 600 "$config" 2>/dev/null || true
+			wifi_sync_mirror "$mnt"
+			info "preseeded networks (in order, like Pi Imager):"
+			jq -r '.networks[] | "  - \(.ssid) (\(if .key_mgmt=="NONE" then "open" else "psk" end))"' "$config" 2>/dev/null || cat "$config"
+			country_now="$(jq -r '.country' "$config" 2>/dev/null || echo "SE")"
+			printf "\n${C_DIM}country %s — micro-OS will try these before scanning. Add more with the same command.${C_RESET}\n" "$country_now"
+			ventoy_cleanup_mnt
+			;;
+		remove|rm|del)
+			ssid=""
+			# using "$@" already
+			while [ $# -gt 0 ]; do
+				case "$1" in
+					--ssid) ssid="$2"; shift 2 ;;
+					--ssid=*) ssid="${1#--ssid=}"; shift ;;
+					--device|--device=*) shift; if [ "${1:-}" != "" ] && [ "${1#--}" = "$1" ]; then :; fi; shift 2>/dev/null || true ;;
+					--help|-h) echo "Usage: $PROG wifi remove --ssid <SSID> [--device <path>]"; ventoy_cleanup_mnt; exit 0 ;;
+					--*) shift ;;
+					*) if [ -z "$ssid" ]; then ssid="$1"; fi; shift ;;
+				esac
+			done
+			[ -n "$ssid" ] || die "wifi remove: missing --ssid <SSID>"
+			before="$(jq '.networks | length' "$config" 2>/dev/null || echo 0)"
+			tmp="$(mktemp)"
+			jq --arg s "$ssid" 'del(.networks[] | select(.ssid==$s))' "$config" > "$tmp" && cat "$tmp" > "$config" || die "jq failed"
+			rm -f "$tmp"
+			after="$(jq '.networks | length' "$config" 2>/dev/null || echo 0)"
+			if [ "$before" -eq "$after" ]; then warn "no such SSID [$ssid]"; else ok "removed [$ssid]"; fi
+			chmod 600 "$config" 2>/dev/null || true
+			wifi_sync_mirror "$mnt"
+			ventoy_cleanup_mnt
+			;;
+		clear)
+			tmp="$(mktemp)"
+			jq '.networks = []' "$config" > "$tmp" && cat "$tmp" > "$config" || die "jq failed"
+			rm -f "$tmp"
+			chmod 600 "$config" 2>/dev/null || true
+			wifi_sync_mirror "$mnt"
+			ok "cleared all preseeded networks on $mnt"
+			ventoy_cleanup_mnt
+			;;
+		set-country)
+			# wifi set-country SE
+			country=""
+			# using "$@" already
+			while [ $# -gt 0 ]; do
+				case "$1" in
+					--device|--device=*) shift; shift 2>/dev/null || true ;;
+					--help|-h) echo "Usage: $PROG wifi set-country <XX> [--device <path>]"; ventoy_cleanup_mnt; exit 0 ;;
+					--*) shift ;;
+					*) if [ -z "$country" ]; then country="$1"; fi; shift ;;
+				esac
+			done
+			[ -n "$country" ] || die "wifi set-country: missing <XX> e.g. SE, US, DE"
+			country="$(printf '%s' "$country" | tr 'a-z' 'A-Z')"
+			case "$country" in [A-Z][A-Z]|[A-Z][A-Z][A-Z]) ;; *) die "country must be 2-letter code (got $country)" ;; esac
+			tmp="$(mktemp)"
+			jq --arg c "$country" '.country = $c' "$config" > "$tmp" && cat "$tmp" > "$config" || die "jq failed"
+			rm -f "$tmp"
+			chmod 600 "$config" 2>/dev/null || true
+			wifi_sync_mirror "$mnt"
+			ok "country set to $country on $mnt"
+			ventoy_cleanup_mnt
+			;;
+		--help|help)
+			cat <<EOF
+${C_YELLOW}wifi preseed — like Raspberry Pi Imager${C_RESET}
+Preseeds Wi-Fi credentials on the Ventoy USB so the micro-OS auto-connects without typing.
+
+${C_YELLOW}Usage${C_RESET}
+  $PROG wifi list [--device <dev|mount>]                     # show preseeded networks
+  $PROG wifi add --ssid <SSID> [--psk <pass>] [--open] [--country XX] [--device <path>]
+  $PROG wifi remove --ssid <SSID> [--device <path>]
+  $PROG wifi clear [--device <path>]
+  $PROG wifi set-country <XX> [--device <path>]
+
+${C_YELLOW}Multiple networks (fallback order matters)${C_RESET}
+  # Pi Imager style — first is tried first, second is fallback:
+  $PROG wifi add --ssid Home --psk secret --device /run/media/\$USER/Ventoy
+  $PROG wifi add --ssid PhoneHotspot --psk 12345678 --device /run/media/\$USER/Ventoy
+  $PROG wifi add --ssid Hotel --open --device /run/media/\$USER/Ventoy
+  $PROG wifi list --device /run/media/\$USER/Ventoy
+
+${C_YELLOW}Storage${C_RESET}
+  JSON at Ventoy partition: ${C_GREEN}airboot.json${C_RESET} (and ${C_GREEN}ventoy/airboot.json${C_RESET} mirror)
+  Checked by micro-OS before scanning. Format:
+    {"version":1,"country":"SE","networks":[{"ssid":"Home","psk":"..."},...]}
+
+${C_YELLOW}Notes${C_RESET}
+  • Country is global (like Pi Imager). Default SE — change with wifi set-country US
+  • Order is priority — add Home first, Phone second for fallback
+  • psk is stored plaintext on the USB (chmod 600) — same as Pi Imager. Physical access == ownership.
+  • Micro-OS will still show manual scan if no preseeded network succeeds
+EOF
+			ventoy_cleanup_mnt
+			;;
+		*) die "wifi: unknown subcommand $sub — see $PROG wifi --help" ;;
 	esac
 }
 
@@ -439,6 +1015,9 @@ case "$1" in
 	validate) shift; cmd_validate "$@" ;;
 	catalog) shift; cmd_catalog "$@" ;;
 	ventoy) shift; cmd_ventoy "$@" ;;
+	wifi) shift; cmd_wifi "$@" ;;
+	# alias: abt add-iso as shortcut for ventoy --add-iso
+	add-iso) shift; cmd_ventoy --add-iso "$@" ;;
 	*)
 		err "unknown command: $1"
 		usage >&2

@@ -25,6 +25,7 @@ set -eu
 VENTOY_LABEL="Ventoy"
 VENTOY_MNT="/mnt/ventoy"
 VENTOY_ISO_DIR="ISO"
+ABT_COUNTRY="SE"  # default, overridden by preseed airboot.json country
 WPA_CONF="/tmp/wpa_supplicant.conf"
 WPA_CTRL="/tmp/wpa_ctrl"
 DIALOG_BACKTITLE="AirBoot — Like netboot.xyz, but works over Wi-Fi and boots via Ventoy"
@@ -123,6 +124,10 @@ mount_ventoy() {
 	fi
 	rm -f "$VENTOY_MNT/.abt_write_test"
 
+	# Detect existing ISO dir (handles ISOS vs ISO — user has ISOS) — Ventoy recurses so any works
+	for _cand in "ISOS" "ISO" "iso" "isos"; do
+		if [ -d "$VENTOY_MNT/$_cand" ]; then VENTOY_ISO_DIR="$_cand"; break; fi
+	done
 	# Ensure ISO dir exists
 	mkdir -p "$VENTOY_MNT/$VENTOY_ISO_DIR"
 	return 0
@@ -132,6 +137,165 @@ mount_ventoy() {
 while ! mount_ventoy; do
 	dialog --backtitle "$DIALOG_BACKTITLE" --yesno "Retry mounting Ventoy USB?" 7 50 || die "Ventoy mount cancelled by user"
 done
+
+# ---------- 1b. Preseed Wi-Fi (Pi Imager style — multiple networks) ----------
+# Checks $VENTOY_MNT/airboot.json (host-side `abt wifi add`) before manual scan.
+# JSON format: {"version":1,"country":"SE","networks":[{"ssid":"Home","psk":"..."},...]}
+# Mirror also checked at ventoy/airboot.json and airboot.conf for compat. Stored chmod 600.
+# Order matters: first network is highest priority.
+
+find_wlan_if() {
+	WLAN_IF=""
+	for iface in /sys/class/net/wlan* /sys/class/net/wl*; do
+		[ -e "$iface" ] || continue
+		WLAN_IF="$(basename "$iface")"
+		break
+	done
+	if [ -z "$WLAN_IF" ]; then
+		WLAN_IF="$(iw dev 2>/dev/null | awk '$1=="Interface"{print $2; exit}' || true)"
+	fi
+	if [ -n "$WLAN_IF" ]; then
+		ip link set "$WLAN_IF" up 2>/dev/null || true
+		sleep 1
+	fi
+	printf '%s' "$WLAN_IF"
+}
+
+# Try to connect using preseeded JSON (no dialogs for PSK). Returns 0 on success.
+connect_wifi_preseed() {
+	SSID="$1"
+	PSK="$2"
+	KEY_MGMT="$3"  # "NONE" for open, else psk
+	# WLAN_IF must already be set globally
+	if [ -z "$WLAN_IF" ]; then
+		log "preseed: no wlan iface"
+		return 1
+	fi
+	log "preseed: trying [$SSID] on $WLAN_IF (country $ABT_COUNTRY)…"
+	pkill -f "wpa_supplicant.*$WLAN_IF" 2>/dev/null || true
+	rm -f "$WPA_CONF" "$WPA_CTRL"/* 2>/dev/null || true
+	mkdir -p "$WPA_CTRL"
+	if [ "$KEY_MGMT" = "NONE" ] || [ -z "$PSK" ]; then
+		cat > "$WPA_CONF" <<EOF
+ctrl_interface=DIR=$WPA_CTRL GROUP=netdev
+update_config=1
+country=$ABT_COUNTRY
+network={
+	ssid="$SSID"
+	key_mgmt=NONE
+}
+EOF
+	else
+		if ! wpa_passphrase "$SSID" "$PSK" > "$WPA_CONF" 2>/dev/null; then
+			cat > "$WPA_CONF" <<EOF
+ctrl_interface=DIR=$WPA_CTRL GROUP=netdev
+update_config=1
+country=$ABT_COUNTRY
+network={
+	ssid="$SSID"
+	psk="$PSK"
+}
+EOF
+		else
+			if ! grep -q "^country=" "$WPA_CONF" 2>/dev/null; then
+				sed -i "1i country=$ABT_COUNTRY" "$WPA_CONF" 2>/dev/null || {
+					tmp_wpa="/tmp/wpa_with_country.conf"
+					printf 'country=%s\n' "$ABT_COUNTRY" > "$tmp_wpa"
+					cat "$WPA_CONF" >> "$tmp_wpa"
+					mv "$tmp_wpa" "$WPA_CONF"
+				}
+			fi
+			if ! grep -q "ctrl_interface" "$WPA_CONF" 2>/dev/null; then
+				sed -i "1i ctrl_interface=DIR=$WPA_CTRL GROUP=netdev" "$WPA_CONF" 2>/dev/null || true
+			fi
+		fi
+	fi
+	chmod 600 "$WPA_CONF"
+	wpa_supplicant -B -i "$WLAN_IF" -c "$WPA_CONF" -P /tmp/abt_wpa.pid 2>&1 | head -20 || true
+	sleep 2
+	log "preseed: DHCP on $WLAN_IF…"
+	udhcpc -i "$WLAN_IF" -q -n -t 5 2>&1 | tail -20 || true
+	for attempt in 1 2 3 4 5; do
+		if ping -c1 -W2 1.1.1.1 >/dev/null 2>&1; then
+			log "preseed: network ready via 1.1.1.1"
+			return 0
+		fi
+		if ping -c1 -W2 8.8.8.8 >/dev/null 2>&1; then
+			log "preseed: network ready via 8.8.8.8"
+			return 0
+		fi
+		sleep 1
+	done
+	log "preseed: [$SSID] failed (no ping)"
+	pkill -f "wpa_supplicant.*$WLAN_IF" 2>/dev/null || true
+	return 1
+}
+
+try_preseed_wifi() {
+	PRESEED=""
+	for cand in "$VENTOY_MNT/airboot.json" "$VENTOY_MNT/ventoy/airboot.json" "$VENTOY_MNT/airboot.conf" "$VENTOY_MNT/ventoy/airboot.conf"; do
+		if [ -f "$cand" ]; then PRESEED="$cand"; break; fi
+	done
+	if [ -z "$PRESEED" ]; then
+		log "preseed: none found (checked airboot.json @ Ventoy root/ventoy/)"
+		return 1
+	fi
+	log "preseed: found $PRESEED"
+	if ! command -v jq >/dev/null 2>&1; then
+		log "preseed: jq missing, cannot parse $PRESEED"
+		return 1
+	fi
+	if ! jq -e '.networks' "$PRESEED" >/dev/null 2>&1; then
+		log "preseed: invalid JSON (no .networks)"
+		return 1
+	fi
+	count="$(jq '.networks | length' "$PRESEED" 2>/dev/null || echo 0)"
+	if [ "$count" -eq 0 ]; then
+		log "preseed: empty networks"
+		return 1
+	fi
+	# Country
+	_country="$(jq -r '.country // empty' "$PRESEED" 2>/dev/null || true)"
+	if [ -n "$_country" ] && [ "$_country" != "null" ]; then
+		ABT_COUNTRY="$_country"
+		log "preseed: country $_country"
+		# Try to set reg domain early
+		if command -v iw >/dev/null 2>&1; then
+			iw reg set "$ABT_COUNTRY" 2>/dev/null || true
+		fi
+	fi
+	# Ensure wlan iface up before looping
+	WLAN_IF="$(find_wlan_if)"
+	if [ -z "$WLAN_IF" ]; then
+		dialog --backtitle "$DIALOG_BACKTITLE" --msgbox "Preseeded Wi-Fi found ($count networks) but no Wi-Fi adapter detected.\n\nFalling back to manual scan." 9 70 || true
+		return 1
+	fi
+	# Iterate networks in order (Pi Imager priority)
+	i=0
+	while [ "$i" -lt "$count" ]; do
+		ssid="$(jq -r --argjson idx "$i" '.networks[$idx].ssid // empty' "$PRESEED" 2>/dev/null || true)"
+		psk="$(jq -r --argjson idx "$i" '.networks[$idx].psk // empty' "$PRESEED" 2>/dev/null || true)"
+		key_mgmt="$(jq -r --argjson idx "$i" '.networks[$idx].key_mgmt // empty' "$PRESEED" 2>/dev/null || true)"
+		if [ "$psk" = "null" ]; then psk=""; fi
+		if [ "$key_mgmt" = "null" ]; then key_mgmt=""; fi
+		if [ -z "$ssid" ] || [ "$ssid" = "null" ]; then
+			i=$((i+1))
+			continue
+		fi
+		# Show trying dialog briefly? Use log + infobox
+		dialog --backtitle "$DIALOG_BACKTITLE" --infobox "Preseeded Wi-Fi ($((i+1))/$count): trying\n  [$ssid]…" 6 60 2>/dev/null || true
+		sleep 1
+		if connect_wifi_preseed "$ssid" "$psk" "$key_mgmt"; then
+			dialog --backtitle "$DIALOG_BACKTITLE" --msgbox "Auto-connected via preseed:\n  [$ssid] ($ABT_COUNTRY)\n\nProceeding to image catalog.\nManual scan skipped." 9 65 || true
+			CHOSEN_SSID="$ssid"
+			log "preseed: success with [$ssid]"
+			return 0
+		fi
+		i=$((i+1))
+	done
+	log "preseed: all $count networks failed"
+	dialog --backtitle "$DIALOG_BACKTITLE" --yesno "Preseeded Wi-Fi failed — none of the $count saved networks connected.\n\n• Country: $ABT_COUNTRY\n• Tried: $(jq -r '.networks[].ssid' "$PRESEED" 2>/dev/null | head -5 | tr '\n' ',' | sed 's/,/, /g')\n\nTry manual Wi-Fi scan instead?" 14 70 && return 1 || return 2
+}
 
 # ---------- 2. Wi-Fi ----------
 # Returns: selected SSID in $CHOSEN_SSID
@@ -277,14 +441,14 @@ connect_wifi() {
 		cat > "$WPA_CONF" <<EOF
 ctrl_interface=DIR=$WPA_CTRL GROUP=netdev
 update_config=1
-country=SE
+country=$ABT_COUNTRY
 network={
 	ssid="$SSID"
 	key_mgmt=NONE
 }
 EOF
 	else
-		# wpa_passphrase hashes the PSK; fall back to plaintext if it fails
+		# wpa_passphrase hashes the PSK; fall back to plaintext if it fails (injected country=$ABT_COUNTRY)
 		if ! wpa_passphrase "$SSID" "$PSK" > "$WPA_CONF" 2>/dev/null; then
 			cat > "$WPA_CONF" <<EOF
 ctrl_interface=DIR=$WPA_CTRL GROUP=netdev
@@ -296,7 +460,19 @@ network={
 EOF
 		else
 			# wpa_passphrase includes a plaintext #psk line; keep it for readability but not required
-			:
+			# Ensure country line present (wpa_passphrase doesn't add it)
+			if ! grep -q "^country=" "$WPA_CONF" 2>/dev/null; then
+				sed -i "1i country=$ABT_COUNTRY" "$WPA_CONF" 2>/dev/null || {
+					tmp_wpa="/tmp/wpa_with_country.conf"
+					printf 'country=%s\n' "$ABT_COUNTRY" > "$tmp_wpa"
+					cat "$WPA_CONF" >> "$tmp_wpa"
+					mv "$tmp_wpa" "$WPA_CONF"
+				}
+			fi
+			# Also ensure ctrl_interface present if wpa_passphrase output lacks it
+			if ! grep -q "ctrl_interface" "$WPA_CONF" 2>/dev/null; then
+				sed -i "1i ctrl_interface=DIR=$WPA_CTRL GROUP=netdev" "$WPA_CONF" 2>/dev/null || true
+			fi
 		fi
 	fi
 	chmod 600 "$WPA_CONF"
@@ -337,19 +513,34 @@ EOF
 	return 1
 }
 
-# Main Wi-Fi flow with retry loop
-while true; do
-	if scan_wifi; then
-		if connect_wifi "$CHOSEN_SSID"; then
-			break
-		fi
-	fi
-	dialog --backtitle "$DIALOG_BACKTITLE" --yesno "Wi-Fi setup failed or cancelled.\n\nRetry Wi-Fi scan?" 8 50 || {
-		# Offer to proceed offline? No — we need network to fetch. Exit gracefully.
-		dialog --backtitle "$DIALOG_BACKTITLE" --msgbox "No network — cannot fetch images.\n\nYou can:\n• Retry Wi-Fi (re-run abt-menu)\n• Or drop to shell and run 'abt-menu' again." 10 70
+# ---------- 2b. Try preseed before manual scan (Pi Imager style) ----------
+WLAN_IF=""
+PRESEED_RET=0
+if try_preseed_wifi; then
+	log "Wi-Fi ready via preseed ($CHOSEN_SSID)"
+	# preseed succeeded — skip manual scan entirely
+	:
+else
+	PRESEED_RET=$?
+	if [ "$PRESEED_RET" -eq 2 ]; then
+		# user declined manual fallback after preseed failure
+		dialog --backtitle "$DIALOG_BACKTITLE" --msgbox "No network — cannot fetch images.\n\nPreseeded networks failed and manual scan was declined.\nRe-run abt-menu or fix airboot.json on the Ventoy USB." 10 70
 		exit 1
-	}
-done
+	fi
+	# Main Wi-Fi flow with retry loop (manual)
+	while true; do
+		if scan_wifi; then
+			if connect_wifi "$CHOSEN_SSID"; then
+				break
+			fi
+		fi
+		dialog --backtitle "$DIALOG_BACKTITLE" --yesno "Wi-Fi setup failed or cancelled.\n\nRetry Wi-Fi scan?" 8 50 || {
+		# Offer to proceed offline? No — we need network to fetch. Exit gracefully.
+			dialog --backtitle "$DIALOG_BACKTITLE" --msgbox "No network — cannot fetch images.\n\nYou can:\n• Retry Wi-Fi (re-run abt-menu)\n• Or drop to shell and run 'abt-menu' again." 10 70
+			exit 1
+		}
+	done
+fi
 
 # ---------- 3. Catalog ----------
 # Try to fetch remote manifest (Phase 3); fall back to hard-coded

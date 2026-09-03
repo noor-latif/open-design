@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AirBoot — Local Setup · localhost:8080</title>
+<style>
+:root {
+  --bg:      oklch(99% 0.002 240);
+  --surface: oklch(100% 0 0);
+  --fg:      oklch(18% 0.012 250);
+  --muted:   oklch(54% 0.012 250);
+  --border:  oklch(92% 0.005 250);
+  --accent:  oklch(58% 0.18 255);
+  --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
+  --fg-soft:     color-mix(in oklch, var(--fg) 6%, transparent);
+  --danger: oklch(58% 0.20 28);
+  --danger-soft: color-mix(in oklch, var(--danger) 10%, transparent);
+  --success: oklch(62% 0.14 155);
+  --success-soft: color-mix(in oklch, var(--success) 12%, transparent);
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  --font-body:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+  --fs-h1: clamp(26px, 3vw, 32px);
+  --container: 960px;
+  --gutter: 24px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin:0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size:14px; line-height:1.5; -webkit-font-smoothing: antialiased; }
+img,svg{display:block; max-width:100%;}
+a{color:inherit}
+button{font:inherit; cursor:pointer}
+p{margin:0; text-wrap:pretty}
+h1,h2,h3{margin:0; text-wrap:balance}
+
+/* page chrome */
+.page-wrap { min-height: 100vh; display:flex; flex-direction:column; }
+.topnav { position: sticky; top:0; z-index:10; background: color-mix(in oklch, var(--bg) 92%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.topnav-inner{max-width:1200px; margin-inline:auto; padding:14px var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:16px;}
+.brand { display:flex; align-items:center; gap:10px; font-weight:600; letter-spacing:-0.015em; }
+.brand-mark{width:32px; height:32px; border-radius:9px; background: var(--fg); color: var(--surface); display:grid; place-items:center; font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:0.08em;}
+.brand small{font-weight:400; color:var(--muted); font-size:13px; margin-left:2px;}
+.nav-links{display:flex; gap:18px; font-size:13px; color:var(--muted)}
+.nav-links a:hover{color:var(--fg)}
+.mono{font-family:var(--font-mono)}
+.meta{font-family:var(--font-mono); font-size:12px; color:var(--muted)}
+.eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent)}
+.intro{max-width:1200px; margin-inline:auto; padding: 28px var(--gutter) 0; }
+.intro-grid{display:grid; grid-template-columns: 1.2fr 0.8fr; gap:32px; align-items:end;}
+@media(max-width:920px){ .intro-grid{grid-template-columns:1fr} }
+
+/* APP WINDOW */
+.app-shell{padding: 28px var(--gutter) 24px; display:grid; place-items:start center; flex:1;}
+.app-window{
+  width: min(var(--container), 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow:hidden;
+  box-shadow: 0 20px 60px oklch(18% 0.012 250 / 0.08), 0 1px 3px oklch(18% 0.012 250 / 0.08);
+  display:flex; flex-direction:column;
+  min-height: 640px;
+}
+.window-bar{
+  height: 44px; display:flex; align-items:center; gap:8px; padding: 0 16px;
+  border-bottom:1px solid var(--border); background: color-mix(in oklch, var(--surface) 96%, var(--bg));
+}
+.dots{display:flex; gap:6px; align-items:center}
+.dot{width:11px; height:11px; border-radius:50%; border:1px solid var(--border)}
+.dot.red{background: oklch(70% 0.18 25)} .dot.yellow{background: oklch(86% 0.14 95)} .dot.green{background: oklch(72% 0.12 155)}
+.window-title{flex:1; text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--muted); letter-spacing:0.02em}
+.window-actions{font-family:var(--font-mono); font-size:11px; color:var(--muted); display:flex; gap:8px; align-items:center}
+.pill-live{padding:4px 8px; border-radius:999px; background: var(--success-soft); color: var(--success); border:1px solid color-mix(in oklch, var(--success) 20%, transparent); font-family:var(--font-mono); font-size:11px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:6px;}
+.pill-live::before{content:""; width:6px; height:6px; border-radius:50%; background: var(--success); box-shadow:0 0 0 4px var(--success-soft)}
+.pill-offline{background: var(--danger-soft); color:var(--danger); border-color: color-mix(in oklch, var(--danger) 18%, transparent)}
+
+/* header inside window */
+.app-header{
+  padding:18px 28px 16px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+  border-bottom:1px solid var(--border);
+}
+.app-header-left{display:flex; align-items:center; gap:12px}
+.app-logo{width:36px; height:36px; border-radius:10px; background: var(--fg); color: var(--surface); display:grid; place-items:center}
+.app-header h2{font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:-0.01em}
+.app-header p{font-size:12px; color:var(--muted); margin-top:1px}
+.stepper{display:flex; align-items:center; gap:8px}
+.step-dot{width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border); display:grid; place-items:center; font-family:var(--font-mono); font-size:12px; color:var(--muted); background: var(--surface); transition: all .18s ease; cursor:default;}
+.step-dot.active{background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight:600}
+.step-dot.done{background: var(--success); border-color: var(--success); color: var(--surface); cursor:pointer}
+.step-dot.clickable{cursor:pointer; }
+.step-dot.clickable:hover{border-color: var(--accent); color: var(--accent); background: var(--surface)}
+.step-dot.done:hover{opacity:0.9}
+.step-line{width:20px; height:2px; background: var(--border); border-radius:99px; transition: background .2s}
+.step-line.done{background: var(--success)}
+.step-line.active{background: color-mix(in oklch, var(--accent) 40%, var(--border))}
+
+/* progress hint under header */
+.header-progress{height:2px; background: var(--border); width:100%;}
+.header-progress-fill{height:100%; background: var(--accent); width:33%; transition: width .4s ease;}
+
+/* window body */
+.window-body{flex:1; display:flex; flex-direction:column; padding: 0; overflow:hidden}
+.step-panel{display:none; flex:1; flex-direction:column; overflow:auto}
+.step-panel.active{display:flex}
+.panel-inner{padding: 28px; flex:1}
+.panel-title{font-family:var(--font-display); font-size: var(--fs-h1); font-weight:650; letter-spacing:-0.02em; line-height:1.1}
+.panel-lead{color:var(--muted); font-size:14px; margin-top:8px; max-width:52ch; line-height:1.5}
+
+/* USB list */
+.usb-list{display:flex; flex-direction:column; gap:10px; margin-top:20px}
+.usb-row{
+  display:flex; align-items:center; gap:14px; padding:14px 16px;
+  border:1.5px solid var(--border); border-radius:12px; background: var(--surface);
+  cursor:pointer; transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.usb-row:hover{border-color: color-mix(in oklch, var(--fg) 18%, var(--border));}
+.usb-row.selected{border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 4px 16px oklch(58% 0.18 255 / 0.08)}
+.usb-icon{width:44px; height:44px; border-radius:10px; background: var(--bg); border:1px solid var(--border); display:grid; place-items:center; color:var(--muted); flex-shrink:0}
+.usb-row.selected .usb-icon{background: var(--surface); color: var(--accent); border-color: var(--accent-soft)}
+.usb-main{flex:1; min-width:0}
+.usb-name{font-weight:600; font-size:14px; letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.usb-sub{font-family:var(--font-mono); font-size:12px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap; margin-top:2px}
+.badge{display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px; font-family:var(--font-mono); font-size:11px; letter-spacing:0.04em; font-weight:600; text-transform:uppercase; border:1px solid transparent}
+.badge-ok{background: var(--success-soft); color: var(--success); border-color: color-mix(in oklch, var(--success) 18%, transparent)}
+.badge-dim{background: var(--fg-soft); color: var(--muted); border-color: var(--border)}
+.dot-indicator{width:6px; height:6px; border-radius:50%; background: currentColor}
+.radio{width:20px; height:20px; border-radius:50%; border:1.5px solid var(--border); display:grid; place-items:center; flex-shrink:0; background: var(--surface)}
+.usb-row.selected .radio{border-color: var(--accent)}
+.usb-row.selected .radio::after{content:""; width:10px; height:10px; border-radius:50%; background: var(--accent)}
+
+.empty-box{
+  border:1.5px dashed var(--border); border-radius:16px; background: color-mix(in oklch, var(--bg) 60%, var(--surface));
+  padding: 32px 24px; text-align:center; margin-top:20px;
+}
+.empty-icon{width:56px; height:56px; border-radius:14px; background: var(--surface); border:1px solid var(--border); display:grid; place-items:center; margin:0 auto 14px; color:var(--muted)}
+.empty-box h3{font-size:16px; font-weight:600}
+.empty-box p{color:var(--muted); font-size:13px; margin-top:6px; max-width:36ch; margin-inline:auto}
+
+/* buttons */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px 18px; border-radius:10px; border:1px solid transparent; font-size:14px; font-weight:500; letter-spacing:-0.01em; transition: transform .05s, background .15s, border-color .15s, opacity .15s; white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background: var(--accent); color: var(--surface); border-color: var(--accent)}
+.btn-primary:hover{background: color-mix(in oklch, var(--accent) 86%, black)}
+.btn-primary:disabled{opacity:0.45; pointer-events:none}
+.btn-primary.pulse{animation: pulse 1.6s ease infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in oklch, var(--accent) 30%, transparent)} 70%{box-shadow:0 0 0 10px transparent} 100%{box-shadow:0 0 0 0 transparent}}
+.btn-secondary{background: var(--surface); color: var(--fg); border-color: var(--border)}
+.btn-secondary:hover{border-color: var(--fg)}
+.btn-ghost{background: transparent; color: var(--muted); border-color: transparent; padding-inline:10px; font-size:13px}
+.btn-ghost:hover{color: var(--fg)}
+.btn-danger{background: var(--danger); color: var(--surface); border-color: var(--danger)}
+.btn-danger:hover{background: color-mix(in oklch, var(--danger) 86%, black)}
+.btn-sm{padding:8px 12px; font-size:13px; border-radius:8px}
+.btn-block{width:100%}
+.link{font-size:13px; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+.link:hover{color: var(--fg)}
+.link-danger{color: var(--danger)}
+.link-danger:hover{color: color-mix(in oklch, var(--danger) 80%, black)}
+
+/* progress */
+.progress-wrap{margin-top:18px; background: var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px}
+.progress-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-family:var(--font-mono); font-size:12px; color:var(--muted)}
+.progress-track{height:8px; background: var(--bg); border-radius:999px; overflow:hidden; border:1px solid var(--border)}
+.progress-fill{height:100%; background: var(--accent); width:0%; transition: width .3s ease; border-radius:999px}
+.progress-fill.error{background: var(--danger)}
+.progress-meta{font-size:12px; color:var(--muted); margin-top:8px; display:flex; gap:12px; flex-wrap:wrap}
+.alert{padding:10px 12px; border-radius:10px; font-size:13px; display:flex; gap:10px; align-items:start; line-height:1.5}
+.alert-error{background: var(--danger-soft); border:1px solid color-mix(in oklch, var(--danger) 18%, transparent); color: color-mix(in oklch, var(--danger) 70%, black)}
+.alert-success{background: var(--success-soft); border:1px solid color-mix(in oklch, var(--success) 18%, transparent); color: color-mix(in oklch, var(--success) 55%, black)}
+.alert-info{background: var(--accent-soft); border:1px solid color-mix(in oklch, var(--accent) 18%, transparent); color: color-mix(in oklch, var(--accent) 65%, black)}
+
+/* inline continue */
+.inline-continue{
+  margin-top:14px; background: var(--success-soft); border:1px solid color-mix(in oklch, var(--success) 18%, transparent);
+  border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+
+/* Wi-Fi - NEW iPhone style */
+.wifi-layout{display:grid; grid-template-columns: 1.55fr 0.95fr; gap:20px; margin-top:18px; align-items:start}
+@media(max-width:920px){ .wifi-layout{grid-template-columns:1fr}}
+.wifi-panel{background: var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden}
+.wifi-panel-head{padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--border); background: var(--bg)}
+.wifi-panel-head h4{font-size:13px; font-weight:600; letter-spacing:-0.01em}
+.country-select{font-family:var(--font-mono); font-size:12px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; background: var(--surface); color:var(--fg)}
+.scan-meta{font-family:var(--font-mono); font-size:11px; color:var(--muted); display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.scan-list{display:flex; flex-direction:column}
+.scan-row{
+  display:flex; align-items:center; gap:12px; padding:11px 14px;
+  border-bottom:1px solid var(--border); background: var(--surface); cursor:pointer; text-align:left;
+  transition: background .12s;
+}
+.scan-row:hover{background: color-mix(in oklch, var(--bg) 55%, var(--surface))}
+.scan-row:active{background: var(--bg)}
+.scan-row.added{opacity:0.55; cursor:default}
+.scan-row.other{justify-content:center; color:var(--accent); font-weight:500; font-size:13px}
+.scan-icon{width:32px; height:32px; border-radius:8px; background: var(--bg); border:1px solid var(--border); display:grid; place-items:center; color:var(--muted); flex-shrink:0}
+.signal{display:flex; align-items:end; gap:2px; height:16px}
+.signal span{width:3px; background: var(--border); border-radius:2px; display:block}
+.signal.s3 span:nth-child(1){height:5px; background: var(--fg)} .signal.s3 span:nth-child(2){height:9px; background: var(--fg)} .signal.s3 span:nth-child(3){height:13px; background: var(--fg)}
+.signal.s2 span:nth-child(1){height:5px; background: var(--fg)} .signal.s2 span:nth-child(2){height:9px; background: var(--fg)} .signal.s2 span:nth-child(3){height:13px; background: var(--border)}
+.signal.s1 span:nth-child(1){height:5px; background: var(--fg)} .signal.s1 span:nth-child(2){height:9px; background: var(--border)} .signal.s1 span:nth-child(3){height:13px; background: var(--border)}
+.signal.s0 span{background: var(--border)}
+.scan-main{flex:1; min-width:0}
+.scan-name{font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.scan-sub{font-family:var(--font-mono); font-size:11px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:2px}
+.scan-check{width:20px; height:20px; border-radius:50%; background: var(--success); color: var(--surface); display:grid; place-items:center; flex-shrink:0; font-size:11px}
+.scan-chevron{color:var(--muted)}
+.wifi-list{max-height: 240px; overflow:auto}
+.wifi-row{display:flex; align-items:center; gap:12px; padding:11px 14px; border-bottom:1px solid var(--border); background: var(--surface)}
+.wifi-row:last-child{border-bottom:0}
+.drag{color:var(--muted); cursor:grab; padding:4px; border-radius:6px}
+.drag:hover{background: var(--bg)}
+.wifi-name{flex:1; font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.wifi-meta{font-family:var(--font-mono); font-size:11px; color:var(--muted); display:flex; gap:6px; align-items:center}
+.icon-lock{width:16px; height:16px; border-radius:4px; background: var(--bg); border:1px solid var(--border); display:grid; place-items:center; color:var(--muted)}
+.wifi-actions{display:flex; gap:6px}
+.icon-btn{width:28px; height:28px; border-radius:8px; border:1px solid var(--border); background: var(--surface); display:grid; place-items:center; color:var(--muted)}
+.icon-btn:hover{border-color: var(--fg); color: var(--fg)}
+.icon-btn.danger:hover{border-color: var(--danger); color: var(--danger); background: var(--danger-soft)}
+.form-card{background: var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px}
+.field{display:flex; flex-direction:column; gap:6px}
+.field label{font-size:12px; font-weight:500; color:var(--muted); letter-spacing:-0.01em}
+.input{width:100%; padding:11px 12px; border:1px solid var(--border); border-radius:10px; background: var(--surface); color:var(--fg); font:inherit; font-size:14px}
+.input:focus{outline:2px solid var(--accent-soft); border-color: var(--accent)}
+.input-wrap{position:relative}
+.input-wrap .eye{position:absolute; right:8px; top:50%; transform:translateY(-50%); width:28px; height:28px; border-radius:8px; border:1px solid transparent; background:transparent; display:grid; place-items:center; color:var(--muted)}
+.input-wrap .eye:hover{background: var(--bg); color:var(--fg)}
+.check-row{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted)}
+.check-row input{accent-color: var(--accent); width:16px; height:16px}
+.section-label{font-family:var(--font-mono); font-size:11px; letter-spacing:0.07em; text-transform:uppercase; color:var(--muted); padding: 10px 14px 6px;}
+
+/* bottom bar */
+.window-footer{
+  padding:14px 20px; border-top:1px solid var(--border); background: var(--surface);
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  position: sticky; bottom:0;
+}
+.footer-left{display:flex; gap:8px; align-items:center}
+.footer-right{display:flex; gap:8px; align-items:center}
+.divider{height:1px; background: var(--border); border:0; margin:0}
+
+/* not running helper */
+.cmd-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px}
+@media(max-width:920px){ .cmd-grid{grid-template-columns:1fr}}
+.cmd-box{background: var(--fg); color: var(--surface); border-radius:12px; padding:14px; font-family:var(--font-mono); font-size:12px; line-height:1.6; position:relative; overflow:hidden}
+.cmd-box small{display:block; opacity:0.6; font-size:11px; margin-bottom:6px; letter-spacing:0.06em; text-transform:uppercase}
+.cmd-text{word-break:break-all; background: oklch(100% 0 0 / 0.08); padding:10px 12px; border-radius:8px; border:1px solid oklch(100% 0 0 / 0.12)}
+.cmd-copy{position:absolute; top:12px; right:12px; padding:6px 10px; font-size:11px; border-radius:8px; border:1px solid oklch(100% 0 0 / 0.18); background: oklch(100% 0 0 / 0.12); color:var(--surface)}
+.cmd-copy:hover{background: oklch(100% 0 0 / 0.18)}
+
+/* modal + sheet */
+.modal-backdrop{position:fixed; inset:0; background: oklch(0% 0 0 / 0.36); backdrop-filter: blur(6px); display:none; place-items:center; z-index:40; padding:20px}
+.modal-backdrop.open{display:grid}
+.modal{background: var(--surface); border:1px solid var(--border); border-radius:16px; width:min(480px,100%); padding:22px; box-shadow: 0 18px 50px oklch(0% 0 0 / 0.18)}
+.modal h3{font-size:16px; font-weight:650}
+.modal p{color:var(--muted); font-size:13px; margin-top:6px; line-height:1.5}
+.modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px}
+.sheet-backdrop{position:fixed; inset:0; background: oklch(0% 0 0 / 0.24); display:none; place-items:end center; z-index:45; padding:0}
+.sheet-backdrop.open{display:grid}
+.sheet{background: var(--surface); border-radius:16px 16px 0 0; width:min(520px,100%); border:1px solid var(--border); border-bottom:0; padding:18px; box-shadow: 0 -12px 32px oklch(0% 0 0 / 0.12)}
+.sheet-handle{width:36px; height:4px; border-radius:99px; background: var(--border); margin:0 auto 12px}
+
+/* phone check strip */
+.phone-check{max-width:1200px; margin: 0 auto; padding: 0 var(--gutter) 32px}
+.phone-frame{width: 375px; max-width:100%; margin-inline:auto; border:1px solid var(--border); border-radius:18px; overflow:hidden; background:var(--surface); box-shadow: 0 12px 32px oklch(18% 0.012 250 / 0.06)}
+.phone-frame .app-header{padding:14px 16px}
+.phone-frame .panel-inner{padding:16px}
+.phone-frame .wifi-layout{grid-template-columns:1fr}
+.phone-frame .cmd-grid{grid-template-columns:1fr}
+
+/* utils */
+.row{ display:flex; align-items:center; gap:10px}
+.row-between{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.stack{display:flex; flex-direction:column; gap:12px}
+.hidden{display:none !important}
+.num{font-family:var(--font-mono); font-variant-numeric: tabular-nums}
+.toasty{position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(12px); background: var(--fg); color:var(--surface); padding:10px 14px; border-radius:999px; font-size:13px; display:flex; gap:8px; align-items:center; opacity:0; pointer-events:none; transition: all .2s ease; z-index:50}
+.toasty.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.spin{animation: spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+<header class="topnav" data-od-id="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <span class="brand-mark">AB</span>
+      AirBoot <small>local app · http://localhost:8080</small>
+    </div>
+    <nav class="nav-links">
+      <a href="#app">App prototype ↓</a>
+      <a href="#spec">Spec</a>
+      <span class="meta" style="opacity:0.7">Figma · 960px + 375px</span>
+    </nav>
+  </div>
+</header>
+
+<div class="intro" data-od-id="intro">
+  <div class="intro-grid">
+    <div>
+      <p class="eyebrow">Figma hand-off · Balena Etcher simplicity — now smarter</p>
+      <h1 style="font-family:var(--font-display); font-size: clamp(32px, 4vw, 44px); line-height:1.05; letter-spacing:-0.02em; margin-top:8px;">Same tiny window.<br/>Three taps, no terminal.</h1>
+      <p style="color:var(--muted); margin-top:12px; max-width:56ch; line-height:1.6;">Interactive prototype with iPhone-style Wi-Fi scan (Python helper) and modern stepper UX: clickable progress, inline “Continue” after success, double-click USB to advance, keyboard arrows + swipe. Passwords never leave this machine — 0600 on USB.</p>
+      <div class="row" style="margin-top:14px; flex-wrap:wrap">
+        <span class="meta">What’s new:</span>
+        <span style="display:inline-flex; gap:6px; flex-wrap:wrap">
+          <span class="badge badge-dim">iPhone scan list</span>
+          <span class="badge badge-dim">dBm + bars</span>
+          <span class="badge badge-dim">tap to add</span>
+          <span class="badge badge-dim">smart Next</span>
+        </span>
+      </div>
+    </div>
+    <div class="stack" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px;">
+      <div class="row-between">
+        <strong style="font-size:13px;">Try the flow</strong>
+        <span style="background:var(--accent-soft); color:var(--accent); padding:4px 8px; border-radius:999px; font-family:var(--font-mono); font-size:11px;">Guided →</span>
+      </div>
+      <p style="font-size:12px; color:var(--muted); line-height:1.6">1) Pick USB → double-click row or press <span class="mono">Enter</span>. 2) Copy → <span class="mono">Continue to Wi-Fi</span> appears inline. 3) Wi-Fi → <span class="mono">Scan again</span> via helper, tap a network to prefill, drag to reorder priority. Stepper dots are now clickable.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px">
+        <button class="btn btn-secondary btn-sm" onclick="jumpToApp()">Jump to app</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleNotRunning()">Show offline helper</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app-anchor" class="app-shell" data-od-id="app-window">
+  <div class="app-window" role="application" aria-label="AirBoot local app window 960px">
+    <div class="window-bar">
+      <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+      <div class="window-title">AirBoot — Setup</div>
+      <div class="window-actions">
+        <span id="livePill" class="pill-live">Live at localhost:8080</span>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 8px; font-size:11px" onclick="toggleNotRunning()" title="Toggle offline helper">Offline view</button>
+      </div>
+    </div>
+
+    <div class="app-header">
+      <div class="app-header-left">
+        <div class="app-logo" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 4v8l-7 4-7-4V7l7-4z"/><path d="M12 11a3 3 0 100 6 3 3 0 000-6z"/><path d="M12 3v5"/><path d="M9 7l3 4 3-4"/></svg>
+        </div>
+        <div>
+          <h2>AirBoot</h2>
+          <p>Ventoy companion · Wi-Fi setup</p>
+        </div>
+      </div>
+      <div class="stepper" aria-label="Steps">
+        <button class="step-dot active" id="sd1" onclick="tryGoStep(1)" aria-label="Step 1 Pick USB">1</button>
+        <span class="step-line" id="sl1"></span>
+        <button class="step-dot" id="sd2" onclick="tryGoStep(2)" aria-label="Step 2 Copy">2</button>
+        <span class="step-line" id="sl2"></span>
+        <button class="step-dot" id="sd3" onclick="tryGoStep(3)" aria-label="Step 3 Wi-Fi">3</button>
+      </div>
+    </div>
+    <div class="header-progress" aria-hidden="true"><div id="headerProg" class="header-progress-fill" style="width:33%"></div></div>
+
+    <div class="window-body" id="windowBody">
+      <!-- NOT RUNNING helper -->
+      <section class="step-panel" id="panel-offline" data-od-id="panel-offline">
+        <div class="panel-inner">
+          <h2 class="panel-title">AirBoot isn't running</h2>
+          <p class="panel-lead">Start the tiny local helper, then reopen <span class="mono">http://localhost:8080</span>. Nothing is sent to the internet — it runs on your computer only.</p>
+          <div class="cmd-grid">
+            <div class="cmd-box">
+              <small>Mac / Linux</small>
+              <div class="cmd-text" id="cmdMac">curl -fsSL https://airboot.sh/install.sh | bash</div>
+              <button class="cmd-copy" onclick="copyText('cmdMac', this)">Copy</button>
+            </div>
+            <div class="cmd-box">
+              <small>Windows (PowerShell)</small>
+              <div class="cmd-text" id="cmdWin">irm https://airboot.sh/install.ps1 | iex</div>
+              <button class="cmd-copy" onclick="copyText('cmdWin', this)">Copy</button>
+            </div>
+          </div>
+          <p style="font-size:12px; color:var(--muted); margin-top:12px;">Or copy <span class="mono">airboot.iso</span> to the USB by hand → <span class="mono">/Ventoy/ISO/airboot.iso</span>.</p>
+          <button class="btn btn-primary" style="margin-top:18px" onclick="goStep(1)">I've started it — continue</button>
+        </div>
+      </section>
+
+      <!-- STEP 1 -->
+      <section class="step-panel active" id="panel-1" data-od-id="step-1-pick-usb">
+        <div class="panel-inner">
+          <div class="row-between" style="align-items:start">
+            <div>
+              <h2 class="panel-title">Pick your Ventoy USB</h2>
+              <p class="panel-lead">We already scanned your computer. Choose the stick that has Ventoy — no file picker needed. <span style="color:var(--muted); font-size:12px">(Double-click a row to advance)</span></p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="toggleEmpty()" id="emptyToggle">Simulate: no Ventoy</button>
+          </div>
+          <div id="usbList" class="usb-list">
+            <div class="usb-row selected" data-id="ventoy-32" onclick="selectUSB(this)" ondblclick="selectUSB(this); goNext()">
+              <div class="usb-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
+              <div class="usb-main">
+                <div class="usb-name">Ventoy — 32GB</div>
+                <div class="usb-sub"><span class="num">29.8 GB</span><span>•</span><span class="mono">E: on Windows</span><span>•</span><span class="mono">/Volumes/Ventoy</span></div>
+              </div>
+              <span class="badge badge-ok"><span class="dot-indicator"></span> Ventoy found</span>
+              <span class="radio" aria-hidden="true"></span>
+            </div>
+            <div class="usb-row" data-id="sandisk-64" onclick="selectUSB(this)" ondblclick="selectUSB(this); goNext()">
+              <div class="usb-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M12 8v8M8 12h8" opacity="0.5"/></svg></div>
+              <div class="usb-main">
+                <div class="usb-name">SanDisk Ultra — 64GB</div>
+                <div class="usb-sub"><span class="num">59.4 GB</span><span>•</span><span class="mono">F:</span><span>•</span><span class="mono">/Volumes/SANDISK</span></div>
+              </div>
+              <span class="badge badge-dim">No Ventoy</span>
+              <span class="radio" aria-hidden="true"></span>
+            </div>
+            <div class="usb-row" data-id="generic-16" onclick="selectUSB(this)" ondblclick="selectUSB(this); goNext()">
+              <div class="usb-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="3" width="12" height="18" rx="3"/><circle cx="12" cy="14" r="2"/></svg></div>
+              <div class="usb-main">
+                <div class="usb-name">USB Drive — 16GB</div>
+                <div class="usb-sub"><span class="num">14.9 GB</span><span>•</span><span class="mono">G:</span><span>•</span><span class="mono">/Volumes/USB16</span></div>
+              </div>
+              <span class="badge badge-dim">No Ventoy</span>
+              <span class="radio" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div id="usbEmpty" class="empty-box hidden">
+            <div class="empty-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 9l6 6M15 9l-6 6"/></svg></div>
+            <h3>No Ventoy found</h3>
+            <p>Plug in a Ventoy USB, or make one first. This app doesn't wipe anything unless you ask it to.</p>
+            <a class="btn btn-primary" href="https://www.ventoy.net" target="_blank" rel="noopener" style="margin-top:14px">Get Ventoy — ventoy.net</a>
+            <p style="font-size:11px; margin-top:10px" class="mono">Requires Ventoy on the stick — then return here and pick it.</p>
+          </div>
+          <div style="margin-top:14px" class="alert alert-info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span><strong>Tip:</strong> Selected USB is remembered if you go back. Next is <span class="mono">Enter</span> too.</span></div>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step-panel" id="panel-2" data-od-id="step-2-copy">
+        <div class="panel-inner">
+          <h2 class="panel-title">Put AirBoot on USB</h2>
+          <p class="panel-lead">This just copies <span class="mono">airboot.iso</span> to your Ventoy stick. No wipe, no reformatting.</p>
+          <div style="margin-top:20px; background: var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; gap:14px; align-items:center">
+            <div style="width:48px; height:48px; border-radius:12px; background: var(--surface); border:1px solid var(--border); display:grid; place-items:center; color:var(--accent)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M12 13v6M9 16l3 3 3-3"/></svg></div>
+            <div style="flex:1; min-width:0">
+              <div style="font-weight:600; font-size:14px">airboot.iso — <span class="num">18.4 MB</span></div>
+              <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted);">Built on your computer · verifies ISO magic <span class="mono">CD001</span></div>
+            </div>
+            <span class="badge badge-ok"><span class="dot-indicator"></span> Ready</span>
+          </div>
+          <div id="copyIdle">
+            <button class="btn btn-primary btn-block" style="margin-top:16px; padding:14px 18px; font-size:15px; font-weight:600" onclick="startCopy()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+              Copy AirBoot
+            </button>
+            <p style="font-size:12px; color:var(--muted); text-align:center; margin-top:8px">Copies to <span class="mono">/Ventoy/ISO/airboot.iso</span> — <span class="mono">Shift+Click</span> to demo error.</p>
+          </div>
+          <div id="copyProgress" class="progress-wrap hidden">
+            <div class="progress-head"><span id="copyLabel">Copying…</span><span class="num" id="copyPct">0%</span></div>
+            <div class="progress-track"><div id="copyFill" class="progress-fill" style="width:0%"></div></div>
+            <div class="progress-meta"><span class="mono" id="copyDetail">Checking file…</span><span id="copySpeed" class="num"></span></div>
+            <div id="copyError" class="alert alert-error hidden" style="margin-top:12px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+              <span><strong>Not a good file</strong> — didn't pass the check. Re-build with <span class="mono">abt build</span> and try again.</span>
+            </div>
+            <div id="copyDone" class="alert alert-success hidden" style="margin-top:12px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+              <span><strong>Copied!</strong> <span class="mono">airboot.iso</span> is on your Ventoy stick.</span>
+            </div>
+          </div>
+          <div id="inlineContinue" class="inline-continue hidden">
+            <div>
+              <div style="font-weight:600; font-size:13px">Copied — ready for Wi-Fi</div>
+              <div style="font-size:12px; color:var(--muted)">Next step is optional. Your USB will boot without it.</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="goNext()">Continue to Wi-Fi →</button>
+          </div>
+          <div style="text-align:center; margin-top:16px">
+            <button class="link link-danger" onclick="openWipe()">Wipe and make new Ventoy USB</button>
+            <div style="font-size:11px; color:var(--muted); margin-top:4px">Advanced · erases the drive</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3 - iPhone Wi-Fi -->
+      <section class="step-panel" id="panel-3" data-od-id="step-3-wifi">
+        <div class="panel-inner">
+          <div class="row-between" style="align-items:start">
+            <div>
+              <h2 class="panel-title">Add Wi-Fi (optional)</h2>
+              <p class="panel-lead">Scanned with the Python helper — just like iPhone Settings. Tap a network to add it. First saved is tried first.</p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="skipWifi()">Skip for now →</button>
+          </div>
+
+          <div class="wifi-layout">
+            <!-- left: scan + saved -->
+            <div class="stack">
+              <!-- SCAN PANEL - iPhone style -->
+              <div class="wifi-panel" data-od-id="wifi-scan-panel">
+                <div class="wifi-panel-head">
+                  <div>
+                    <h4>Nearby networks</h4>
+                    <div class="scan-meta"><span id="scanStatus">Python helper · scanned <span id="scanTime">just now</span></span><span>·</span><span class="mono" id="scanCount">8 found</span></div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" id="scanBtn" onclick="rescan()">
+                    <svg id="scanIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 11-9-9"/><path d="M21 12v-5h-5"/></svg>
+                    Scan again
+                  </button>
+                </div>
+                <div style="background: var(--bg); padding:8px 14px; display:flex; gap:8px; align-items:center; border-bottom:1px solid var(--border)">
+                  <span style="font-size:12px; color:var(--muted)">Country for regulatory domain</span>
+                  <select class="country-select" id="countrySel" aria-label="Country" style="margin-left:auto">
+                    <option value="SE" selected>SE — Sweden</option>
+                    <option value="DE">DE — Germany</option>
+                    <option value="US">US — United States</option>
+                    <option value="GB">GB — United Kingdom</option>
+                    <option value="JP">JP — Japan</option>
+                    <option value="FR">FR — France</option>
+                  </select>
+                </div>
+                <div class="section-label">Choose a network</div>
+                <div id="scanList" class="scan-list"></div>
+                <div style="padding:8px 14px; font-size:11px; color:var(--muted); background: var(--bg); border-top:1px solid var(--border)">Signal: ▁▂▃ bars + dBm. Tap a row to prefill the form. “Other…” for hidden SSID.</div>
+              </div>
+
+              <!-- SAVED networks -->
+              <div class="wifi-panel">
+                <div class="wifi-panel-head">
+                  <h4>Saved for USB <span class="meta" style="font-weight:400">· priority 1 at top</span></h4>
+                  <span class="meta" id="savedCount">0 networks</span>
+                </div>
+                <div id="wifiEmpty" style="padding:22px 16px; text-align:center; color:var(--muted); font-size:13px;">
+                  <div style="width:40px; height:40px; border-radius:10px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; margin:0 auto 8px; color:var(--muted)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12a9 9 0 0114 0"/><path d="M8 14a5 5 0 018 0"/><circle cx="12" cy="17" r="1.5"/></svg>
+                  </div>
+                  No Wi-Fi saved yet — tap a scanned network or add manually below.
+                </div>
+                <div id="wifiList" class="wifi-list"></div>
+              </div>
+
+              <!-- Form -->
+              <div class="form-card" id="wifiFormCard">
+                <div style="font-weight:600; font-size:13px; margin-bottom:2px">Add network</div>
+                <div style="font-size:11px; color:var(--muted); margin-bottom:10px" id="formHint">Keeps spaces — e.g. “Hotel Lobby”. Password never leaves this Mac/PC.</div>
+                <div class="stack">
+                  <div class="field">
+                    <label for="ssid">Wi-Fi name (SSID)</label>
+                    <input class="input" id="ssid" placeholder="Hotel Lobby" autocomplete="off" oninput="validateFormLive()" />
+                  </div>
+                  <label class="check-row"><input type="checkbox" id="openCheck" onchange="togglePass(); validateFormLive()" /> Open network (no password)</label>
+                  <div class="field" id="passField">
+                    <label for="pass">Password</label>
+                    <div class="input-wrap">
+                      <input class="input" id="pass" type="password" placeholder="••••••••" autocomplete="new-password" oninput="validateFormLive()" />
+                      <button class="eye" onclick="toggleEye()" aria-label="Show password" type="button">
+                        <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                    </div>
+                    <span style="font-size:11px; color:var(--muted)" id="passHint">WPA2/WPA3 · 8+ characters</span>
+                  </div>
+                  <div style="display:flex; gap:10px">
+                    <button class="btn btn-secondary" style="flex:1" id="addBtn" onclick="addWifi()">Add</button>
+                    <button class="btn btn-ghost btn-sm" onclick="clearWifiForm()">Clear</button>
+                  </div>
+                  <p id="wifiError" class="alert alert-error hidden" style="padding:8px 10px; font-size:12px"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- right: summary / save -->
+            <div class="stack" style="position:sticky; top:0">
+              <div style="background: var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px">
+                <div style="font-weight:600; font-size:13px">Where it saves</div>
+                <p style="font-size:12px; color:var(--muted); line-height:1.6; margin-top:6px">Writes to <span class="mono">ventoy/airboot-wifi.conf</span> on the USB. File is <span class="mono">0600</span> (owner only). Like Raspberry Pi Imager — no cloud.</p>
+                <div style="margin-top:12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-family:var(--font-mono); font-size:11px; color:var(--muted); line-height:1.6" id="confPreview">
+                  country=SE<br/>
+                  network={<br/>
+                  &nbsp;&nbsp;ssid="Hotel Lobby"<br/>
+                  &nbsp;&nbsp;psk=••••••••<br/>
+                  }
+                </div>
+                <div style="display:flex; gap:8px; margin-top:12px">
+                  <button id="saveWifiBtn" class="btn btn-primary" style="flex:1; font-weight:600" onclick="saveWifi()">Save to USB</button>
+                  <button class="btn btn-secondary btn-sm" onclick="previewConf()">Preview</button>
+                </div>
+                <div id="savedMsg" class="alert alert-success hidden" style="margin-top:10px">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                  <span><strong>Saved!</strong> <span class="mono" id="savedPath">/Volumes/Ventoy/ventoy/airboot-wifi.conf</span> · 0600</span>
+                </div>
+                <p style="font-size:11px; color:var(--muted); margin-top:8px">Drag handle to reorder — first tried first. Tap ⓘ for why.</p>
+              </div>
+              <div style="background: var(--accent-soft); border:1px solid color-mix(in oklch, var(--accent) 16%, transparent); border-radius:14px; padding:14px">
+                <div style="font-size:12px; font-weight:600; color: color-mix(in oklch, var(--accent) 70%, black)">Private by design</div>
+                <p style="font-size:12px; color:var(--muted); line-height:1.5; margin-top:4px">Wi-Fi passwords never leave your computer. The Python helper scans locally with <span class="mono">nmcli / netsh / airport</span> — no upload.</p>
+              </div>
+              <div style="background: var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px">
+                <div style="font-size:12px; font-weight:600">Need help?</div>
+                <p style="font-size:12px; color:var(--muted); margin-top:4px; line-height:1.5">If a network uses enterprise (EAP) or captive portal, add it after boot in AirBoot instead. This helper is for WPA/WPA2/WPA3 personal only.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="window-footer">
+      <div class="footer-left">
+        <button class="btn btn-ghost btn-sm" id="backBtn" onclick="goBack()" disabled>← Back</button>
+        <span class="meta" id="footerHint">Pick a Ventoy USB to continue — Enter ↵ advances</span>
+      </div>
+      <div class="footer-right">
+        <button class="btn btn-secondary btn-sm" onclick="toggleNotRunning()">Help</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="goNext()" disabled>Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="spec" data-od-id="frames-overview" style="padding:24px 0 8px; border-top:1px solid var(--border)">
+  <div class="container" style="max-width:1200px; margin-inline:auto; padding:0 var(--gutter)">
+    <div class="row-between" style="flex-wrap:wrap">
+      <h2 style="font-family:var(--font-display); font-size:18px; letter-spacing:-0.01em">Frame map — 7 Figma frames + Wi-Fi scan upgrade</h2>
+      <span class="meta">Stepper: clickable + progress · Wi-Fi: iPhone scan list</span>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:12px; margin-top:16px">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px">
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent)">Frame 1</div>
+        <div style="font-weight:600; font-size:13px; margin-top:2px">Screen 1 — Pick USB</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px">Double-click row = Next. Stepper dots clickable for visited steps.</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px">
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent)">Frame 2</div>
+        <div style="font-weight:600; font-size:13px; margin-top:2px">Screen 1 Empty</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px">Dashed + Get Ventoy. Footer Next disabled with reason.</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px">
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent)">Frame 3+4</div>
+        <div style="font-weight:600; font-size:13px; margin-top:2px">Screen 2 — Copy</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px">Inline “Continue to Wi-Fi →” after success + pulsing Next.</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px">
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent)">Frame 5+6</div>
+        <div style="font-weight:600; font-size:13px; margin-top:2px">Screen 3 — Wi-Fi iPhone</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px">Scan list (bars/dBm/ch) → tap to prefill, 0600 save.</div>
+      </div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-top:12px; display:flex; gap:12px; align-items:center">
+      <div style="width:32px; height:32px; border-radius:8px; background: var(--danger-soft); color:var(--danger); display:grid; place-items:center; flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 9v6M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
+      <div><div style="font-weight:600; font-size:13px">Frame 7 — Warning Popup + Sheet</div><div style="font-size:12px; color:var(--muted)">Wipe confirm + “Other network” sheet with hidden SSID toggle.</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="phone-check" data-od-id="phone-check">
+  <p class="meta" style="text-align:center; margin-bottom:10px">375px phone check — scan list stacks, stepper stays tappable</p>
+  <div class="phone-frame" aria-label="Phone preview 375px">
+    <div class="app-header">
+      <div class="app-header-left">
+        <div class="app-logo" style="width:30px; height:30px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 4v8l-7 4-7-4V7l7-4z"/></svg></div>
+        <div><h2 style="font-size:14px">AirBoot</h2><p style="font-size:11px">Wi-Fi scan</p></div>
+      </div>
+      <div class="stepper" style="gap:6px"><span class="step-dot active" style="width:26px; height:26px; font-size:11px">1</span><span class="step-line" style="width:14px"></span><span class="step-dot" style="width:26px; height:26px">2</span><span class="step-line" style="width:14px"></span><span class="step-dot" style="width:26px; height:26px">3</span></div>
+    </div>
+    <div class="panel-inner">
+      <div style="font-weight:650; font-size:18px; letter-spacing:-0.015em">Nearby networks</div>
+      <div style="margin-top:10px; border:1px solid var(--border); border-radius:12px; overflow:hidden">
+        <div style="padding:10px 12px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border)"><span style="font-size:12px; font-weight:600">Hotel Lobby</span><span style="display:flex; gap:2px; align-items:end"><span style="width:3px; height:13px; background:var(--fg); border-radius:2px"></span><span style="width:3px; height:9px; background:var(--fg); border-radius:2px"></span><span style="width:3px; height:5px; background:var(--fg); border-radius:2px"></span></span></div>
+        <div style="padding:10px 12px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border)"><span style="font-size:12px">eduroam</span><span style="font-size:11px; color:var(--muted)">−68 dBm</span></div>
+        <div style="padding:10px 12px; text-align:center; color:var(--accent); font-size:12px">Other…</div>
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:12px">Next →</button>
+    </div>
+  </div>
+</div>
+
+<footer style="padding:18px var(--gutter); border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; color:var(--muted); font-size:12px; max-width:1200px; margin-inline:auto; width:100%">
+  <span>© AirBoot · Ventoy & netboot.xyz are separate · localhost only</span>
+  <span class="mono">ab — helper scans via python · localhost:8080</span>
+</footer>
+</div>
+
+<!-- Wipe modal -->
+<div class="modal-backdrop" id="wipeModal" onclick="if(event.target===this) closeWipe()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="wipeTitle">
+    <div style="width:42px; height:42px; border-radius:10px; background: var(--danger-soft); color:var(--danger); display:grid; place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+    <h3 id="wipeTitle" style="margin-top:10px">Wipe and make new Ventoy USB?</h3>
+    <p>This will <strong style="color:var(--danger)">delete everything</strong> on the selected USB. The normal copy does not wipe.</p>
+    <p style="font-family:var(--font-mono); font-size:11px; background: var(--bg); border:1px solid var(--border); padding:8px 10px; border-radius:8px; margin-top:10px" id="wipeTarget">Target: Ventoy — 32GB · E: /Volumes/Ventoy</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeWipe()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmWipe()">Yes, wipe it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Other network sheet -->
+<div class="sheet-backdrop" id="otherSheet" onclick="if(event.target===this) closeOther()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="otherTitle">
+    <div class="sheet-handle"></div>
+    <h3 id="otherTitle" style="font-size:15px; font-weight:650">Other network</h3>
+    <p style="font-size:12px; color:var(--muted); margin-top:4px">For hidden SSIDs. Name must match exactly — case and spaces matter.</p>
+    <div class="field" style="margin-top:14px">
+      <label>Hidden SSID</label>
+      <input class="input" id="otherSsid" placeholder="MyHiddenWiFi" />
+    </div>
+    <label class="check-row" style="margin-top:10px"><input type="checkbox" id="otherOpen" onchange="document.getElementById('otherPassWrap').style.display=this.checked?'none':'flex'" /> Open network</label>
+    <div class="field" id="otherPassWrap" style="margin-top:10px"><label>Password</label><input class="input" id="otherPass" type="password" placeholder="••••••••" /></div>
+    <div style="display:flex; gap:10px; margin-top:14px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeOther()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="addOther()">Add hidden</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasty" id="toasty"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-9"/></svg><span id="toastyMsg">Copied!</span></div>
+
+<script>
+let currentStep = 1;
+let selectedUSB = 'ventoy-32';
+let isEmpty = false;
+let offline = false;
+let copyTimer = null;
+let copyDoneFlag = false;
+let wifi = [];
+let scanned = [
+  {ssid:'Hotel Lobby', rssi:-42, secure:true, channel:36, band:'5 GHz', bssid:'aa:bb:cc:01'},
+  {ssid:'Hotel Lobby 5G', rssi:-56, secure:true, channel:149, band:'5 GHz', bssid:'aa:bb:cc:02'},
+  {ssid:'eduroam', rssi:-61, secure:true, channel:6, band:'2.4 GHz', bssid:'aa:bb:cc:03'},
+  {ssid:'Telia-4G-8821', rssi:-68, secure:true, channel:11, band:'2.4 GHz', bssid:'aa:bb:cc:04'},
+  {ssid:'AIRBOOT_SETUP', rssi:-48, secure:false, channel:1, band:'2.4 GHz', bssid:'aa:bb:cc:05'},
+  {ssid:'Conference_WiFi', rssi:-73, secure:true, channel:44, band:'5 GHz', bssid:'aa:bb:cc:06'},
+  {ssid:'Guest-Net', rssi:-78, secure:false, channel:6, band:'2.4 GHz', bssid:'aa:bb:cc:07'},
+  {ssid:'Neighbor 2.4G', rssi:-82, secure:true, channel:11, band:'2.4 GHz', bssid:'aa:bb:cc:08'}
+];
+
+function signalLevel(rssi){
+  if(rssi >= -55) return 3;
+  if(rssi >= -68) return 2;
+  if(rssi >= -80) return 1;
+  return 0;
+}
+function renderScan(){
+  const list = document.getElementById('scanList');
+  const count = document.getElementById('scanCount');
+  if(!list) return;
+  list.innerHTML = '';
+  scanned.forEach(s=>{
+    const added = wifi.some(w=>w.ssid===s.ssid);
+    const lvl = signalLevel(s.rssi);
+    const btn = document.createElement('button');
+    btn.className = 'scan-row' + (added ? ' added' : '');
+    btn.type='button';
+    btn.setAttribute('aria-label', s.ssid + (added ? ' already added' : ' tap to add'));
+    if(!added) btn.onclick = ()=> tapScan(s);
+    btn.innerHTML = `
+      <div class="scan-icon">${s.secure ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V8a4 4 0 018 0v2"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 12a5 5 0 0110 0"/><path d="M3 12a9 9 0 0118 0"/><circle cx="12" cy="16" r="1"/></svg>'}</div>
+      <div class="scan-main">
+        <div class="scan-name">${escapeHtml(s.ssid)}</div>
+        <div class="scan-sub"><span>${s.secure?'WPA2/WPA3':'Open'}</span><span>·</span><span>${s.rssi} dBm</span><span>·</span><span>ch ${s.channel}</span><span>·</span><span>${s.band}</span></div>
+      </div>
+      <span class="signal s${lvl}" aria-hidden="true"><span></span><span></span><span></span></span>
+      ${added ? '<span class="scan-check">✓</span>' : '<span class="scan-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg></span>'}
+    `;
+    list.appendChild(btn);
+  });
+  // Other row
+  const other = document.createElement('button');
+  other.className='scan-row other'; other.type='button';
+  other.innerHTML = '<span>Other…</span><span class="scan-chevron" style="margin-left:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg></span>';
+  other.onclick = openOther;
+  list.appendChild(other);
+  if(count) count.textContent = scanned.length + ' found';
+}
+
+function tapScan(s){
+  document.getElementById('ssid').value = s.ssid;
+  document.getElementById('openCheck').checked = !s.secure;
+  togglePass();
+  if(s.secure) {
+    document.getElementById('pass').focus();
+    toast('Scanned “'+s.ssid+'” — enter password then Add');
+  } else {
+    toast('Scanned open network “'+s.ssid+'” — tap Add');
+  }
+  document.getElementById('wifiFormCard').scrollIntoView({behavior:'smooth', block:'center'});
+  validateFormLive();
+  // highlight
+  document.getElementById('wifiFormCard').style.outline='2px solid var(--accent-soft)';
+  setTimeout(()=>document.getElementById('wifiFormCard').style.outline='', 1200);
+}
+
+function rescan(){
+  const btn = document.getElementById('scanBtn');
+  const icon = document.getElementById('scanIcon');
+  const time = document.getElementById('scanTime');
+  btn.disabled = true;
+  icon.classList.add('spin');
+  btn.childNodes[btn.childNodes.length-1].textContent = ' Scanning…';
+  setTimeout(()=>{
+    // jitter RSSI to feel live
+    scanned = scanned.map(s=> ({...s, rssi: s.rssi + (Math.random()*6-3|0) }));
+    scanned.sort((a,b)=> a.rssi - b.rssi ? b.rssi - a.rssi : 0);
+    scanned.sort((a,b)=> b.rssi - a.rssi);
+    scanned.sort((a,b)=> a.rssi - b.rssi); // keep stable? simpler shuffle
+    scanned.sort((a,b)=> b.rssi - a.rssi);
+    renderScan();
+    icon.classList.remove('spin');
+    btn.disabled=false;
+    btn.innerHTML = '<svg id="scanIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 11-9-9"/><path d="M21 12v-5h-5"/></svg> Scan again';
+    time.textContent='just now';
+    toast('Scan complete — '+scanned.length+' networks (helper: nmcli)');
+  }, 900);
+}
+
+/* stepper */
+function renderSteps(){
+  const prog = document.getElementById('headerProg');
+  const widths = {1:'33%',2:'66%',3:'100%'};
+  if(prog) prog.style.width = offline ? '0%' : widths[currentStep];
+
+  for(let i=1;i<=3;i++){
+    const dot = document.getElementById('sd'+i);
+    const line = document.getElementById('sl'+i);
+    dot.className='step-dot';
+    if(line) line.className='step-line';
+    if(i < currentStep){ dot.classList.add('done','clickable'); dot.innerHTML='✓'; dot.disabled=false; if(line) line.classList.add('done'); }
+    else if(i===currentStep){ dot.classList.add('active'); dot.textContent=i; dot.disabled=false; if(line) line.classList.add('active'); }
+    else {
+      const reachable = (i===currentStep+1) && (
+        (currentStep===1 && !!selectedUSB && !isEmpty) ||
+        (currentStep===2 && copyDoneFlag)
+      );
+      dot.textContent=i;
+      dot.disabled = !reachable;
+      if(reachable){ dot.classList.add('clickable'); dot.title='Continue to next step'; }
+      else dot.title = i>currentStep ? 'Complete this step first' : '';
+    }
+  }
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  if(offline){ document.getElementById('panel-offline').classList.add('active'); }
+  else { document.getElementById('panel-'+currentStep)?.classList.add('active'); }
+
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const hint = document.getElementById('footerHint');
+  backBtn.disabled = offline ? false : currentStep===1;
+  nextBtn.classList.remove('pulse');
+  if(offline){ hint.textContent='Start the helper, then return'; nextBtn.textContent='Continue →'; nextBtn.disabled=false; }
+  else if(currentStep===1){
+    nextBtn.textContent='Next →';
+    nextBtn.disabled = !selectedUSB || isEmpty;
+    hint.textContent = isEmpty ? 'Insert a Ventoy USB or make one' : (selectedUSB ? 'Double-click row or press Enter ↵' : 'Pick a USB to continue');
+  } else if(currentStep===2){
+    nextBtn.textContent='Add Wi-Fi →';
+    nextBtn.disabled = false;
+    if(copyDoneFlag){ nextBtn.classList.add('pulse'); hint.textContent = 'Copied — press Enter or Continue inline →'; }
+    else hint.textContent = 'Copy AirBoot — Next stays enabled (step is optional to skip)';
+  } else {
+    const n = wifi.length;
+    nextBtn.textContent = n ? 'Save & Done ✓' : 'Done — skip Wi-Fi ✓';
+    hint.textContent = n ? n+' network'+(n>1?'s':'')+' · first tried first · Enter saves' : 'Optional — Enter finishes, or add Wi-Fi first';
+  }
+  const pill = document.getElementById('livePill');
+  if(offline){ pill.textContent='Offline'; pill.className='pill-live pill-offline'; }
+  else { pill.textContent='Live at localhost:8080'; pill.className='pill-live'; }
+}
+
+function goNext(){
+  if(offline){ offline=false; currentStep=1; renderSteps(); return; }
+  if(currentStep===1 && (!selectedUSB || isEmpty)) return;
+  if(currentStep===3){
+    // smart: if not saved, save first
+    if(wifi.length && document.getElementById('savedMsg').classList.contains('hidden')){
+      saveWifi();
+      setTimeout(()=> toast('Setup done — reboot and pick AirBoot in Ventoy menu'), 900);
+      return;
+    }
+    toast('Setup done — reboot and pick AirBoot in the Ventoy menu');
+    return;
+  }
+  if(currentStep<3){ currentStep++; renderSteps(); }
+}
+function goBack(){
+  if(offline){ offline=false; renderSteps(); return; }
+  if(currentStep>1){ currentStep--; renderSteps(); }
+}
+function goStep(n){ offline=false; currentStep=n; renderSteps(); }
+function tryGoStep(n){
+  if(offline){ offline=false; currentStep=n; renderSteps(); return; }
+  if(n <= currentStep) { currentStep=n; renderSteps(); return; }
+  if(n===currentStep+1){
+    if(currentStep===1 && selectedUSB && !isEmpty) goNext();
+    else if(currentStep===2) goNext();
+    else toast('Complete this step first');
+  }
+}
+function skipWifi(){ toast('Skipped — you can add Wi-Fi later from AirBoot'); goNext(); }
+function toggleNotRunning(){ offline = !offline; renderSteps(); if(offline) window.scrollTo({top: document.getElementById('app-anchor').offsetTop - 12, behavior:'smooth'}); }
+function jumpToApp(){ window.scrollTo({top: document.getElementById('app-anchor').offsetTop - 12, behavior:'smooth'}); }
+
+// USB
+function selectUSB(el){
+  if(isEmpty) return;
+  document.querySelectorAll('.usb-row').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedUSB = el.dataset.id;
+  document.getElementById('wipeTarget').textContent = 'Target: ' + el.querySelector('.usb-name').textContent + ' · ' + el.querySelector('.usb-sub').textContent.trim();
+  renderSteps();
+}
+function toggleEmpty(){
+  isEmpty = !isEmpty;
+  document.getElementById('usbList').classList.toggle('hidden', isEmpty);
+  document.getElementById('usbEmpty').classList.toggle('hidden', !isEmpty);
+  document.getElementById('emptyToggle').textContent = isEmpty ? 'Show USBs again' : 'Simulate: no Ventoy';
+  if(isEmpty) selectedUSB=null; else selectedUSB='ventoy-32';
+  renderSteps();
+}
+
+// Copy
+function startCopy(){
+  const idle = document.getElementById('copyIdle');
+  const prog = document.getElementById('copyProgress');
+  const fill = document.getElementById('copyFill');
+  const pct = document.getElementById('copyPct');
+  const label = document.getElementById('copyLabel');
+  const detail = document.getElementById('copyDetail');
+  const err = document.getElementById('copyError');
+  const done = document.getElementById('copyDone');
+  const speed = document.getElementById('copySpeed');
+  const inline = document.getElementById('inlineContinue');
+  err.classList.add('hidden'); done.classList.add('hidden'); inline.classList.add('hidden');
+  idle.classList.add('hidden'); prog.classList.remove('hidden');
+  fill.classList.remove('error'); fill.style.width='0%';
+  copyDoneFlag=false; renderSteps();
+  let p=0; label.textContent='Copying…'; detail.textContent='Checking file…'; pct.textContent='0%'; speed.textContent='';
+  const forceError = window.event && window.event.shiftKey;
+  clearInterval(copyTimer);
+  copyTimer = setInterval(()=>{
+    p += Math.random()*14 + 6;
+    if(p>=100) p=100;
+    fill.style.width = p+'%';
+    pct.textContent = Math.round(p)+'%';
+    if(p<18) detail.textContent='Verifying ISO magic CD001…';
+    else if(p<55) detail.textContent='Copying to /Ventoy/ISO/airboot.iso…';
+    else if(p<90) detail.textContent='Flushing to disk…';
+    else detail.textContent='Finalizing…';
+    speed.textContent = p<100 ? ( (Math.random()*40+30).toFixed(0)+' MB/s') : '';
+    if(forceError && p>42){
+      clearInterval(copyTimer);
+      fill.classList.add('error');
+      label.textContent='Stopped';
+      detail.textContent='Validation failed';
+      err.classList.remove('hidden');
+      idle.classList.remove('hidden');
+      return;
+    }
+    if(p>=100){
+      clearInterval(copyTimer);
+      label.textContent='Copied';
+      detail.textContent='Done — ready for Wi-Fi';
+      speed.textContent='18.4 MB · verified';
+      done.classList.remove('hidden');
+      inline.classList.remove('hidden');
+      copyDoneFlag=true;
+      idle.classList.remove('hidden');
+      idle.querySelector('button').innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5 9-9"/></svg> Copy again';
+      renderSteps();
+      toast('Copied — Continue to Wi-Fi is now available');
+    }
+  }, 220);
+}
+
+// Wipe modal
+function openWipe(){
+  if(isEmpty || !selectedUSB){ toast('Pick a USB first'); return; }
+  document.getElementById('wipeModal').classList.add('open');
+}
+function closeWipe(){ document.getElementById('wipeModal').classList.remove('open'); }
+function confirmWipe(){ closeWipe(); toast('Wipe started — this would erase the USB (demo)'); }
+
+// Wi-Fi
+function togglePass(){
+  const open = document.getElementById('openCheck').checked;
+  document.getElementById('passField').style.display = open ? 'none' : 'flex';
+  document.getElementById('passHint').style.display = open ? 'none' : 'block';
+}
+function toggleEye(){
+  const inp = document.getElementById('pass');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+function validateFormLive(){
+  const ssid = document.getElementById('ssid').value.trim();
+  const isOpen = document.getElementById('openCheck').checked;
+  const pass = document.getElementById('pass').value;
+  const btn = document.getElementById('addBtn');
+  let ok = ssid.length>0;
+  if(!isOpen) ok = ok && pass.length>=8;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? 1 : 0.5;
+}
+function addWifi(){
+  const ssid = document.getElementById('ssid').value.trim();
+  const isOpen = document.getElementById('openCheck').checked;
+  const pass = document.getElementById('pass').value;
+  const err = document.getElementById('wifiError');
+  err.classList.add('hidden');
+  if(!ssid){ err.textContent='Add a Wi-Fi name.'; err.classList.remove('hidden'); return; }
+  if(!isOpen && pass.length < 8){ err.textContent='Password must be at least 8 characters (or check “Open network”).'; err.classList.remove('hidden'); return; }
+  if(wifi.find(w=>w.ssid.toLowerCase()===ssid.toLowerCase())){ err.textContent='That Wi-Fi is already added.'; err.classList.remove('hidden'); return; }
+  wifi.push({ssid, isOpen, pass: isOpen? '' : pass, id: Date.now()});
+  document.getElementById('ssid').value=''; document.getElementById('pass').value='';
+  validateFormLive();
+  renderWifi(); renderScan();
+  toast('Added “'+ssid+'”');
+}
+function clearWifiForm(){ document.getElementById('ssid').value=''; document.getElementById('pass').value=''; document.getElementById('openCheck').checked=false; togglePass(); validateFormLive(); document.getElementById('wifiError').classList.add('hidden'); }
+function renderWifi(){
+  const list = document.getElementById('wifiList');
+  const empty = document.getElementById('wifiEmpty');
+  const count = document.getElementById('savedCount');
+  list.innerHTML='';
+  count.textContent = wifi.length ? wifi.length + ' network'+(wifi.length>1?'s':'') : '0 networks';
+  if(wifi.length===0){ empty.style.display='block'; updatePreview(); renderSteps(); return; }
+  empty.style.display='none';
+  wifi.forEach((w,idx)=>{
+    const row=document.createElement('div');
+    row.className='wifi-row';
+    row.innerHTML = `
+      <span class="drag" title="Drag to reorder" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="1.2" fill="currentColor"/><circle cx="15" cy="6" r="1.2" fill="currentColor"/><circle cx="9" cy="12" r="1.2" fill="currentColor"/><circle cx="15" cy="12" r="1.2" fill="currentColor"/><circle cx="9" cy="18" r="1.2" fill="currentColor"/><circle cx="15" cy="18" r="1.2" fill="currentColor"/></svg></span>
+      <span style="min-width:0; flex:1">
+        <div class="wifi-name">${escapeHtml(w.ssid)}</div>
+        <div class="wifi-meta"><span class="icon-lock">${w.isOpen? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 12a5 5 0 0110 0"/><path d="M3 12a9 9 0 0118 0"/><circle cx="12" cy="16" r="1"/></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V8a4 4 0 018 0v2"/></svg>'}</span> ${w.isOpen? 'Open' : '••••••••'} <span>· Priority ${idx+1}</span></div>
+      </span>
+      <span class="wifi-actions">
+        <button class="icon-btn" title="Move up" onclick="moveWifi(${idx},-1)" ${idx===0?'disabled':''} style="opacity:${idx===0?0.4:1}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 18V6M6 12l6-6 6 6"/></svg></button>
+        <button class="icon-btn" title="Move down" onclick="moveWifi(${idx},1)" ${idx===wifi.length-1?'disabled':''} style="opacity:${idx===wifi.length-1?0.4:1}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6v12M6 12l6 6 6-6"/></svg></button>
+        <button class="icon-btn danger" title="Remove" onclick="removeWifi(${idx})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </span>`;
+    list.appendChild(row);
+  });
+  updatePreview();
+  renderSteps();
+}
+function moveWifi(i,dir){ const j=i+dir; if(j<0||j>=wifi.length) return; const t=wifi[i]; wifi[i]=wifi[j]; wifi[j]=t; renderWifi(); renderScan(); }
+function removeWifi(i){ const name=wifi[i].ssid; wifi.splice(i,1); renderWifi(); renderScan(); toast('Removed “'+name+'”'); }
+function updatePreview(){
+  const sel = document.getElementById('countrySel');
+  const c = sel ? sel.value : 'SE';
+  const el = document.getElementById('confPreview');
+  if(!el) return;
+  if(!wifi.length) el.innerHTML = 'country='+c+'<br/># no networks yet';
+  else {
+    el.innerHTML = 'country='+c+'<br/>' + wifi.map(w=> 'network={<br/>&nbsp;&nbsp;ssid="'+escapeHtml(w.ssid)+'"<br/>&nbsp;&nbsp;'+(w.isOpen?'key_mgmt=NONE':'psk=••••••••')+'<br/>}').join('<br/>');
+  }
+}
+function previewConf(){ updatePreview(); toast('Preview updated — '+wifi.length+' network'+(wifi.length!==1?'s':'')); }
+function saveWifi(){
+  const btn=document.getElementById('saveWifiBtn');
+  const msg=document.getElementById('savedMsg');
+  const path=document.getElementById('savedPath');
+  const sel = document.querySelector('.usb-row.selected .usb-sub');
+  const mount = sel ? sel.textContent.match(/\/Volumes\/[^\s]+/) : null;
+  path.textContent = (mount? mount[0] : '/Volumes/Ventoy') + '/ventoy/airboot-wifi.conf';
+  btn.textContent='Saving…'; btn.disabled=true;
+  setTimeout(()=>{ btn.textContent='Save to USB'; btn.disabled=false; msg.classList.remove('hidden'); toast('Saved to USB — 0600, owner only'); renderSteps(); }, 700);
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Other sheet
+function openOther(){ document.getElementById('otherSheet').classList.add('open'); setTimeout(()=>document.getElementById('otherSsid').focus(),80); }
+function closeOther(){ document.getElementById('otherSheet').classList.remove('open'); }
+function addOther(){
+  const ssid=document.getElementById('otherSsid').value.trim();
+  const isOpen=document.getElementById('otherOpen').checked;
+  const pass=document.getElementById('otherPass').value;
+  if(!ssid){ toast('Enter hidden SSID'); return; }
+  if(!isOpen && pass.length<8){ toast('Password 8+ chars'); return; }
+  if(wifi.find(w=>w.ssid===ssid)){ toast('Already added'); return; }
+  wifi.push({ssid,isOpen, pass: isOpen?'':pass, id:Date.now()});
+  closeOther();
+  document.getElementById('otherSsid').value=''; document.getElementById('otherPass').value=''; document.getElementById('otherOpen').checked=false;
+  renderWifi(); renderScan();
+  toast('Added hidden “'+ssid+'”');
+}
+
+// copy helpers
+function copyText(id, btn){
+  const el=document.getElementById(id);
+  const text=el.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const prev=btn.textContent; btn.textContent='Copied!'; setTimeout(()=>btn.textContent=prev, 1300); toast('Copied to clipboard');
+  });
+}
+function toast(msg){
+  const t=document.getElementById('toasty');
+  document.getElementById('toastyMsg').textContent=msg;
+  t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// keyboard + swipe
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    const ae = document.activeElement;
+    if(ae && (ae.tagName==='INPUT' || ae.tagName==='SELECT' || ae.tagName==='TEXTAREA')) {
+      if(ae.id==='ssid' || ae.id==='pass'){ e.preventDefault(); if(!document.getElementById('addBtn').disabled) addWifi(); return; }
+    }
+    const nb = document.getElementById('nextBtn');
+    if(nb && !nb.disabled){ e.preventDefault(); goNext(); }
+  }
+  if(e.key==='ArrowLeft' && e.altKey){ goBack(); }
+  if(e.key==='ArrowRight' && e.altKey){ goNext(); }
+  if(e.key==='Escape'){
+    closeWipe(); closeOther();
+    if(offline){ offline=false; renderSteps(); }
+  }
+});
+let touchX=0;
+const bodyEl = document.getElementById('windowBody');
+if(bodyEl){
+  bodyEl.addEventListener('touchstart', e=> touchX=e.changedTouches[0].clientX, {passive:true});
+  bodyEl.addEventListener('touchend', e=>{
+    const dx = e.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 60){
+      if(dx < 0) goNext();
+      else goBack();
+    }
+  }, {passive:true});
+}
+document.getElementById('countrySel')?.addEventListener('change', updatePreview);
+
+// init
+renderScan();
+renderSteps();
+togglePass();
+validateFormLive();
+renderWifi();
+</script>
+</body>
+</html>

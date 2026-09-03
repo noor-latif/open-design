@@ -142,6 +142,9 @@ mkdir -p "$OUTDIR" "$WORKDIR"
 # Patch aports with our profile (copy, don't move — keep source clean)
 log "Patching aports with mkimg.abt.sh…"
 cp -v "$ROOT/aports-patch/mkimg.abt.sh" "$APORTS_DIR/scripts/mkimg.abt.sh"
+# genapkovl must be alongside mkimg.*.sh for mkimage's $PWD search (not /work absolute)
+cp -v "$ROOT/scripts/genapkovl-abt.sh" "$APORTS_DIR/scripts/genapkovl-abt.sh"
+chmod +x "$APORTS_DIR/scripts/genapkovl-abt.sh"
 
 # Ensure scripts are available at /work inside container (build.sh mounts ROOT as /work)
 # The apkovl path in mkimg.abt.sh is /work/genapkovl-abt.sh — so we need it at $ROOT/genapkovl-abt.sh as well
@@ -158,10 +161,11 @@ fi
 if [ ! -f "$ROOT/Dockerfile" ]; then die "missing Dockerfile at $ROOT/Dockerfile"; fi
 
 log "Building Docker image (alpine:3.20 toolchain)…"
-# Build image if not present or if Dockerfile changed
+# BuildKit cache for fast rebuilds (falls back gracefully if not available)
+export DOCKER_BUILDKIT=1
 IMAGE="airboot-builder:3.20"
 if ! "$DOCKER_BIN" image inspect "$IMAGE" >/dev/null 2>&1; then
-	"$DOCKER_BIN" build -t "$IMAGE" -f "$ROOT/Dockerfile" "$ROOT"
+	"$DOCKER_BIN" build -t "$IMAGE" -f "$ROOT/Dockerfile" "$ROOT" || "$DOCKER_BIN" build -t "$IMAGE" -f "$ROOT/Dockerfile" "$ROOT"
 else
 	log "Image $IMAGE already exists — reusing (docker build to refresh if needed)"
 fi
@@ -177,6 +181,16 @@ log "Running mkimage.sh inside container (privileged, needs loop devices)…"
 #   $OUTDIR        -> /work/out  (output)
 #
 # Note: mkimage.sh expects to run from aports/scripts/
+# repo URLs for edge vs versioned tag (mkimage.sh requires --repository since 3.14)
+if [ "$TAG" = "edge" ]; then
+	REPO_MAIN="http://dl-cdn.alpinelinux.org/alpine/edge/main"
+	REPO_COMM="http://dl-cdn.alpinelinux.org/alpine/edge/community"
+else
+	# tag like 3.20 or v3.20 -> normalize to v3.20
+	case "$TAG" in v*) vtag="$TAG" ;; *) vtag="v$TAG" ;; esac
+	REPO_MAIN="http://dl-cdn.alpinelinux.org/alpine/$vtag/main"
+	REPO_COMM="http://dl-cdn.alpinelinux.org/alpine/$vtag/community"
+fi
 set +e
 "$DOCKER_BIN" run --rm --privileged \
 	-v "$ROOT:/work" \
@@ -188,13 +202,12 @@ set +e
 	sh -c '
 		set -e
 		echo ">>> Inside container: $(cat /etc/alpine-release) — $(apk --print-arch)"
-		echo ">>> mkimage.sh --arch '"$ARCH"' --profile '"$PROFILE"' --outdir /work/out --workdir /work/work --tag '"$TAG"'"
+		echo ">>> mkimage.sh --arch '"$ARCH"' --profile '"$PROFILE"' --outdir /work/out --workdir /work/work --tag '"$TAG"' --repository '"$REPO_MAIN"' --repository '"$REPO_COMM"'"
 		# Ensure builder keys exist (abuild-keygen needs a user)
 		if [ ! -f ~/.abuild/abuild.conf ]; then
 			abuild-keygen -a -i -n 2>&1 | tail -5 || true
 		fi
-		# mkimage.sh is in /aports/scripts/
-		./mkimage.sh --arch '"$ARCH"' --profile '"$PROFILE"' --outdir /work/out --workdir /work/work --tag '"$TAG"'
+		./mkimage.sh --arch '"$ARCH"' --profile '"$PROFILE"' --outdir /work/out --workdir /work/work --tag '"$TAG"' --repository '"$REPO_MAIN"' --repository '"$REPO_COMM"'
 		echo ">>> Done — ls /work/out:"
 		ls -lh /work/out || true
 	'
@@ -212,7 +225,23 @@ log "Build succeeded."
 ISO_PATH="$(find "$OUTDIR" -name "*.iso" -type f 2>/dev/null | head -1 || true)"
 if [ -n "$ISO_PATH" ]; then
 	ls -lh "$ISO_PATH"
-	log "ISO ready: $ISO_PATH"
+	# validation gate — fail fast if captive portal HTML or truncated (CD001 at 32769)
+	if [ -f "$ROOT/abt" ]; then
+		log "Validating ISO (CD001 at 32769) via abt validate…"
+		if ! "$ROOT/abt" validate "$ISO_PATH" 2>&1; then
+			die "ISO validation failed — $ISO_PATH is not a valid bootable ISO (see CD001 check above)"
+		fi
+	else
+		# fallback: direct hexdump check without abt
+		if command -v hexdump >/dev/null 2>&1; then
+			magic="$(hexdump -s 32769 -n 5 -e '5/1 "%_c"' "$ISO_PATH" 2>/dev/null || true)"
+			if [ "$magic" != "CD001" ]; then die "ISO validation failed — CD001 missing at 32769 (got [$magic])"; fi
+		fi
+	fi
+	size_h="$(du -h "$ISO_PATH" 2>/dev/null | awk '{print $1}')"
+	size_b="$(stat -c%s "$ISO_PATH" 2>/dev/null || stat -f%z "$ISO_PATH" 2>/dev/null || echo 0)"
+	log "ISO ready: $ISO_PATH ($size_h, $size_b bytes)"
+	if [ "$size_b" -lt 50000000 ]; then warn "ISO unusually small (<50M) — check profile apks"; fi
 	log "Deploy: sudo ./abt ventoy --copy /dev/sdX   or   cp $ISO_PATH /run/media/\$USER/Ventoy/ISO/airboot.iso"
 else
 	warn_msg="no .iso found in $OUTDIR — check $WORKDIR and container logs"
