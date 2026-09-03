@@ -3251,6 +3251,7 @@ export function HomeView({
         initialPath={folderImport.pickerInitialPath}
         onPick={folderImport.onPickerPick}
         onCancel={folderImport.onPickerCancel}
+        picking={folderImport.importing}
       />
 
       {recentProjectsEmpty ? null : (

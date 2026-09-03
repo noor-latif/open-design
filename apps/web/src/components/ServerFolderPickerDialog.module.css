@@ -194,6 +194,53 @@
   background: var(--bg-subtle);
 }
 
+.rowSelected {
+  background: var(--bg-subtle);
+  border: 1px solid var(--accent);
+}
+
+.rowMain {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.rowEnter {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+
+.rowEnter:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.rowCheck {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
 .rowIcon {
   flex: 0 0 auto;
   color: var(--text-muted);

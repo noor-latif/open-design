@@ -9,6 +9,7 @@ export interface ServerFolderPickerDialogProps {
   initialPath?: string;
   onPick: (absolutePath: string) => void;
   onCancel: () => void;
+  picking?: boolean;
 }
 
 interface BrowseEntry {
@@ -71,6 +72,7 @@ export function ServerFolderPickerDialog({
   initialPath,
   onPick,
   onCancel,
+  picking = false,
 }: ServerFolderPickerDialogProps) {
   const [currentPath, setCurrentPath] = useState(initialPath ?? '/var/home/noor/dev');
   const [parentPath, setParentPath] = useState<string | null>(null);
@@ -80,6 +82,7 @@ export function ServerFolderPickerDialog({
   const [inputValue, setInputValue] = useState(initialPath ?? '/var/home/noor/dev');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lastFetchedRef = useRef<string | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
   const load = useCallback(async (target: string) => {
     setLoading(true);
@@ -91,6 +94,8 @@ export function ServerFolderPickerDialog({
       setEntries(data.entries);
       setInputValue(data.currentPath);
       lastFetchedRef.current = data.currentPath;
+      // Clear selection when navigating — selection is for picking a child without entering it
+      setSelectedPath(null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load folder';
       setError(msg);
@@ -141,9 +146,10 @@ export function ServerFolderPickerDialog({
   );
 
   const handleSelect = useCallback(() => {
-    if (!currentPath) return;
-    onPick(currentPath);
-  }, [currentPath, onPick]);
+    const target = selectedPath ?? currentPath;
+    if (!target) return;
+    onPick(target);
+  }, [selectedPath, currentPath, onPick]);
 
   // Global keyboard: Enter selects, Escape cancels (when not handled by input)
   useEffect(() => {
@@ -170,7 +176,7 @@ export function ServerFolderPickerDialog({
   if (!open) return null;
 
   const segs = breadcrumbSegments(currentPath);
-  const canSelect = Boolean(currentPath && !loading);
+  const canSelect = Boolean((selectedPath ?? currentPath) && !loading && !picking);
 
   const dialog = (
     <Dialog
@@ -241,7 +247,7 @@ export function ServerFolderPickerDialog({
           </p>
         ) : null}
 
-        {/* List */}
+        {/* List — single-click selects, double-click or chevron enters */}
         <div className={styles.list} role="listbox" data-testid="server-folder-picker-list">
           {loading ? (
             <div className={styles.hint} data-testid="server-folder-picker-loading">
@@ -258,6 +264,7 @@ export function ServerFolderPickerDialog({
                 >
                   <Icon name="folder" size={15} className={styles.rowIcon} />
                   <span className={styles.rowName}>..</span>
+                  <Icon name="arrow-up" size={14} className={styles.rowChevron} />
                 </button>
               ) : null}
               {entries.length === 0 ? (
@@ -265,36 +272,63 @@ export function ServerFolderPickerDialog({
                   No subfolders
                 </div>
               ) : (
-                entries.map((e) => (
-                  <button
-                    key={e.path}
-                    type="button"
-                    className={styles.row}
-                    onClick={() => handleNavigate(e.path)}
-                    onDoubleClick={() => onPick(e.path)}
-                    title={e.path}
-                    data-testid={`server-folder-picker-entry-${e.name}`}
-                  >
-                    <Icon name="folder" size={15} className={styles.rowIcon} />
-                    <span className={styles.rowName}>{e.name}</span>
-                    {e.hasChildren ? (
-                      <Icon name="chevron-right" size={14} className={styles.rowChevron} />
-                    ) : null}
-                  </button>
-                ))
+                entries.map((e) => {
+                  const isSelected = selectedPath === e.path;
+                  return (
+                    <div
+                      key={e.path}
+                      className={`${styles.row} ${isSelected ? styles.rowSelected : ''}`}
+                      data-testid={`server-folder-picker-entry-${e.name}`}
+                      role="option"
+                      aria-selected={isSelected}
+                    >
+                      <button
+                        type="button"
+                        className={styles.rowMain}
+                        onClick={() => setSelectedPath(e.path)}
+                        onDoubleClick={() => onPick(e.path)}
+                        title={`Select ${e.path}`}
+                      >
+                        <Icon name="folder" size={15} className={styles.rowIcon} />
+                        <span className={styles.rowName}>{e.name}</span>
+                        {isSelected ? (
+                          <Icon name="check" size={14} className={styles.rowCheck} />
+                        ) : null}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.rowEnter}
+                        onClick={() => handleNavigate(e.path)}
+                        title={`Open ${e.name}`}
+                        aria-label={`Open ${e.name}`}
+                      >
+                        <Icon name="chevron-right" size={14} className={styles.rowChevron} />
+                      </button>
+                    </div>
+                  );
+                })
               )}
             </>
           )}
         </div>
 
-        {/* Current selection hint */}
+        {/* Current selection hint — shows what Select will open */}
         <p className={styles.selectionHint} data-testid="server-folder-picker-current">
-          <Icon name="folder-filled" size={13} /> <code>{currentPath || '/'}</code>
+          <Icon name="folder-filled" size={13} />{' '}
+          {selectedPath ? (
+            <>
+              Selected: <code>{selectedPath}</code>
+            </>
+          ) : (
+            <>
+              This folder: <code>{currentPath || '/'}</code>
+            </>
+          )}
         </p>
       </div>
 
       <DialogFooter>
-        <Button variant="ghost" onClick={onCancel} data-testid="server-folder-picker-cancel">
+        <Button variant="ghost" onClick={onCancel} disabled={picking} data-testid="server-folder-picker-cancel">
           Cancel
         </Button>
         <Button
@@ -303,7 +337,15 @@ export function ServerFolderPickerDialog({
           disabled={!canSelect}
           data-testid="server-folder-picker-select"
         >
-          Open folder
+          {picking ? (
+            <>
+              <Icon name="spinner" size={14} className={styles.spin} /> Opening…
+            </>
+          ) : selectedPath ? (
+            <>Open {selectedPath.split('/').pop()}</>
+          ) : (
+            <>Open this folder</>
+          )}
         </Button>
       </DialogFooter>
     </Dialog>
