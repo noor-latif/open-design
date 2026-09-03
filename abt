@@ -1,0 +1,403 @@
+#!/bin/sh
+# abt — AirBoot host CLI
+# Like netboot.xyz, but works over Wi-Fi and boots via Ventoy.
+#
+# Host-side companion to the AirBoot micro-OS (scripts/abt-menu.sh).
+# Provides: build, fetch, validate, catalog, ventoy, version
+#
+# POSIX sh — runs on Alpine, Fedora/Aurora, macOS (without bashisms).
+# Install: sudo install -m755 abt /usr/local/bin/abt
+
+set -eu
+
+VERSION="0.1.0"
+PROG="$(basename "$0")"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+CATALOG_FILE="$ROOT/catalog/manifest.json"
+
+# ---------- colours (auto-disable if not tty) ----------
+if [ -t 1 ] && [ "${NO_COLOR:-}" != "1" ]; then
+	C_GREEN="\033[32m"; C_BLUE="\033[34m"; C_YELLOW="\033[33m"; C_RED="\033[31m"; C_DIM="\033[2m"; C_RESET="\033[0m"
+else
+	C_GREEN=""; C_BLUE=""; C_YELLOW=""; C_RED=""; C_DIM=""; C_RESET=""
+fi
+
+info()  { printf "${C_BLUE}▸${C_RESET} %s\n" "$*"; }
+ok()    { printf "${C_GREEN}✔${C_RESET} %s\n" "$*"; }
+warn()  { printf "${C_YELLOW}⚠${C_RESET} %s\n" "$*" >&2; }
+err()   { printf "${C_RED}✘${C_RESET} %s\n" "$*" >&2; }
+die()   { err "$*"; exit 1; }
+
+usage() {
+	cat <<EOF
+${C_GREEN}abt${C_RESET} ${C_DIM}v$VERSION${C_RESET} — AirBoot: netboot.xyz over Wi-Fi via Ventoy
+
+${C_YELLOW}USAGE${C_RESET}
+  $PROG <command> [options]
+
+${C_YELLOW}COMMANDS${C_RESET}
+  ${C_GREEN}build${C_RESET}     Build airboot.iso via Docker + Alpine aports
+                [--arch x86_64] [--outdir ./out] [--workdir ./work]
+                [--profile abt] [--tag edge] [--clone-refs]
+
+  ${C_GREEN}fetch${C_RESET}     Fetch an ISO over HTTPS with resume + ISO validation
+                <url> [--out FILE] [--sha256 HASH] [--no-validate]
+
+  ${C_GREEN}validate${C_RESET}  Validate an ISO file (CD001 magic at 32769)
+                <file>
+
+  ${C_GREEN}catalog${C_RESET}   Manage the image catalog
+                catalog list                  # list all images
+                catalog show <id>             # show one entry
+                catalog fetch                 # fetch remote manifest (if ABT_CATALOG_URL set)
+
+  ${C_GREEN}ventoy${C_RESET}    Ventoy USB helpers
+                ventoy --copy <device|mountpoint>   # copy out/airboot.iso to Ventoy USB
+                ventoy --list                       # list Ventoy USBs
+                ventoy --help                       # Ventoy layout docs
+
+  ${C_GREEN}version${C_RESET}   Show version
+  ${C_GREEN}help${C_RESET}      Show this help
+
+${C_YELLOW}EXAMPLES${C_RESET}
+  $PROG build
+  $PROG fetch https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso --out /tmp/ubuntu.iso
+  $PROG validate /tmp/ubuntu.iso
+  $PROG catalog list
+  $PROG ventoy --copy /dev/sdb
+
+${C_YELLOW}ENV${C_RESET}
+  ABT_CATALOG_URL   Override remote catalog URL (Phase 3 OTA)
+  NO_COLOR=1        Disable colours
+
+${C_DIM}Docs: $ROOT/readme.md  •  Plan: $ROOT/plan.md${C_RESET}
+EOF
+}
+
+# ---------- validate ----------
+cmd_validate() {
+	case "${1:-}" in --help|-h) echo "Usage: $PROG validate <file>  — check ISO 9660 CD001 at offset 32769"; exit 0 ;; esac
+	file="${1:-}"
+	[ -n "$file" ] || die "validate: missing <file> — usage: $PROG validate <file>"
+	[ -f "$file" ] || die "not found: $file"
+
+	size="$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || wc -c < "$file" 2>/dev/null || echo 0)"
+	if [ "$size" -lt 33000 ]; then
+		err "too small ($size bytes) — likely HTML error page, not an ISO"
+		if head -c 1024 "$file" 2>/dev/null | grep -qi "<html"; then
+			err "file starts with <html — captive portal?"
+		fi
+		head -c 300 "$file" 2>/dev/null | cat -v | head -5 || true
+		exit 1
+	fi
+
+	magic=""
+	if command -v hexdump >/dev/null 2>&1; then
+		magic="$(hexdump -s 32769 -n 5 -e '5/1 "%_c"' "$file" 2>/dev/null || hexdump -s 32769 -n 5 -e '5/1 "%c"' "$file" 2>/dev/null || true)"
+	elif command -v od >/dev/null 2>&1; then
+		magic="$(od -An -j 32769 -N 5 -t c "$file" 2>/dev/null | tr -d ' \n' || true)"
+	fi
+
+	if [ "$magic" = "CD001" ]; then
+		ok "valid ISO 9660 (CD001 at 32769) — $file ($size bytes)"
+		exit 0
+	else
+		err "invalid ISO — expected CD001 at offset 32769, got [${magic:-<unreadable>}]"
+		if head -c 1024 "$file" 2>/dev/null | grep -qi "<html"; then
+			err "file starts with <html — captive portal HTML, not an ISO"
+		fi
+		exit 1
+	fi
+}
+
+# ---------- fetch ----------
+cmd_fetch() {
+	url=""
+	out=""
+	sha256=""
+	validate=1
+
+	while [ $# -gt 0 ]; do
+		case "$1" in
+			--out) out="$2"; shift 2 ;;
+			--out=*) out="${1#--out=}"; shift ;;
+			--sha256) sha256="$2"; shift 2 ;;
+			--sha256=*) sha256="${1#--sha256=}"; shift ;;
+			--no-validate) validate=0; shift ;;
+			--help|-h) echo "Usage: $PROG fetch <url> [--out FILE] [--sha256 HASH] [--no-validate]"; exit 0 ;;
+			-*) die "fetch: unknown flag $1" ;;
+			*) if [ -z "$url" ]; then url="$1"; shift; else die "fetch: unexpected arg $1"; fi ;;
+		esac
+	done
+
+	[ -n "$url" ] || die "fetch: missing <url> — usage: $PROG fetch <url> [--out FILE]"
+	case "$url" in https://*) ;; http://*) warn "plain HTTP — prefer HTTPS"; ;; *) die "URL must be https:// (got: $url)" ;; esac
+
+	if [ -z "$out" ]; then
+		base="$(basename "$url" | sed 's/\?.*//')"
+		# sanitize + force .iso (same logic as abt-menu.sh)
+		base="$(printf '%s' "$base" | tr ' ' '_' | tr -cd 'a-zA-Z0-9._-' | sed 's/__*/_/g')"
+		case "$base" in *.iso) ;; *.ISO) ;; *) base="${base}.iso" ;; esac
+		[ -n "$base" ] && [ "$base" != ".iso" ] || base="download.iso"
+		out="./$base"
+	fi
+
+	info "Fetching"
+	printf "  ${C_DIM}URL${C_RESET}  %s\n" "$url"
+	printf "  ${C_DIM}out${C_RESET}  %s\n" "$out"
+	if [ -n "$sha256" ]; then printf "  ${C_DIM}sha256${C_RESET} %s\n" "$sha256"; fi
+	printf "  ${C_DIM}validate${C_RESET} %s\n" "$([ "$validate" -eq 1 ] && echo "CD001 at 32769" || echo "skipped")"
+
+	mkdir -p "$(dirname "$out")"
+
+	# Prefer aria2c, fallback to curl/wget
+	ret=0
+	if command -v aria2c >/dev/null 2>&1; then
+		info "via aria2c (-x 8 -s 8 --continue)"
+		dir="$(dirname "$out")"; file="$(basename "$out")"
+		# Ensure absolute dir for aria2c
+		dir="$(cd "$dir" && pwd)"
+		aria2c -x 8 -s 8 --continue=true --auto-file-renaming=false --file-allocation=none \
+			--summary-interval=1 --console-log-level=warn --check-certificate=true \
+			--max-tries=3 --retry-wait=2 \
+			--dir="$dir" --out="$file" "$url" || ret=$?
+		out="$dir/$file"
+	elif command -v curl >/dev/null 2>&1; then
+		info "via curl (-L -C -)"
+		curl -L -C - --fail --progress-bar -o "$out" "$url" || ret=$?
+	elif command -v wget >/dev/null 2>&1; then
+		info "via wget (--continue)"
+		wget --continue --progress=dot:giga -O "$out" "$url" || ret=$?
+	else
+		die "no downloader found — install aria2, curl, or wget"
+	fi
+
+	if [ "$ret" -ne 0 ]; then
+		err "download failed (exit $ret)"
+		exit "$ret"
+	fi
+
+	ok "downloaded — $(du -h "$out" 2>/dev/null | awk '{print $1}' || echo "?") at $out"
+
+	if [ -n "$sha256" ]; then
+		info "verifying sha256…"
+		actual=""
+		if command -v sha256sum >/dev/null 2>&1; then actual="$(sha256sum "$out" | awk '{print $1}')"; 
+		elif command -v shasum >/dev/null 2>&1; then actual="$(shasum -a 256 "$out" | awk '{print $1}')"; fi
+		if [ -n "$actual" ]; then
+			if [ "$actual" = "$sha256" ]; then ok "sha256 OK"; else err "sha256 MISMATCH — expected $sha256, got $actual"; exit 1; fi
+		else
+			warn "no sha256 tool — skipping check"
+		fi
+	fi
+
+	if [ "$validate" -eq 1 ]; then
+		info "validating ISO magic bytes…"
+		# reuse cmd_validate but don't exit the whole process with its help text
+		if ! "$0" validate "$out" 2>&1; then
+			err "validation failed — file may be a captive-portal HTML page"
+			err "deleted: $out (use --no-validate to keep)"
+			rm -f "$out" 2>/dev/null || true
+			exit 1
+		fi
+	fi
+
+	ok "done — $out"
+}
+
+# ---------- catalog ----------
+cmd_catalog() {
+	sub="${1:-list}"; shift 2>/dev/null || true
+	catfile="$CATALOG_FILE"
+	# If ABT_CATALOG_URL set and fetch requested, try remote
+	if [ "$sub" = "fetch" ]; then
+		url="${ABT_CATALOG_URL:-https://raw.githubusercontent.com/noor/airboot/main/catalog/manifest.json}"
+		tmp="/tmp/abt_catalog_fetch.json"
+		info "fetching catalog from $url"
+		if command -v curl >/dev/null 2>&1; then
+			curl -fsSL --max-time 15 "$url" -o "$tmp" && cat "$tmp" | head -40
+		elif command -v wget >/dev/null 2>&1; then
+			wget -qO "$tmp" "$url" && cat "$tmp" | head -40
+		else
+			die "need curl or wget"
+		fi
+		if command -v jq >/dev/null 2>&1 && [ -f "$tmp" ]; then
+			jq . "$tmp" > /dev/null && cp "$tmp" "$catfile" && ok "updated $catfile"
+		fi
+		exit 0
+	fi
+
+	[ -f "$catfile" ] || die "catalog not found: $catfile"
+
+	if ! command -v jq >/dev/null 2>&1; then
+		warn "jq not found — showing raw JSON"
+		cat "$catfile"
+		exit 0
+	fi
+
+	case "$sub" in
+		list|"")
+			printf "${C_YELLOW}%-22s %-40s %-8s %s${C_RESET}\n" "ID" "NAME" "ARCH" "SIZE"
+			jq -r '.images[] | "\(.id)\t\(.name)\t\(.arch)\t\(.size_human // "?")\t\(.version)"' "$catfile" | while IFS="$(printf '\t')" read -r id name arch size ver; do
+				printf "%-22s %-40s %-8s %s  ${C_DIM}%s${C_RESET}\n" "$id" "$(printf '%s' "$name" | cut -c1-40)" "$arch" "$size" "$ver"
+			done
+			printf "\n${C_DIM}%s images — %s${C_RESET}\n" "$(jq '.images | length' "$catfile")" "$(jq -r '.updated' "$catfile")"
+			printf "${C_DIM}Use: $PROG catalog show <id>  |  $PROG fetch <url>${C_RESET}\n"
+			;;
+		show)
+			id="${1:-}"; [ -n "$id" ] || die "catalog show: missing <id>"
+			entry="$(jq --arg id "$id" '.images[] | select(.id==$id)' "$catfile")"
+			[ -n "$entry" ] && [ "$entry" != "null" ] || die "no such id: $id"
+			echo "$entry" | jq .
+			url="$(echo "$entry" | jq -r '.url')"
+			printf "\n${C_DIM}Fetch with:${C_RESET} $PROG fetch \"$url\"\n"
+			;;
+		*)
+			die "catalog: unknown subcommand $sub — use list, show <id>, fetch"
+			;;
+	esac
+}
+
+# ---------- ventoy ----------
+cmd_ventoy() {
+	case "${1:-}" in
+		--copy)
+			target="${2:-}"; [ -n "$target" ] || die "ventoy --copy: missing <device|mountpoint>"
+			iso_src="$ROOT/out/airboot.iso"
+			# Also check ./out and $ROOT
+			if [ ! -f "$iso_src" ]; then iso_src="./out/airboot.iso"; fi
+			if [ ! -f "$iso_src" ]; then iso_src="$ROOT/out/airboot.iso"; fi
+			# Search more broadly
+			if [ ! -f "$iso_src" ]; then
+				found="$(find "$ROOT" -name "airboot.iso" -type f 2>/dev/null | head -1 || true)"
+				if [ -n "$found" ]; then iso_src="$found"; fi
+			fi
+			[ -f "$iso_src" ] || die "airboot.iso not found — run $PROG build first (looked at $iso_src)"
+
+			# Resolve target to mountpoint
+			mnt=""
+			if [ -b "$target" ]; then
+				# It's a block device — find its Ventoy mount or mount it
+				lbl="$(blkid -o value -s LABEL "$target" 2>/dev/null || true)"
+				if [ "$lbl" = "Ventoy" ]; then
+					mnt="/tmp/abt_ventoy_mnt"
+					mkdir -p "$mnt"
+					# Check if already mounted
+					existing="$(findmnt -n -o TARGET "$target" 2>/dev/null || true)"
+					if [ -n "$existing" ]; then
+						mnt="$existing"
+						info "Ventoy partition already mounted at $mnt"
+					else
+						info "mounting $target at $mnt"
+						if ! mount -t exfat "$target" "$mnt" 2>/dev/null; then mount "$target" "$mnt" || die "mount failed"; fi
+					fi
+				else
+					die "$target label is [$lbl], expected Ventoy — is this the Ventoy USB data partition?"
+				fi
+			elif [ -d "$target" ]; then
+				# Directory — assume it's the mountpoint or Ventoy root
+				if [ -d "$target/ISO" ]; then mnt="$target"
+				elif [ -d "$(dirname "$target")/ISO" ]; then mnt="$(dirname "$target")"
+				else
+					# Check label of underlying device
+					dev="$(findmnt -n -o SOURCE "$target" 2>/dev/null || true)"
+					if [ -n "$dev" ]; then
+						lbl="$(blkid -o value -s LABEL "$dev" 2>/dev/null || true)"
+						if [ "$lbl" = "Ventoy" ]; then mnt="$target"; fi
+					fi
+					[ -n "$mnt" ] || mnt="$target"
+				fi
+			else
+				die "not a block device or directory: $target"
+			fi
+
+			info "copying $iso_src → $mnt/ISO/airboot.iso"
+			mkdir -p "$mnt/ISO"
+			cp -v "$iso_src" "$mnt/ISO/airboot.iso"
+			sync
+			ok "done — $mnt/ISO/airboot.iso ($(du -h "$mnt/ISO/airboot.iso" | awk '{print $1}'))"
+			printf "\n${C_DIM}Next: boot the Ventoy USB → select airboot.iso${C_RESET}\n"
+			# If we mounted tmp, unmount
+			if [ "$mnt" = "/tmp/abt_ventoy_mnt" ]; then
+				umount "$mnt" 2>/dev/null || true
+				rmdir "$mnt" 2>/dev/null || true
+			fi
+			;;
+		--list)
+			info "scanning for Ventoy USBs (label Ventoy)…"
+			found=0
+			for dev in /dev/sd* /dev/nvme* /dev/mmcblk* /dev/vd*; do
+				[ -b "$dev" ] || continue
+				lbl="$(blkid -o value -s LABEL "$dev" 2>/dev/null || true)"
+				if [ "$lbl" = "Ventoy" ]; then
+					mnt="$(findmnt -n -o TARGET "$dev" 2>/dev/null || echo "not mounted")"
+					printf "  ${C_GREEN}%s${C_RESET}  label=%s  mount=%s  size=%s\n" "$dev" "$lbl" "$mnt" "$(lsblk -dn -o SIZE "$dev" 2>/dev/null || echo "?")"
+					found=1
+				fi
+			done
+			# Also try blkid -L
+			if [ "$found" -eq 0 ]; then
+				dev="$(blkid -L Ventoy 2>/dev/null || true)"
+				if [ -n "$dev" ]; then
+					mnt="$(findmnt -n -o TARGET "$dev" 2>/dev/null || echo "not mounted")"
+					printf "  ${C_GREEN}%s${C_RESET}  mount=%s\n" "$dev" "$mnt"
+					found=1
+				fi
+			fi
+			if [ "$found" -eq 0 ]; then
+				warn "no Ventoy USB found (looked for label Ventoy)"
+				printf "${C_DIM}Create one: https://www.ventoy.net/en/doc_start.html${C_RESET}\n"
+			fi
+			;;
+		--help|help|"")
+			cat <<EOF
+${C_YELLOW}Ventoy USB layout${C_RESET}
+  /dev/sdX (GPT)
+   ├── Part 1 (exFAT, label "Ventoy")  ← ISO/ + ventoy/
+   └── Part 2 (FAT, signed UEFI boot)
+
+AirBoot is deployed as ${C_GREEN}ISO/airboot.iso${C_RESET} on Part 1.
+Ventoy lists any .iso there — no formatting, no extraction.
+
+${C_YELLOW}Usage${C_RESET}
+  $PROG ventoy --list                    # find Ventoy USBs
+  $PROG ventoy --copy /dev/sdX1          # copy airboot.iso (block device)
+  $PROG ventoy --copy /run/media/\$USER/Ventoy  # copy via mountpoint
+  cp out/airboot.iso /run/media/\$USER/Ventoy/ISO/airboot.iso  # manual
+
+${C_YELLOW}Notes${C_RESET}
+  • Create Ventoy USB first: https://www.ventoy.net/en/doc_start.html
+  • AirBoot never writes ventoy.json VTOYDEFAULTIMAGE (boot-loop risk)
+  • After AirBoot fetches an ISO, reboot and select it manually in Ventoy's menu
+  • Keep Secure Boot disabled or enroll Ventoy's MOK
+EOF
+			;;
+		*) die "ventoy: unknown flag $1 — see $PROG ventoy --help" ;;
+	esac
+}
+
+# ---------- build ----------
+cmd_build() {
+	# Delegate to build.sh; pass through args
+	script="$ROOT/build.sh"
+	[ -f "$script" ] || die "build.sh not found at $script"
+	exec "$script" "$@"
+}
+
+# ---------- dispatch ----------
+if [ $# -eq 0 ]; then usage; exit 0; fi
+
+case "$1" in
+	--help|-h|help) usage; exit 0 ;;
+	--version|-V|version) echo "abt v$VERSION"; exit 0 ;;
+	build) shift; cmd_build "$@" ;;
+	fetch) shift; cmd_fetch "$@" ;;
+	validate) shift; cmd_validate "$@" ;;
+	catalog) shift; cmd_catalog "$@" ;;
+	ventoy) shift; cmd_ventoy "$@" ;;
+	*)
+		err "unknown command: $1"
+		usage >&2
+		exit 1
+		;;
+esac

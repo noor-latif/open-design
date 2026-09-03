@@ -1,0 +1,23 @@
+# Build artifacts
+work/
+out/
+*.iso
+*.apkovl.tar.gz
+*.log
+
+# Reference clones (heavy, re-clonable)
+reference/
+
+# Docker
+.docker/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Secrets / local overrides
+.env
+*.key
+*.pem

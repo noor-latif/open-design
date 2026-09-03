@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "updated": "2026-09-03",
+  "source": "https://github.com/noor/airboot",
+  "notes": "Phase 3 remote catalog. MVP ships hard-coded URLs in scripts/abt-menu.sh; this file is the canonical OTA manifest shape. A manifest edit should ship a new distro without rebuilding the ISO. Add sha256 when known; fetcher verifies if present, warns if absent.",
+  "images": [
+    {
+      "id": "ubuntu-24.04",
+      "name": "Ubuntu 24.04.3 LTS (Noble) Desktop",
+      "description": "Current LTS desktop — recommended MVP target. ~6 GB.",
+      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
+      "arch": "x86_64",
+      "version": "24.04.3",
+      "size_human": "6.0G",
+      "sha256": null,
+      "homepage": "https://ubuntu.com/download/desktop"
+    },
+    {
+      "id": "ubuntu-24.04-server",
+      "name": "Ubuntu 24.04.3 LTS Server",
+      "description": "Headless/server variant.",
+      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-live-server-amd64.iso",
+      "arch": "x86_64",
+      "version": "24.04.3",
+      "size_human": "2.7G",
+      "sha256": null,
+      "homepage": "https://ubuntu.com/download/server"
+    },
+    {
+      "id": "debian-12-netinst",
+      "name": "Debian 12 (Bookworm) netinst",
+      "description": "Minimal netinst — fetches packages during install. ~700 MB.",
+      "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso",
+      "arch": "x86_64",
+      "version": "12.11.0",
+      "size_human": "700M",
+      "sha256": null,
+      "homepage": "https://www.debian.org/distrib/"
+    },
+    {
+      "id": "fedora-42-workstation",
+      "name": "Fedora 42 Workstation",
+      "description": "GNOME desktop, ~2.3 GB.",
+      "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-42-1.1.iso",
+      "arch": "x86_64",
+      "version": "42",
+      "size_human": "2.3G",
+      "sha256": null,
+      "homepage": "https://fedoraproject.org/workstation/download"
+    },
+    {
+      "id": "arch-2025.09",
+      "name": "Arch Linux 2025.09",
+      "description": "Rolling netinstall.",
+      "url": "https://geo.mirror.pkgbuild.com/iso/2025.09.01/archlinux-2025.09.01-x86_64.iso",
+      "arch": "x86_64",
+      "version": "2025.09.01",
+      "size_human": "1.2G",
+      "sha256": null,
+      "homepage": "https://archlinux.org/download/"
+    }
+  ]
+}
