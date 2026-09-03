@@ -360,6 +360,46 @@ If the browser asks for credentials, use `open-design` as the username and the
 traffic authenticated without requiring host networking. API clients can keep
 using `Authorization: Bearer <OD_API_TOKEN>`.
 
+#### 📁 Docker: making host folders visible to Open Folder / Working directory
+
+`Open Folder` (`Home → Open Folder`, `POST /api/import/folder`) and `Working directory → Choose folder` now use a web-native browser (`GET /api/fs/browse` → `ServerFolderPickerDialog`) instead of the container's `zenity` dialog. The list shows **the container's filesystem**, not your browser's local files — so host folders are only visible if you mount them into the container.
+
+* **This fork already mounts them.** `deploy/docker-compose.override.yml` (used when you run `podman compose -f docker-compose.yml -f docker-compose.override.yml --env-file .env up -d` or `pnpm tools-dev`) mounts:
+
+  ```yaml
+  volumes:
+    - ${HOME}/dev:${HOME}/dev:rw,z
+    - ${HOME}/Documents:${HOME}/Documents:rw,z
+    - ${HOME}/dev/open-design:${HOME}/dev/open-design:rw,z  # the repo itself
+  ```
+
+  With that, `GET /api/fs/browse?path=/var/home/noor/dev` lists real host projects like `gotalandstrafikskola`, `bayt-hub`, `open-design`. Without the mount the picker only sees `/app`, `/tmp`.
+
+* **Vanilla Docker (no override):** create `deploy/docker-compose.override.yml` (git-ignored) with the mounts you need:
+
+  ```yaml
+  services:
+    open-design:
+      volumes:
+        - ${HOME}/dev:${HOME}/dev:rw,z        # all host projects
+        # - ${HOME}/projects:${HOME}/projects:rw,z
+        # - /data:/data:rw,z                  # any extra host root
+  ```
+
+  Then recreate:
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+  ```
+
+  Use `:rw,z` on SELinux hosts (Fedora / Aurora) and `:rw` elsewhere; use `:ro` if the agent should never write to the host.
+
+* **Security:** a `rw` mount gives the container (and any agent it spawns) write access to the host path. Only mount what you need, prefer `ro` for read-only reference projects, and never mount `/` or `/etc` writable.
+
+* **Troubleshooting:** picker shows `No subfolders` or `path does not exist` → the path isn't mounted. `docker exec open-design ls -la /var/home/noor/dev` (or `podman exec …`) shows what the container actually sees. Add the missing volume and `up -d` again.
+
+Details and the old `zenity` path → [`deploy/README.md`](deploy/README.md#host-filesystem-access-for-file-pickers).
+
 ### 🚀 Deploy on Sealos
 
 [![Deploy on Sealos](https://sealos.io/Deploy-on-Sealos.svg)](https://sealos.io/products/app-store/open-design/)

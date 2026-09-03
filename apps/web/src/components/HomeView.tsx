@@ -83,6 +83,7 @@ import {
 } from '../providers/registry';
 import { isOpenDesignHostAvailable, pickHostWorkingDir } from '@open-design/host';
 import { useOpenFolderImport } from './useOpenFolderImport';
+import { ServerFolderPickerDialog } from './ServerFolderPickerDialog';
 import type {
   DesignSystemSummary,
   Project,
@@ -3243,6 +3244,12 @@ export function HomeView({
         // recommendation engine and `RecommendedStartRegion` are left intact;
         // only this mount point is gone.
         recommendationSlot={artifactUpgradeSlot}
+      />
+      <ServerFolderPickerDialog
+        open={folderImport.pickerOpen}
+        initialPath={folderImport.pickerInitialPath}
+        onPick={folderImport.onPickerPick}
+        onCancel={folderImport.onPickerCancel}
       />
 
       {recentProjectsEmpty ? null : (

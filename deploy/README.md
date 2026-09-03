@@ -92,6 +92,48 @@ The image intentionally does not bundle Claude/Codex/Gemini CLI binaries. Keep
 those outside the image, or build a separate private runtime layer if a server
 deployment needs local code-agent CLIs installed in the container.
 
+## Host filesystem access for file pickers
+
+`Home → Open Folder` and `Working directory → Choose folder` no longer depend on `zenity`/`DISPLAY`. They use a web-native picker (`GET /api/fs/browse` → `ServerFolderPickerDialog` in `apps/web/src/components/ServerFolderPickerDialog.tsx`) that lists **server-side directories**. That means the container's mount table *is* the picker's world — host folders are invisible until you mount them.
+
+**What the daemon sees:**
+
+```bash
+# Inside the container vs on the host
+docker exec open-design ls -la /var/home/noor/dev   # or podman exec …
+ls -la ~/dev
+```
+
+If the first is empty or missing your projects, add a volume.
+
+**Minimal override (`deploy/docker-compose.override.yml`, git-ignored):**
+
+```yaml
+services:
+  open-design:
+    volumes:
+      - ${HOME}/dev:${HOME}/dev:rw,z
+      - ${HOME}/Documents:${HOME}/Documents:rw,z
+      # any other host root you want browsable:
+      # - /data:/data:rw,z
+```
+
+Recreate with both files:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+# podman equivalent:
+podman compose -f deploy/docker-compose.yml -f deploy/docker-compose.override.yml --env-file deploy/.env up -d
+```
+
+This fork's `deploy/docker-compose.override.yml` already mounts `${HOME}/dev`, `${HOME}/Documents`, and the repo itself — so `GET /api/fs/browse?path=/var/home/noor/dev` lists real host projects (`gotalandstrafikskola`, `bayt-hub`, `open-design`). The base `deploy/docker-compose.yml` alone only sees `/app` and the `open_design_data` volume.
+
+**SELinux / Podman notes:** use `:z` (shared label) on Fedora/Aurora/Universal Blue; plain `:rw` on other distros. Use `:ro` for reference data the agent shouldn't write.
+
+**Security:** `rw` gives every agent run write access to the host path. Mount only what you need, prefer `ro` where you can, and never mount `/` or host config writable.
+
+**Legacy path:** `POST /api/dialog/open-folder` still calls `zenity --file-selection --directory` on Linux (`apps/daemon/src/server.ts:openNativeFolderDialog`). It requires `zenity` in the image and a `DISPLAY` — unsuitable for headless Docker. The web picker (`/api/fs/browse`) is the default fallback when that 500s, and works without extra packages.
+
 ## Linux: mounting host agent CLIs
 
 On Linux you can mount host-installed agent CLIs (Claude Code, opencode, Codex,

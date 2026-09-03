@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import type { Express } from 'express';
 import type {
   HyperFramesScaffoldRequest,
@@ -779,6 +781,99 @@ export function registerMediaRoutes(app: Express, ctx: RegisterMediaRoutesDeps) 
       res
         .status(500)
         .json({ error: String(err && err.message ? err.message : err) });
+    }
+  });
+
+  // Web-native server directory browser for the folder picker fallback.
+  // Used when the native dialog (zenity/DISPLAY) is unavailable in container.
+  app.get('/api/fs/browse', async (req, res) => {
+    if (!isLocalSameOrigin(req, getResolvedPort())) {
+      return res.status(403).json({ error: 'cross-origin request rejected' });
+    }
+    try {
+      const raw = typeof req.query.path === 'string' ? req.query.path : '';
+      let target: string;
+      if (!raw || !raw.trim()) {
+        const candidates = ['/var/home/noor/dev', process.cwd(), os.homedir()];
+        let chosen: string | null = null;
+        for (const c of candidates) {
+          try {
+            if (c && fs.existsSync(c) && fs.statSync(c).isDirectory()) {
+              chosen = c;
+              break;
+            }
+          } catch {}
+        }
+        target = chosen ?? '/';
+      } else {
+        target = raw.trim();
+      }
+
+      const resolved = path.resolve(target);
+      if (!path.isAbsolute(resolved)) {
+        return res.status(400).json({ error: 'path must be absolute' });
+      }
+
+      let stat: fs.Stats;
+      try {
+        stat = await fs.promises.stat(resolved);
+      } catch (err: any) {
+        const code = err?.code;
+        if (code === 'ENOENT') {
+          return res.status(404).json({ error: `path does not exist: ${resolved}` });
+        }
+        if (code === 'EACCES' || code === 'EPERM') {
+          return res.status(403).json({ error: `permission denied: ${resolved}` });
+        }
+        return res.status(404).json({ error: `path does not exist: ${resolved}` });
+      }
+
+      if (!stat.isDirectory()) {
+        return res.status(404).json({ error: `not a directory: ${resolved}` });
+      }
+
+      let dirents: fs.Dirent[];
+      try {
+        dirents = await fs.promises.readdir(resolved, { withFileTypes: true });
+      } catch (err: any) {
+        const code = err?.code;
+        if (code === 'EACCES' || code === 'EPERM') {
+          return res.status(403).json({ error: `permission denied: ${resolved}` });
+        }
+        throw err;
+      }
+
+      const dirsOnly = dirents.filter((d) => d.isDirectory());
+      dirsOnly.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+      const sliced = dirsOnly.slice(0, 200);
+
+      const entries = await Promise.all(
+        sliced.map(async (d) => {
+          const fullPath = path.join(resolved, d.name);
+          let hasChildren = false;
+          try {
+            const sub = await fs.promises.readdir(fullPath, { withFileTypes: true });
+            hasChildren = sub.some((s) => s.isDirectory());
+          } catch {
+            hasChildren = false;
+          }
+          return { name: d.name, path: fullPath, hasChildren };
+        }),
+      );
+
+      const parentPath = resolved === path.dirname(resolved) ? null : path.dirname(resolved);
+
+      return res.json({
+        currentPath: resolved,
+        parentPath,
+        entries,
+      });
+    } catch (err: any) {
+      const code = err?.code;
+      if (code === 'EACCES' || code === 'EPERM') {
+        return res.status(403).json({ error: 'permission denied' });
+      }
+      return res.status(500).json({ error: String(err?.message ?? err) });
     }
   });
 
