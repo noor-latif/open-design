@@ -16,6 +16,7 @@ services:
       OD_PORT: ${OPEN_DESIGN_PORT:-7456}
       OD_WEB_PORT: ${OPEN_DESIGN_PORT:-7456}
       OD_BIND_HOST: 127.0.0.1
+      HOME: /home/open-design
       PATH: /mnt/host-local-bin:/mnt/host-opencode:/usr/local/bin:/usr/bin:/bin
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -32,7 +33,12 @@ services:
       - /usr/lib64:/usr/lib64:ro
       - /lib64:/lib64:ro
     tmpfs:
+      - /tmp
       - /home/open-design
+      - /root
+      - /root/.cache
+      - /root/.local
+      - /root/.config
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:${OPEN_DESIGN_PORT:-7456}/api/health"]
       interval: 30s
