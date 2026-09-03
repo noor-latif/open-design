@@ -46,7 +46,7 @@ AirBoot bridges the gap: a tiny, always-current fetcher that rides on top of Ven
 | # | Decision | Rationale |
 |---|----------|-----------|
 | 1 | Drop `efibootmgr --bootnext` | Portable Ventoy USBs create no persistent NVRAM entry; temp entries are volatile and rarely named "Ventoy". |
-| 2 | Drop forced auto-boot (`VTOYDEFAULTIMAGE`) | Avoids boot-loop traps, JSON corruption, reset-timing paradoxes. User selects ISO manually. |
+| 2 | Drop forced auto-boot (`VTOYDEFAULTIMAGE`) by default | Avoids boot-loop traps, JSON corruption, reset-timing paradoxes. User selects ISO manually. BUT: Ventoy **does** have loop prevention — `VTOY_MENU_TIMEOUT` (any key cancels countdown). `VTOYDEFAULTIMAGE` (an ISO path like `/ISO/debian.iso`) just sets `default` + waits `VTOY_MENU_TIMEOUT` seconds; pressing any key aborts. Trap is **persistence**: if AirBoot writes `ventoy.json` and never clears it, every subsequent boot re-auto-selects. Phase 4 adds opt-in auto-boot with `jq` + `blkid -L Ventoy` (never `/dev/sdX`) and a self-destructing reset script (deletes `VTOYDEFAULTIMAGE` after one boot). Default MVP stays manual. See §Ventoy VTOYDEFAULTIMAGE research. |
 | 3 | `wpa_supplicant + udhcpc`, not `iwd` | iwd needs D-Bus and races with manual DHCP; wpa_supplicant is bulletproof in live envs. |
 | 4 | Tag-based SSID parsing | SSIDs contain spaces; naive `awk '{print $1}'` truncates them. |
 | 5 | Autostart via `/etc/local.d/`, not `inittab` sed | Direct inittab editing is fragile and caused double-sed overwrite bugs. |
@@ -90,6 +90,27 @@ AirBoot bridges the gap: a tiny, always-current fetcher that rides on top of Ven
 - [ ] Optional auto-boot via `jq` + blkid (never `/dev/sdX`)
 - [ ] GRUB param injection via `ventoy_grub.cfg`
 - [ ] Acceptance: hands-free automated install, no boot-loop on cancel
+
+## Ventoy VTOYDEFAULTIMAGE research (2026-09-03)
+
+Verified against `reference/Ventoy` (grub-2.04, `INSTALL/grub/grub.cfg`, `GRUB2/MOD_SRC/.../ventoy_cmd.c`, `Plugson/www/plugson_control.html`):
+
+- `VTOY_DEFAULT_IMAGE` = absolute path like `/ISO/debian-12-netinst.iso` (or `/ISO/subdir/foo.iso`).
+- `ventoy_cmd.c:ventoy_set_default_menu()` matches it against `g_ventoy_img_list` (populated by `vt_list_img`) and emits `set default='VID_...'` (list mode) or `set default='DIR_...>'` (tree mode). Called **before** `vt_dynamic_menu`.
+- `VTOY_MENU_TIMEOUT` (seconds, default 0 = wait forever). When set, `grub.cfg` does `set timeout=$VTOY_MENU_TIMEOUT` near line 2554, so GRUB counts down and auto-boots `default`. The Ventoy plugson docs say: *"During the countdown, pressing any key will stop the countdown and wait for user operation."* That **is** loop-trap prevention — 3-10 sec window to cancel.
+- Special `F[2-9]>(/path)` syntax in `grub.cfg:2729` (`regexp --set 1:vtHotkey --set 2:vtDefault "(F[2-9])>(.*)"`) maps F-keys to browser/diagnosis/localboot — not the normal `VTOY_DEFAULT_IMAGE` path.
+- **Why we still default to manual**: (1) persistence — `ventoy.json` lives on the USB; without a reset, every boot auto-selects same ISO; (2) corrupted JSON from concurrent writes; (3) failed ISO keeps looping; (4) portable USBs have no NVRAM; (5) `efibootmgr --bootnext` is similarly volatile. So: default = manual. Opt-in Phase 4 auto-boot (with `jq`, `blkid -L Ventoy`, and a one-shot reset script that deletes `VTOY_DEFAULT_IMAGE` after boot) would look like:
+
+```json
+// ventoy/ventoy.json — operator-set once, AirBoot never mutates by default
+{
+  "control": [
+    { "VTOY_DEFAULT_IMAGE": "/ISO/debian-12-netinst.iso" },
+    { "VTOY_MENU_TIMEOUT": "5" }
+  ]
+}
+```
+Any key within 5 sec cancels and shows Ventoy menu. Reset script: a tiny `ventoy/ventoy_grub.cfg` hook that on next boot does `rm` or `jq 'del(.control[] | select(.VTOY_DEFAULT_IMAGE))'` via `blkid -L Ventoy` mount, then reboots clean.
 
 ## Technical Specification
 
@@ -150,20 +171,19 @@ Deploy AirBoot as `/ISO/airboot.iso`; optionally default via static `ventoy.json
 ```
 airboot/
 ├── abt                       # host CLI (shell)
-├── plan.md
-├── readme.md
-├── build.sh                  # Docker build driver
-├── Dockerfile
+├── plan.md / readme.md / REFERENCE.md
+├── build.sh / Dockerfile     # Docker build driver (alpine:3.20)
 ├── scripts/
-│   ├── abt-menu.sh           # fetcher (runs inside micro-OS)
-│   └── genapkovl-abt.sh      # overlay generator
-├── aports-patch/
-│   └── mkimg.abt.sh          # build profile
+│   ├── abt-menu.sh           # fetcher (runs inside micro-OS) — MVP default: debian-12-netinst (700M)
+│   ├── genapkovl-abt.sh      # overlay generator (/etc/local.d)
+│   └── generate-catalog.py   # netboot endpoints.yml → catalog/netboot-full.json + curated manifest
+├── aports-patch/mkimg.abt.sh # build profile (linux-firmware-other + sof-firmware)
 ├── catalog/
-│   └── manifest.json         # remote catalog (Phase 3)
+│   ├── manifest.json         # curated Ventoy-bootable ISOs (7 entries, debian first, includes omarchy)
+│   └── netboot-full.json     # full 172-entry netboot.xyz roster re-shaped (only 13 ventoy_bootable)
 └── reference/                # cloned for interface study (gitignored)
-    ├── netboot.xyz
-    ├── Ventoy
+    ├── netboot.xyz (endpoints.yml, templates)
+    ├── Ventoy (grub.cfg, ventoy_cmd.c)
     └── aports
 ```
 
@@ -174,6 +194,13 @@ airboot/
 - WPA-Enterprise deferred to Phase 4.
 - Secure Boot: MVP assumes disabled or Ventoy MOK enrolled.
 
+## Catalog strategy (2026-09-03 update)
+
+- **MVP default**: `debian-12-netinst` (700M, mobile/metered friendly) — not Ubuntu 6G. `CATALOG_FALLBACK` in `abt-menu.sh` ordered small→large for the same reason.
+- **Full roster**: `scripts/generate-catalog.py` reads `reference/netboot.xyz/endpoints.yml` (~165 endpoints, 130+ unique OS) and emits `catalog/netboot-full.json` (172 entries including curated ISO overrides). Only 13 are single-file ISOs Ventoy can boot directly (proxmox, tails, plus curated debian/ubuntu/fedora/arch/cachyos/omarchy). The rest are netboot squashfs (kernel+initrd+filesystem.squashfs) — not Ventoy ISOs, kept for search completeness.
+- **Omarchy**: present in both places. Netboot endpoint `omarchy: {path: /asset-mirror/.../4.0.2/, os: omarchy}` is the squashfs netboot flavor; AirBoot's curated `omarchy-4.0.2` is the real Ventoy ISO at `https://iso.omarchy.org/omarchy-4.0.2.iso` (SHA256 `2ef8e624…`), verified 6227752960 bytes via `curl -I`.
+- Host search: `abt catalog list --full | grep omarchy`, `abt catalog search omarchy`, `abt catalog search --full debian`.
+
 ## Definition of Done (MVP)
 
-A Wi-Fi-only laptop with empty internal disk can: boot Ventoy USB → launch AirBoot → join Wi-Fi via menu → fetch Ubuntu 24.04 ISO onto Ventoy partition → reboot → manually boot ISO from Ventoy menu → reach Ubuntu installer — zero pre-staged ISOs, no Ethernet.
+A Wi-Fi-only laptop with empty internal disk can: boot Ventoy USB → launch AirBoot → join Wi-Fi via menu → fetch **Debian 12 netinst (700M)** ISO onto Ventoy partition → reboot → manually boot ISO from Ventoy menu → reach Debian installer — zero pre-staged ISOs, no Ethernet. (Ubuntu 24.04 still available as large alternative on unmetered Wi-Fi.)

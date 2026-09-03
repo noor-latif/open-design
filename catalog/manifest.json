@@ -2,40 +2,56 @@
   "version": 1,
   "updated": "2026-09-03",
   "source": "https://github.com/noor/airboot",
-  "notes": "Phase 3 remote catalog. MVP ships hard-coded URLs in scripts/abt-menu.sh; this file is the canonical OTA manifest shape. A manifest edit should ship a new distro without rebuilding the ISO. Add sha256 when known; fetcher verifies if present, warns if absent.",
+  "notes": "MVP catalog — debian-12-netinst first (700M, mobile-friendly default). Ubuntu 6G kept for access but not default. Mirrors netboot.xyz endpoints.yml shape (now ~130 entries available via catalog/netboot-full.json); this file is the curated Ventoy-ISO catalog for Phase 3 OTA. A manifest edit ships a new distro without rebuilding the ISO. Add sha256 when known; fetcher verifies if present.",
   "images": [
-    {
-      "id": "ubuntu-24.04",
-      "name": "Ubuntu 24.04.3 LTS (Noble) Desktop",
-      "description": "Current LTS desktop — recommended MVP target. ~6 GB.",
-      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
-      "arch": "x86_64",
-      "version": "24.04.3",
-      "size_human": "6.0G",
-      "sha256": null,
-      "homepage": "https://ubuntu.com/download/desktop"
-    },
-    {
-      "id": "ubuntu-24.04-server",
-      "name": "Ubuntu 24.04.3 LTS Server",
-      "description": "Headless/server variant.",
-      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-live-server-amd64.iso",
-      "arch": "x86_64",
-      "version": "24.04.3",
-      "size_human": "2.7G",
-      "sha256": null,
-      "homepage": "https://ubuntu.com/download/server"
-    },
     {
       "id": "debian-12-netinst",
       "name": "Debian 12 (Bookworm) netinst",
-      "description": "Minimal netinst — fetches packages during install. ~700 MB.",
+      "description": "MVP default — minimal netinst, fetches packages during install. 600-700 MB, best for mobile/metered Wi-Fi.",
       "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso",
       "arch": "x86_64",
       "version": "12.11.0",
       "size_human": "700M",
       "sha256": null,
-      "homepage": "https://www.debian.org/distrib/"
+      "homepage": "https://www.debian.org/distrib/",
+      "tags": ["mvp", "small", "netinst"]
+    },
+    {
+      "id": "omarchy-4.0.2",
+      "name": "Omarchy 4.0.2 (Arch + Hyprland)",
+      "description": "DHH's Arch-based distro with Hyprland. Now under 6 GB. Also available via netboot.xyz asset-mirror.",
+      "url": "https://iso.omarchy.org/omarchy-4.0.2.iso",
+      "arch": "x86_64",
+      "version": "4.0.2",
+      "size_human": "5.8G",
+      "sha256": "2ef8e624aa1bec7e277e28056b8535a6c9373ba48d7ede3f1a01cb6d2373cfb8",
+      "homepage": "https://omarchy.org",
+      "netboot_endpoint": "omarchy",
+      "tags": ["omarchy", "arch"]
+    },
+    {
+      "id": "debian-13-netinst",
+      "name": "Debian 13 (Trixie) netinst — testing",
+      "description": "Next-stable netinst for newer hardware.",
+      "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso",
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "size_human": "700M",
+      "sha256": null,
+      "homepage": "https://www.debian.org/distrib/",
+      "tags": ["debian", "netinst"]
+    },
+    {
+      "id": "ubuntu-24.04",
+      "name": "Ubuntu 24.04.3 LTS (Noble) Desktop",
+      "description": "Full desktop — 6 GB. Use only on unmetered Wi-Fi.",
+      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
+      "arch": "x86_64",
+      "version": "24.04.3",
+      "size_human": "6.0G",
+      "sha256": null,
+      "homepage": "https://ubuntu.com/download/desktop",
+      "tags": ["ubuntu", "large"]
     },
     {
       "id": "fedora-42-workstation",
@@ -46,18 +62,33 @@
       "version": "42",
       "size_human": "2.3G",
       "sha256": null,
-      "homepage": "https://fedoraproject.org/workstation/download"
+      "homepage": "https://fedoraproject.org/workstation/download",
+      "tags": ["fedora"]
     },
     {
       "id": "arch-2025.09",
       "name": "Arch Linux 2025.09",
-      "description": "Rolling netinstall.",
+      "description": "Rolling netinstall, ~1.2 GB.",
       "url": "https://geo.mirror.pkgbuild.com/iso/2025.09.01/archlinux-2025.09.01-x86_64.iso",
       "arch": "x86_64",
       "version": "2025.09.01",
       "size_human": "1.2G",
       "sha256": null,
-      "homepage": "https://archlinux.org/download/"
+      "homepage": "https://archlinux.org/download/",
+      "tags": ["arch"]
+    },
+    {
+      "id": "cachyos-260809",
+      "name": "CachyOS 260809 (Arch-optimized)",
+      "description": "Arch-based, performance-tuned. Netboot endpoint: cachyos.",
+      "url": "https://mirror.cachyos.org/iso/cachyos-260809.iso",
+      "arch": "x86_64",
+      "version": "260809",
+      "size_human": "2.5G",
+      "sha256": null,
+      "homepage": "https://cachyos.org",
+      "netboot_endpoint": "cachyos",
+      "tags": ["arch", "cachyos"]
     }
   ]
 }

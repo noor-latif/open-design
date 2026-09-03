@@ -31,11 +31,12 @@ DIALOG_BACKTITLE="AirBoot — Like netboot.xyz, but works over Wi-Fi and boots v
 CATALOG_URL_DEFAULT="https://raw.githubusercontent.com/noor/airboot/main/catalog/manifest.json"
 
 # Hard-coded MVP catalog (mirrors catalog/manifest.json; OTA manifest overrides when reachable)
-# Format: id|label|url
-CATALOG_FALLBACK="ubuntu-24.04|Ubuntu 24.04.3 LTS Desktop (6.0G)|https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso
-ubuntu-24.04-server|Ubuntu 24.04.3 LTS Server (2.7G)|https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-live-server-amd64.iso
-debian-12-netinst|Debian 12 netinst (700M)|https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso
+# Format: id|label|url — ordered small→large so mobile/metered default is Debian netinst (700M).
+CATALOG_FALLBACK="debian-12-netinst|Debian 12 netinst (700M) ★ MVP default — mobile-friendly|https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso
+omarchy-4.0.2|Omarchy 4.0.2 (5.8G) — Arch+Hyprland|https://iso.omarchy.org/omarchy-4.0.2.iso
+arch-2025.09|Arch Linux 2025.09 (1.2G)|https://geo.mirror.pkgbuild.com/iso/2025.09.01/archlinux-2025.09.01-x86_64.iso
 fedora-42-workstation|Fedora 42 Workstation (2.3G)|https://download.fedoraproject.org/pub/fedora/linux/releases/42/Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-42-1.1.iso
+ubuntu-24.04|Ubuntu 24.04.3 LTS Desktop (6.0G) — unmetered only|https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso
 custom|Custom HTTPS URL…|__CUSTOM__"
 
 # ---------- helpers ----------

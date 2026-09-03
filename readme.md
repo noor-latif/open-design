@@ -51,7 +51,7 @@ cp out/airboot.iso /run/media/$USER/Ventoy/ISO/airboot.iso
 4. `aria2c` fetches the ISO to the Ventoy partition with resume + magic-byte validation
 5. Reboot → Ventoy menu → select the fetched ISO → install
 
-No `efibootmgr --bootnext`, no `VTOYDEFAULTIMAGE` auto-boot — manual selection after reboot avoids NVRAM and boot-loop traps.
+Manual selection by default (no `efibootmgr --bootnext`, no auto `VTOYDEFAULTIMAGE` write) — avoids NVRAM and boot-loop traps. Ventoy *does* have cancel prevention when `VTOYDEFAULTIMAGE` is used: `VTOY_MENU_TIMEOUT` seconds + any key aborts (see `plan.md` §VTOYDEFAULTIMAGE research). Phase 4 can opt-in to 5-sec auto-boot with a self-destructing reset script via `ventoy_grub.cfg`.
 
 ## `abt` CLI
 
@@ -61,9 +61,10 @@ abt version
 abt build [--arch x86_64] [--outdir ./out] [--workdir ./work] [--profile abt]
 abt fetch <url> [--out FILE] [--sha256 HASH]     # host-side fetch with validation
 abt validate <file>                              # check ISO 9660 magic bytes
-abt catalog list | show <id> | fetch             # inspect remote catalog
+abt catalog list [--full] | search <term> [--full] | show <id> | fetch   # curated (7) or full (172) roster
 abt ventoy --copy <device|mountpoint>            # deploy airboot.iso to Ventoy USB
 ```
+MVP default is **Debian 12 netinst (700M)** — not Ubuntu 6G — so it works on mobile/metered Wi-Fi.
 
 Host-side `abt fetch` is useful for testing catalog URLs without booting the micro-OS. It mirrors the same `CD001` validation and `aria2c --continue` semantics as `abt-menu.sh`.
 
@@ -92,7 +93,8 @@ Host-side `abt fetch` is useful for testing catalog URLs without booting the mic
 
 - **Partition label** `Ventoy` (exFAT) — located via `blkid -L Ventoy`, never `/dev/sdX`
 - **ISO drop** → `…/ISO/*.iso` — Ventoy recurses and lists known extensions
-- **Optional** `ventoy/ventoy.json` `VTOYDEFAULTIMAGE` — set once by operator, never written by AirBoot at runtime (boot-loop risk)
+- **Optional** `ventoy/ventoy.json` `VTOYDEFAULTIMAGE` — set once by operator (e.g. `"VTOY_DEFAULT_IMAGE": "/ISO/debian-12-netinst.iso"` + `"VTOY_MENU_TIMEOUT": "5"` gives 5-sec any-key-cancel auto-boot). AirBoot never writes it by default (persistence trap). See `plan.md` for research.
+- **VTOY_MENU_TIMEOUT** — verified: any key during countdown aborts auto-boot (Ventoy plugson docs + `grub.cfg:2554`). So loop protection exists, but persistence still needs a reset script.
 
 ## netboot.xyz Interface
 
@@ -111,26 +113,25 @@ Re-clone with: `./build.sh --clone-refs` or `abt build --clone-refs`.
 
 ## Catalog
 
-`catalog/manifest.json` is the Phase 3 remote catalog. MVP ships with hard-coded entries in `scripts/abt-menu.sh` and a local `catalog/manifest.json` for host-side `abt catalog` / future OTA fetch.
+Two catalogs:
+- `catalog/manifest.json` — **curated, Ventoy-bootable ISOs** (7 entries, **Debian 12 netinst first** for mobile). OTA: a manifest edit ships a distro without ISO rebuild.
+- `catalog/netboot-full.json` — **full netboot.xyz roster re-shaped** (172 entries from `endpoints.yml` → Ventoy shape via `scripts/generate-catalog.py`). Only 13 are single-file ISOs Ventoy can boot (proxmox, tails, + curated); the rest are netboot squashfs (kernel+initrd) — searchable but not Ventoy ISOs. Includes **Omarchy** both as `omarchy-4.0.2` ISO (`https://iso.omarchy.org/omarchy-4.0.2.iso`, 5.8G, SHA256 `2ef8e6…`) and as netboot squashfs endpoint.
 
-```json
-{
-  "version": 1,
-  "updated": "2026-09-03",
-  "images": [
-    {
-      "id": "ubuntu-24.04",
-      "name": "Ubuntu 24.04.3 LTS Desktop",
-      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
-      "sha256": "...",
-      "arch": "x86_64",
-      "size_human": "6.0G"
-    }
-  ]
-}
+```sh
+abt catalog list                 # curated 7 (Debian first)
+abt catalog list --full          # 172 full roster
+abt catalog search omarchy       # curated hits
+abt catalog search --full omarchy # full hits (3: iso + 2 netboot)
+abt catalog show omarchy-4.0.2   # curated ISO
 ```
 
-Future: fetch + verify a signed remote manifest instead of rebuilding the ISO.
+Generate/refresh full catalog from the pinned `endpoints.yml`:
+```sh
+./scripts/generate-catalog.py          # writes catalog/netboot-full.json
+./scripts/generate-catalog.py --check  # lint: debian first, omarchy present
+```
+
+`catalog/manifest.json` is also the Phase 3 remote catalog shape. MVP ships hard-coded `CATALOG_FALLBACK` in `scripts/abt-menu.sh` (same order: Debian 700M ★ first) and OTA-fetches `ABT_CATALOG_URL` if reachable.
 
 ## Edge Cases
 
@@ -142,9 +143,11 @@ See `plan.md` for the full register. Highlights: captive portal defense, dirty-b
 # Lint shell scripts
 shellcheck abt scripts/*.sh aports-patch/*.sh
 
-# Host-side fetch smoke test (no hardware needed)
-./abt fetch https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso --out /tmp/test.iso
-./abt validate /tmp/test.iso
+# Host-side fetch smoke test (no hardware needed) — use 700M Debian for mobile
+./abt fetch https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso --out /tmp/debian.iso
+./abt validate /tmp/debian.iso
+./abt catalog search omarchy
+./abt catalog search --full debian
 
 # Build ISO (needs docker, ~2 GB, privileged for loop devices)
 ./abt build
@@ -153,7 +156,7 @@ shellcheck abt scripts/*.sh aports-patch/*.sh
 ## Project Status
 
 - **Phase 0** — Build environment: done (Dockerfile, aports, reference clones)
-- **Phase 1 — MVP**: `scripts/abt-menu.sh` + `genapkovl-abt.sh` + `mkimg.abt.sh` scaffolded, awaiting hardware acceptance
+- **Phase 1 — MVP**: `scripts/abt-menu.sh` (Debian 700M fallback first) + `genapkovl-abt.sh` + `mkimg.abt.sh` scaffolded, awaiting hardware acceptance
 - **Phase 2 — Robustness**: captive-portal check, sanitization, cache prompt implemented
 - **Phase 3 — Catalog polish**: local manifest + remote-fetch path scaffolded
 - **Phase 4 — Orchestration**: deferred (preseed/seed.iso, optional auto-boot)

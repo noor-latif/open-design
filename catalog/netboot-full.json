@@ -1,0 +1,4288 @@
+{
+  "version": 1,
+  "updated": "2026-09-03",
+  "source": "https://github.com/noor/airboot (generated from netboot.xyz endpoints.yml)",
+  "counts": {
+    "total": 172,
+    "ventoy_bootable_iso": 13,
+    "netboot_squashfs": 159
+  },
+  "notes": "Full netboot.xyz roster re-shaped for AirBoot search. Only entries with ventoy_bootable:true and a url are direct ISOs Ventoy can boot. Others are squashfs/netboot (kernel+initrd+squashfs) \u2014 not single ISOs. Curated Ventoy ISOs live in catalog/manifest.json (small MVP). Use `abt catalog --full list | grep omarchy` to search.",
+  "images": [
+    {
+      "id": "debian-12-netinst",
+      "name": "Debian 12 (Bookworm) netinst",
+      "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso",
+      "arch": "x86_64",
+      "version": "12.11.0",
+      "size_human": "700M",
+      "homepage": "https://www.debian.org/distrib/",
+      "tags": [
+        "mvp",
+        "small",
+        "netinst"
+      ],
+      "os": "debian",
+      "ventoy_bootable": true,
+      "description": "Debian 12 (Bookworm) netinst"
+    },
+    {
+      "id": "arch-2025.09",
+      "name": "Arch Linux 2025.09",
+      "url": "https://geo.mirror.pkgbuild.com/iso/2025.09.01/archlinux-2025.09.01-x86_64.iso",
+      "arch": "x86_64",
+      "version": "2025.09.01",
+      "size_human": "1.2G",
+      "homepage": "https://archlinux.org/download/",
+      "tags": [
+        "arch"
+      ],
+      "os": "arch",
+      "ventoy_bootable": true,
+      "description": "Arch Linux 2025.09"
+    },
+    {
+      "id": "fedora-42-workstation",
+      "name": "Fedora 42 Workstation",
+      "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-42-1.1.iso",
+      "arch": "x86_64",
+      "version": "42",
+      "size_human": "2.3G",
+      "homepage": "https://fedoraproject.org/workstation/download",
+      "tags": [
+        "fedora"
+      ],
+      "os": "fedora",
+      "ventoy_bootable": true,
+      "description": "Fedora 42 Workstation"
+    },
+    {
+      "id": "cachyos-260809",
+      "name": "CachyOS 260809 (Arch-optimized)",
+      "description": "netboot.xyz endpoint \u2014 cachyos 260809  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": "https://mirror.cachyos.org/iso/cachyos-260809.iso",
+      "arch": "x86_64",
+      "version": "260809",
+      "os": "cachyos",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/260809-5e532368/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initrd",
+        "vmlinuz",
+        "archiso_pxe_http"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": "2.5G",
+      "tags": [
+        "arch",
+        "cachyos"
+      ],
+      "ventoy_bootable": true,
+      "homepage": "https://cachyos.org",
+      "netboot_endpoint": "cachyos"
+    },
+    {
+      "id": "omarchy-4.0.2",
+      "name": "Omarchy 4.0.2 (Arch + Hyprland)",
+      "url": "https://iso.omarchy.org/omarchy-4.0.2.iso",
+      "arch": "x86_64",
+      "version": "4.0.2",
+      "size_human": "5.8G",
+      "sha256": "2ef8e624aa1bec7e277e28056b8535a6c9373ba48d7ede3f1a01cb6d2373cfb8",
+      "homepage": "https://omarchy.org",
+      "netboot_endpoint": "omarchy",
+      "tags": [
+        "omarchy",
+        "arch"
+      ],
+      "os": "omarchy",
+      "ventoy_bootable": true,
+      "description": "Omarchy 4.0.2 (Arch + Hyprland)"
+    },
+    {
+      "id": "ubuntu-24.04",
+      "name": "Ubuntu 24.04.3 LTS (Noble) Desktop",
+      "url": "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
+      "arch": "x86_64",
+      "version": "24.04.3",
+      "size_human": "6.0G",
+      "homepage": "https://ubuntu.com/download/desktop",
+      "tags": [
+        "ubuntu",
+        "large"
+      ],
+      "os": "ubuntu",
+      "ventoy_bootable": true,
+      "description": "Ubuntu 24.04.3 LTS (Noble) Desktop"
+    },
+    {
+      "id": "debian-13-netinst",
+      "name": "Debian 13 (Trixie) netinst \u2014 testing",
+      "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso",
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "size_human": "700M",
+      "homepage": "https://www.debian.org/distrib/",
+      "tags": [
+        "debian",
+        "netinst"
+      ],
+      "os": "debian",
+      "ventoy_bootable": true,
+      "description": "Debian 13 (Trixie) netinst \u2014 testing"
+    },
+    {
+      "id": "proxmox-backup-server",
+      "name": "proxmox-backup-server 4.2-1",
+      "description": "netboot.xyz endpoint \u2014 proxmox-backup-server 4.2-1  (x86_64) \u2014 ISO",
+      "url": "https://github.com/netbootxyz/asset-mirror/releases/download/4.2-1-ca8b9126/proxmox.iso",
+      "arch": "x86_64",
+      "version": "4.2-1",
+      "os": "proxmox-backup-server",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/4.2-1-ca8b9126/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "proxmox.iso"
+      ],
+      "netboot_iso_file": "proxmox.iso",
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "iso",
+        "proxmox-backup-server"
+      ],
+      "ventoy_bootable": true
+    },
+    {
+      "id": "proxmox-datacenter-manager",
+      "name": "proxmox-datacenter-manager 1.1-1",
+      "description": "netboot.xyz endpoint \u2014 proxmox-datacenter-manager 1.1-1  (x86_64) \u2014 ISO",
+      "url": "https://github.com/netbootxyz/asset-mirror/releases/download/1.1-1-c313fdaf/proxmox.iso",
+      "arch": "x86_64",
+      "version": "1.1-1",
+      "os": "proxmox-datacenter-manager",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/1.1-1-c313fdaf/",
+      "netboot_files": [
+        "initrd",
+        "proxmox.iso",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": "proxmox.iso",
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "iso",
+        "proxmox-datacenter-manager"
+      ],
+      "ventoy_bootable": true
+    },
+    {
+      "id": "proxmox-mailgateway",
+      "name": "proxmox-mailgateway 9.1-1",
+      "description": "netboot.xyz endpoint \u2014 proxmox-mailgateway 9.1-1  (x86_64) \u2014 ISO",
+      "url": "https://github.com/netbootxyz/asset-mirror/releases/download/9.1-1-fdfe5b69/proxmox.iso",
+      "arch": "x86_64",
+      "version": "9.1-1",
+      "os": "proxmox-mailgateway",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/9.1-1-fdfe5b69/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "proxmox.iso"
+      ],
+      "netboot_iso_file": "proxmox.iso",
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "iso",
+        "proxmox-mailgateway"
+      ],
+      "ventoy_bootable": true
+    },
+    {
+      "id": "proxmox-ve",
+      "name": "proxmox-ve 9.2-1",
+      "description": "netboot.xyz endpoint \u2014 proxmox-ve 9.2-1  (x86_64) \u2014 ISO",
+      "url": "https://github.com/netbootxyz/asset-mirror/releases/download/9.2-1-4bbcc809/proxmox.iso",
+      "arch": "x86_64",
+      "version": "9.2-1",
+      "os": "proxmox-ve",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/9.2-1-4bbcc809/",
+      "netboot_files": [
+        "initrd",
+        "proxmox.iso",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": "proxmox.iso",
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "iso",
+        "proxmox-ve"
+      ],
+      "ventoy_bootable": true
+    },
+    {
+      "id": "proxmox-ve-arm64",
+      "name": "proxmox-ve 9.2-1",
+      "description": "netboot.xyz endpoint \u2014 proxmox-ve 9.2-1  (arm64) \u2014 ISO",
+      "url": "https://github.com/netbootxyz/asset-mirror/releases/download/9.2-1-ab708b5c/proxmox.iso",
+      "arch": "arm64",
+      "version": "9.2-1",
+      "os": "proxmox-ve",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/9.2-1-ab708b5c/",
+      "netboot_files": [
+        "initrd",
+        "proxmox.iso",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": "proxmox.iso",
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "iso",
+        "proxmox-ve"
+      ],
+      "ventoy_bootable": true
+    },
+    {
+      "id": "tails",
+      "name": "tails 7.11",
+      "description": "netboot.xyz endpoint \u2014 tails 7.11  (amd64) \u2014 ISO",
+      "url": "https://github.com/netbootxyz/asset-mirror/releases/download/7.11-9a1a16cf/tails-amd64.iso",
+      "arch": "amd64",
+      "version": "7.11",
+      "os": "tails",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/7.11-9a1a16cf/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd.img",
+        "9990-misc-helpers.sh",
+        "tails-amd64.iso"
+      ],
+      "netboot_iso_file": "tails-amd64.iso",
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "iso",
+        "tails"
+      ],
+      "ventoy_bootable": true
+    },
+    {
+      "id": "4mlinux",
+      "name": "4mlinux current full",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current full (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "4mlinux",
+      "flavor": "full",
+      "netboot_path": "/asset-mirror/releases/download/52.0-858598a9/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "4mlinux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "4mlinux-antivirus",
+      "name": "4mlinux current AntivirusLiveCD",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current AntivirusLiveCD (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "4mlinux",
+      "flavor": "AntivirusLiveCD",
+      "netboot_path": "/asset-mirror/releases/download/52.0-1.5.2-4d985abe/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "4mlinux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "4mlinux-bakandimg",
+      "name": "4mlinux current BakAndImg",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current BakAndImg (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "4mlinux",
+      "flavor": "BakAndImg",
+      "netboot_path": "/asset-mirror/releases/download/52.0-66a6c047/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "4mlinux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "4mlinux-thesss",
+      "name": "4mlinux current TheSSS",
+      "description": "netboot.xyz endpoint \u2014 4mlinux current TheSSS (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "4mlinux",
+      "flavor": "TheSSS",
+      "netboot_path": "/asset-mirror/releases/download/52.0-9155a5ca/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "4mlinux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "archlinux-32",
+      "name": "archlinux 2024.07.10",
+      "description": "netboot.xyz endpoint \u2014 archlinux 2024.07.10  (i686) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "i686",
+      "version": "2024.07.10",
+      "os": "archlinux",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2024.07.10-a0d44609/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initramfs-linux.img",
+        "vmlinuz-linux"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "archlinux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "backbox-default-squash",
+      "name": "BackBox 8.1 desktop",
+      "description": "netboot.xyz endpoint \u2014 BackBox 8.1 desktop (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "8.1",
+      "os": "BackBox",
+      "flavor": "desktop",
+      "netboot_path": "/ubuntu-squash/releases/download/8.1-c2287989/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "BackBox"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "blackarch-installer",
+      "name": "blackarch current",
+      "description": "netboot.xyz endpoint \u2014 blackarch current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "blackarch",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2023.04.01-fe90c223/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "airootfs.sfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "blackarch"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "bluestar",
+      "name": "bluestar current",
+      "description": "netboot.xyz endpoint \u2014 bluestar current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "bluestar",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/6.7.8-2024.03.04-d4e083fc/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "airootfs.sfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "bluestar"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "bodhi-apppack",
+      "name": "bodhi 7.0.0 apppack",
+      "description": "netboot.xyz endpoint \u2014 bodhi 7.0.0 apppack (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "7.0.0",
+      "os": "bodhi",
+      "flavor": "apppack",
+      "netboot_path": "/ubuntu-squash/releases/download/7.0.0-b10d29eb/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "bodhi"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "bodhi-standard",
+      "name": "bodhi 7.0.0 standard",
+      "description": "netboot.xyz endpoint \u2014 bodhi 7.0.0 standard (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "7.0.0",
+      "os": "bodhi",
+      "flavor": "standard",
+      "netboot_path": "/ubuntu-squash/releases/download/7.0.0-0b77b753/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "bodhi"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "bootrepair",
+      "name": "bootrepair current",
+      "description": "netboot.xyz endpoint \u2014 bootrepair current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "bootrepair",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/current-e035b00c/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "bootrepair"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "breakin",
+      "name": "breakin 4.26.1",
+      "description": "netboot.xyz endpoint \u2014 breakin 4.26.1  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "4.26.1",
+      "os": "breakin",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/4.26.1-f22abf78/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "breakin"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "caine",
+      "name": "caine 13.0",
+      "description": "netboot.xyz endpoint \u2014 caine 13.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.0",
+      "os": "caine",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/13.0-512fe637/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "caine"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "clonezilla-debian-stable-amd64",
+      "name": "clonezilla 3.3.3-15 stable",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 3.3.3-15 stable (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "3.3.3-15",
+      "os": "clonezilla",
+      "flavor": "stable",
+      "netboot_path": "/debian-squash/releases/download/3.3.3-15-0790c10c/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "clonezilla"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "clonezilla-debian-testing-amd64",
+      "name": "clonezilla 3.3.3-32 testing",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 3.3.3-32 testing (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "3.3.3-32",
+      "os": "clonezilla",
+      "flavor": "testing",
+      "netboot_path": "/debian-squash/releases/download/3.3.3-32-7f56e939/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "clonezilla"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "clonezilla-ubuntu-stable-amd64",
+      "name": "clonezilla 20260705-resolute stable",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 20260705-resolute stable (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "20260705-resolute",
+      "os": "clonezilla",
+      "flavor": "stable",
+      "netboot_path": "/ubuntu-squash/releases/download/20260705-resolute-e29c1458/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "clonezilla"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "clonezilla-ubuntu-testing-amd64",
+      "name": "clonezilla 20260812-stonking testing",
+      "description": "netboot.xyz endpoint \u2014 clonezilla 20260812-stonking testing (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "20260812-stonking",
+      "os": "clonezilla",
+      "flavor": "testing",
+      "netboot_path": "/ubuntu-squash/releases/download/20260812-stonking-2558197c/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "clonezilla"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "dban",
+      "name": "dban 2.3.0",
+      "description": "netboot.xyz endpoint \u2014 dban 2.3.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2.3.0",
+      "os": "dban",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2.3.0-c3b4b7a6/",
+      "netboot_files": [
+        "DBAN.BZI"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "dban"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-cinnamon-squash",
+      "name": "debian 13.6.0 cinnamon",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "cinnamon",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-b92f504b/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-default-squash",
+      "name": "debian 13.6.0 core",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 core (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "core",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-96693faa/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-gnome-squash",
+      "name": "debian 13.6.0 gnome",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "gnome",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-fb71121c/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-kde-squash",
+      "name": "debian 13.6.0 kde",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 kde (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "kde",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-e4e00843/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-live-kernel",
+      "name": "debian 13",
+      "description": "netboot.xyz endpoint \u2014 debian 13  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13",
+      "os": "debian",
+      "flavor": "",
+      "netboot_path": "/debian-core-13/releases/download/13.6.0-f21f0a6b/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-lxde-squash",
+      "name": "debian 13.6.0 lxde",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 lxde (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "lxde",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-f94e83c4/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-lxqt-squash",
+      "name": "debian 13.6.0 lxqt",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 lxqt (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "lxqt",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-7b24d038/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-mate-squash",
+      "name": "debian 13.6.0 mate",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "mate",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-ca54f57a/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "debian-13-xfce-squash",
+      "name": "debian 13.6.0 xfce",
+      "description": "netboot.xyz endpoint \u2014 debian 13.6.0 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "13.6.0",
+      "os": "debian",
+      "flavor": "xfce",
+      "netboot_path": "/debian-squash/releases/download/13.6.0-3761931e/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "debian"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "deepin-20-squash",
+      "name": "Deepin 20.9",
+      "description": "netboot.xyz endpoint \u2014 Deepin 20.9  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.9",
+      "os": "Deepin",
+      "flavor": "",
+      "netboot_path": "/debian-squash/releases/download/20.9-cb214ab4/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "Deepin"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "devuan-ascii",
+      "name": "devuan 2 ascii",
+      "description": "netboot.xyz endpoint \u2014 devuan 2 ascii (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2",
+      "os": "devuan",
+      "flavor": "ascii",
+      "netboot_path": "/debian-squash/releases/download/2.1-c1f637a9/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "devuan"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "dts",
+      "name": "dts 2.7.1",
+      "description": "netboot.xyz endpoint \u2014 dts 2.7.1  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2.7.1",
+      "os": "dts",
+      "flavor": "",
+      "netboot_path": "/dts/v2.7.1",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "dts"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "elementaryos-6-default-squash",
+      "name": "elementary-os 6",
+      "description": "netboot.xyz endpoint \u2014 elementary-os 6  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6",
+      "os": "elementary-os",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/6-3e90a5ea/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "elementary-os"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "elementaryos-7-default-squash",
+      "name": "elementary-os 7",
+      "description": "netboot.xyz endpoint \u2014 elementary-os 7  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "7",
+      "os": "elementary-os",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/7-c98a385c/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "elementary-os"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "endeavouros",
+      "name": "endeavouros Titan-Nova-2026.08.15",
+      "description": "netboot.xyz endpoint \u2014 endeavouros Titan-Nova-2026.08.15  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "Titan-Nova-2026.08.15",
+      "os": "endeavouros",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/Titan-Nova-2026.08.15-a87b6a2f/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "endeavouros"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "fatdog",
+      "name": "fatdog current",
+      "description": "netboot.xyz endpoint \u2014 fatdog current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "fatdog",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/904-735701a5/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "fatdog"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "fedora-40-gnome",
+      "name": "fedora 40 GNOME",
+      "description": "netboot.xyz endpoint \u2014 fedora 40 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "40",
+      "os": "fedora",
+      "flavor": "GNOME",
+      "netboot_path": "/fedora-assets/releases/download/1.14-aefc8f89/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd",
+        "squashfs.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "fedora"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-cinnamon",
+      "name": "garuda 250801 cinnamon",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "cinnamon",
+      "netboot_path": "/asset-mirror/releases/download/250801-0b360492/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-dr460nized",
+      "name": "garuda 250801 dr460nized",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 dr460nized (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "dr460nized",
+      "netboot_path": "/asset-mirror/releases/download/250801-f610be58/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-dr460nized-gaming",
+      "name": "garuda 250801 dr460nized-gaming",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 dr460nized-gaming (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "dr460nized-gaming",
+      "netboot_path": "/asset-mirror/releases/download/250801-a96201bb/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-gnome",
+      "name": "garuda 250801 gnome",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "gnome",
+      "netboot_path": "/asset-mirror/releases/download/250801-c80a21be/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-i3wm",
+      "name": "garuda 250801 i3wm",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 i3wm (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "i3wm",
+      "netboot_path": "/asset-mirror/releases/download/250801-d48b8f05/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-kde-barebones",
+      "name": "garuda 220329 kde-barebones",
+      "description": "netboot.xyz endpoint \u2014 garuda 220329 kde-barebones (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "220329",
+      "os": "garuda",
+      "flavor": "kde-barebones",
+      "netboot_path": "/asset-mirror/releases/download/220329-198784ed/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-lxqt-kwin",
+      "name": "garuda 230501 lxqt-kwin",
+      "description": "netboot.xyz endpoint \u2014 garuda 230501 lxqt-kwin (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "230501",
+      "os": "garuda",
+      "flavor": "lxqt-kwin",
+      "netboot_path": "/asset-mirror/releases/download/230501-f13b4b24/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-mate",
+      "name": "garuda 230501 mate",
+      "description": "netboot.xyz endpoint \u2014 garuda 230501 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "230501",
+      "os": "garuda",
+      "flavor": "mate",
+      "netboot_path": "/asset-mirror/releases/download/230501-3af08aa6/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-qtile",
+      "name": "garuda 231029 qtile",
+      "description": "netboot.xyz endpoint \u2014 garuda 231029 qtile (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "231029",
+      "os": "garuda",
+      "flavor": "qtile",
+      "netboot_path": "/asset-mirror/releases/download/231029-9dfb930b/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-sway",
+      "name": "garuda 250801 sway",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 sway (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "sway",
+      "netboot_path": "/asset-mirror/releases/download/250801-8d451890/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-wayfire",
+      "name": "garuda 230501 wayfire",
+      "description": "netboot.xyz endpoint \u2014 garuda 230501 wayfire (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "230501",
+      "os": "garuda",
+      "flavor": "wayfire",
+      "netboot_path": "/asset-mirror/releases/download/230501-61b681d1/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "garuda-xfce",
+      "name": "garuda 250801 xfce",
+      "description": "netboot.xyz endpoint \u2014 garuda 250801 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "250801",
+      "os": "garuda",
+      "flavor": "xfce",
+      "netboot_path": "/asset-mirror/releases/download/250801-c866e6bf/",
+      "netboot_files": [
+        "amd_ucode.img",
+        "desktopfs.sfs",
+        "intel_ucode.img",
+        "livefs.sfs",
+        "initramfs.img",
+        "mhwdfs.sfs",
+        "rootfs.sfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "garuda"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "gentoo-amd64",
+      "name": "gentoo 20260811T083102Z",
+      "description": "netboot.xyz endpoint \u2014 gentoo 20260811T083102Z  (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "20260811T083102Z",
+      "os": "gentoo",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/20260811T083102Z-245180de/",
+      "netboot_files": [
+        "image.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "gentoo"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "gentoo-arm64",
+      "name": "gentoo 20260816T204555Z",
+      "description": "netboot.xyz endpoint \u2014 gentoo 20260816T204555Z  (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "20260816T204555Z",
+      "os": "gentoo",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/20260816T204555Z-e9d13c28/",
+      "netboot_files": [
+        "image.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "gentoo"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "gentoo-x86",
+      "name": "gentoo 20260804T163056Z",
+      "description": "netboot.xyz endpoint \u2014 gentoo 20260804T163056Z  (x86) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86",
+      "version": "20260804T163056Z",
+      "os": "gentoo",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/20260804T163056Z-066bbf20/",
+      "netboot_files": [
+        "image.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "gentoo"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "gparted-stable",
+      "name": "gparted stable",
+      "description": "netboot.xyz endpoint \u2014 gparted stable  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "stable",
+      "os": "gparted",
+      "flavor": "",
+      "netboot_path": "/debian-squash/releases/download/1.8.1-3-80b39d5b/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "gparted"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "grml-full-amd64",
+      "name": "grml 2026.04 full",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 full (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "2026.04",
+      "os": "grml",
+      "flavor": "full",
+      "netboot_path": "/debian-squash/releases/download/2026.04-724f4353/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "grml"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "grml-full-arm64",
+      "name": "grml 2026.04 full",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 full (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "2026.04",
+      "os": "grml",
+      "flavor": "full",
+      "netboot_path": "/debian-squash/releases/download/2026.04-8ad6c3d2/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "grml"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "grml-small-amd64",
+      "name": "grml 2026.04 small",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 small (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "2026.04",
+      "os": "grml",
+      "flavor": "small",
+      "netboot_path": "/debian-squash/releases/download/2026.04-ce174dbb/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "grml"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "grml-small-arm64",
+      "name": "grml 2026.04 small",
+      "description": "netboot.xyz endpoint \u2014 grml 2026.04 small (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "2026.04",
+      "os": "grml",
+      "flavor": "small",
+      "netboot_path": "/debian-squash/releases/download/2026.04-815421ba/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "grml"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "harvester",
+      "name": "harvester v1.7.3",
+      "description": "netboot.xyz endpoint \u2014 harvester v1.7.3  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "v1.7.3",
+      "os": "harvester",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/v1.7.3-9348084a/",
+      "netboot_files": [
+        "harvester-vmlinuz-amd64",
+        "harvester-initrd-amd64",
+        "harvester-rootfs-amd64.squashfs",
+        "harvester-amd64.sha512",
+        "version.yaml"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "harvester"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "hrmpf",
+      "name": "hrmpf 20231124",
+      "description": "netboot.xyz endpoint \u2014 hrmpf 20231124  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20231124",
+      "os": "hrmpf",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/20231124-1008bb6d/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd",
+        "squashfs.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "hrmpf"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "kali-xfce-squash",
+      "name": "kali 2026.2 xfce",
+      "description": "netboot.xyz endpoint \u2014 kali 2026.2 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2026.2",
+      "os": "kali",
+      "flavor": "xfce",
+      "netboot_path": "/debian-squash/releases/download/2026.2-6fd5ce88/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "kali"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "kaspersky-rescue",
+      "name": "kaspersky 18",
+      "description": "netboot.xyz endpoint \u2014 kaspersky 18  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "18",
+      "os": "kaspersky",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/18-7f6056db/",
+      "netboot_files": [
+        "initrd.xz",
+        "initrd",
+        "vmlinuz",
+        "kernel.dat",
+        "000-core.srm",
+        "001-xorg.srm",
+        "002-xfce.srm",
+        "003-kl.srm",
+        "004-krt.srm",
+        "005-bases.srm",
+        "008-firefox.srm"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "kaspersky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "kde-neon-user",
+      "name": "neon 20260604-1324 user",
+      "description": "netboot.xyz endpoint \u2014 neon 20260604-1324 user (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20260604-1324",
+      "os": "neon",
+      "flavor": "user",
+      "netboot_path": "/ubuntu-squash/releases/download/20260604-1324-88395a11/",
+      "netboot_files": [
+        "vmlinuz",
+        "filesystem.squashfs",
+        "initrd.lz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "neon"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "kodachi-6",
+      "name": "kodachi 6",
+      "description": "netboot.xyz endpoint \u2014 kodachi 6  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6",
+      "os": "kodachi",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/6.2-2a23039c/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "kodachi"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "kodachi-7",
+      "name": "kodachi 7",
+      "description": "netboot.xyz endpoint \u2014 kodachi 7  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "7",
+      "os": "kodachi",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/7.6-5b1ead62/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "kodachi"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "kodachi-8",
+      "name": "kodachi 8",
+      "description": "netboot.xyz endpoint \u2014 kodachi 8  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "8",
+      "os": "kodachi",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/8.2-625e11fa/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "kodachi"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "linux-lite-5-squash",
+      "name": "lite 5.8",
+      "description": "netboot.xyz endpoint \u2014 lite 5.8  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "5.8",
+      "os": "lite",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/5.8-75cb937c/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "lite"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "linux-lite-6-squash",
+      "name": "lite 6.4",
+      "description": "netboot.xyz endpoint \u2014 lite 6.4  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6.4",
+      "os": "lite",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/6.4-2550834c/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "lite"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "lxle",
+      "name": "lxle current",
+      "description": "netboot.xyz endpoint \u2014 lxle current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "lxle",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/18.04.3-83291c4b/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "lxle"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "manjaro-gnome-current",
+      "name": "manjaro current gnome",
+      "description": "netboot.xyz endpoint \u2014 manjaro current gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "manjaro",
+      "flavor": "gnome",
+      "netboot_path": "/manjaro-squash/releases/download/26.0.4-260327-linux618-917f9a0a/",
+      "netboot_files": [
+        "livefs.sfs",
+        "rootfs.sfs",
+        "mhwdfs.sfs",
+        "desktopfs.sfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "manjaro"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "manjaro-kde-current",
+      "name": "manjaro current kde",
+      "description": "netboot.xyz endpoint \u2014 manjaro current kde (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "manjaro",
+      "flavor": "kde",
+      "netboot_path": "/manjaro-squash/releases/download/26.0.4-260327-linux618-df3b24fa/",
+      "netboot_files": [
+        "livefs.sfs",
+        "rootfs.sfs",
+        "mhwdfs.sfs",
+        "desktopfs.sfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "manjaro"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "manjaro-xfce-current",
+      "name": "manjaro current xfce",
+      "description": "netboot.xyz endpoint \u2014 manjaro current xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "manjaro",
+      "flavor": "xfce",
+      "netboot_path": "/manjaro-squash/releases/download/26.0.4-260327-linux618-93c4b57e/",
+      "netboot_files": [
+        "livefs.sfs",
+        "rootfs.sfs",
+        "mhwdfs.sfs",
+        "desktopfs.sfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "manjaro"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "memtest86",
+      "name": "memtest86-free 11.7",
+      "description": "netboot.xyz endpoint \u2014 memtest86-free 11.7  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "11.7",
+      "os": "memtest86-free",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/11.7-55cdeb8e/",
+      "netboot_files": [
+        "memtest86-usb.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "memtest86-free"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "memtest86plus",
+      "name": "memtest86-plus 8.00",
+      "description": "netboot.xyz endpoint \u2014 memtest86-plus 8.00  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "8.00",
+      "os": "memtest86-plus",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/8.00-32a14678/",
+      "netboot_files": [
+        "memtest32.bin",
+        "memtest32.efi",
+        "memtest64.bin",
+        "memtest64.efi",
+        "mt86p_i586",
+        "mt86p_la64",
+        "mt86p_x86_64"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "memtest86-plus"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mfsbsd-14",
+      "name": "freebsd 14",
+      "description": "netboot.xyz endpoint \u2014 freebsd 14  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "14",
+      "os": "freebsd",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/14.2-a0a0ac45/",
+      "netboot_files": [
+        "default.img",
+        "special-edition.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "freebsd"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-20-cinnamon-squash",
+      "name": "mint 20.3 Cinnamon",
+      "description": "netboot.xyz endpoint \u2014 mint 20.3 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.3",
+      "os": "mint",
+      "flavor": "Cinnamon",
+      "netboot_path": "/ubuntu-squash/releases/download/20.3-8b9bc9d4/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-20-mate-squash",
+      "name": "mint 20.3 mate",
+      "description": "netboot.xyz endpoint \u2014 mint 20.3 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.3",
+      "os": "mint",
+      "flavor": "mate",
+      "netboot_path": "/ubuntu-squash/releases/download/20.3-1308999e/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-20-xfce-squash",
+      "name": "mint 20.3 xfce",
+      "description": "netboot.xyz endpoint \u2014 mint 20.3 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.3",
+      "os": "mint",
+      "flavor": "xfce",
+      "netboot_path": "/ubuntu-squash/releases/download/20.3-68ef39b2/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-21-cinnamon-squash",
+      "name": "mint 21 Cinnamon",
+      "description": "netboot.xyz endpoint \u2014 mint 21 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "21",
+      "os": "mint",
+      "flavor": "Cinnamon",
+      "netboot_path": "/ubuntu-squash/releases/download/21-eec307d9/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-21-mate-squash",
+      "name": "mint 21 mate",
+      "description": "netboot.xyz endpoint \u2014 mint 21 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "21",
+      "os": "mint",
+      "flavor": "mate",
+      "netboot_path": "/ubuntu-squash/releases/download/21-cab2fe58/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-21-xfce-squash",
+      "name": "mint 21 xfce",
+      "description": "netboot.xyz endpoint \u2014 mint 21 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "21",
+      "os": "mint",
+      "flavor": "xfce",
+      "netboot_path": "/ubuntu-squash/releases/download/21-661c5b6f/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-22-cinnamon-squash",
+      "name": "mint 22 Cinnamon",
+      "description": "netboot.xyz endpoint \u2014 mint 22 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22",
+      "os": "mint",
+      "flavor": "Cinnamon",
+      "netboot_path": "/ubuntu-squash/releases/download/22-2b593d38/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-22-mate-squash",
+      "name": "mint 22 mate",
+      "description": "netboot.xyz endpoint \u2014 mint 22 mate (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22",
+      "os": "mint",
+      "flavor": "mate",
+      "netboot_path": "/ubuntu-squash/releases/download/22-487af4d4/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-22-xfce-squash",
+      "name": "mint 22 xfce",
+      "description": "netboot.xyz endpoint \u2014 mint 22 xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22",
+      "os": "mint",
+      "flavor": "xfce",
+      "netboot_path": "/ubuntu-squash/releases/download/22-8770cb66/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "mint-lmde-cinnamon-squash",
+      "name": "mint 6 Cinnamon",
+      "description": "netboot.xyz endpoint \u2014 mint 6 Cinnamon (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6",
+      "os": "mint",
+      "flavor": "Cinnamon",
+      "netboot_path": "/debian-squash/releases/download/6-1834227b/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "mint"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "nitrux-release",
+      "name": "nitrux 2022.02.28",
+      "description": "netboot.xyz endpoint \u2014 nitrux 2022.02.28  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2022.02.28",
+      "os": "nitrux",
+      "flavor": "",
+      "netboot_path": "/ubuntu-squash/releases/download/2022.02.28-e364d0a5/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "nitrux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "nixos-20.03",
+      "name": "nixos 20.03",
+      "description": "netboot.xyz endpoint \u2014 nixos 20.03  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.03",
+      "os": "nixos",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/124244129-bd20f138/",
+      "netboot_files": [
+        "bzImage",
+        "initrd",
+        "netboot.ipxe"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "nixos"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "omarchy",
+      "name": "omarchy 4.0.2",
+      "description": "netboot.xyz endpoint \u2014 omarchy 4.0.2  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "4.0.2",
+      "os": "omarchy",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/4.0.2-abf09efd/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initrd",
+        "vmlinuz",
+        "archiso_pxe_http"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "omarchy"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "omarchy-netboot",
+      "name": "Omarchy 4.0.2 (netboot squashfs)",
+      "url": null,
+      "netboot_path": "/asset-mirror/releases/download/4.0.2-abf09efd/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "arch": "x86_64",
+      "version": "4.0.2",
+      "homepage": "https://omarchy.org",
+      "tags": [
+        "omarchy",
+        "netboot",
+        "not-ventoy"
+      ],
+      "os": "omarchy",
+      "ventoy_bootable": false,
+      "description": "Omarchy 4.0.2 (netboot squashfs)"
+    },
+    {
+      "id": "oracle-8",
+      "name": "oracle 8",
+      "description": "netboot.xyz endpoint \u2014 oracle 8  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "8",
+      "os": "oracle",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/6-ddbb57bc/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd",
+        "squashfs.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "oracle"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "oracle-9-aarch64",
+      "name": "oracle 9",
+      "description": "netboot.xyz endpoint \u2014 oracle 9  (aarch64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "aarch64",
+      "version": "9",
+      "os": "oracle",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/U2-e36ba13e/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd",
+        "squashfs.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "oracle"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "oracle-9-x86_64",
+      "name": "oracle 9",
+      "description": "netboot.xyz endpoint \u2014 oracle 9  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "9",
+      "os": "oracle",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/U2-cf364f3e/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd",
+        "squashfs.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "oracle"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "parrot-home",
+      "name": "parrot 6.3.2 home",
+      "description": "netboot.xyz endpoint \u2014 parrot 6.3.2 home (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6.3.2",
+      "os": "parrot",
+      "flavor": "home",
+      "netboot_path": "/debian-squash/releases/download/6.3.2-4f9f85a8/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "parrot"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "parrot-security",
+      "name": "parrot 6.3.2 security",
+      "description": "netboot.xyz endpoint \u2014 parrot 6.3.2 security (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6.3.2",
+      "os": "parrot",
+      "flavor": "security",
+      "netboot_path": "/debian-squash/releases/download/6.3.2-9e456d69/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "parrot"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "pop-20.04-default-squash",
+      "name": "pop 20.04 intel-amd",
+      "description": "netboot.xyz endpoint \u2014 pop 20.04 intel-amd (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "pop",
+      "flavor": "intel-amd",
+      "netboot_path": "/ubuntu-squash/releases/download/5-66b7e861/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "pop"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "pop-20.04-nvidia-squash",
+      "name": "pop 20.04 nvidia",
+      "description": "netboot.xyz endpoint \u2014 pop 20.04 nvidia (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "pop",
+      "flavor": "nvidia",
+      "netboot_path": "/ubuntu-squash/releases/download/5-6efd1d75/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "pop"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "pop-22.04-default-squash",
+      "name": "pop 22.04 intel-amd",
+      "description": "netboot.xyz endpoint \u2014 pop 22.04 intel-amd (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "pop",
+      "flavor": "intel-amd",
+      "netboot_path": "/ubuntu-squash/releases/download/21-23d162dc/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "pop"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "pureos-gnome",
+      "name": "pureos current gnome",
+      "description": "netboot.xyz endpoint \u2014 pureos current gnome (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "pureos",
+      "flavor": "gnome",
+      "netboot_path": "/ubuntu-squash/releases/download/2020-08-06-83257efc/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "pureos"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "q4os-default-squash",
+      "name": "Q4OS 6.8 trinity",
+      "description": "netboot.xyz endpoint \u2014 Q4OS 6.8 trinity (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6.8",
+      "os": "Q4OS",
+      "flavor": "trinity",
+      "netboot_path": "/debian-squash/releases/download/6.8-20787c37/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "Q4OS"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "q4os-plasma-squash",
+      "name": "Q4OS 6.8 plasma",
+      "description": "netboot.xyz endpoint \u2014 Q4OS 6.8 plasma (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "6.8",
+      "os": "Q4OS",
+      "flavor": "plasma",
+      "netboot_path": "/debian-squash/releases/download/6.8-ef5260a0/",
+      "netboot_files": [
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "Q4OS"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "raizo",
+      "name": "raizo current",
+      "description": "netboot.xyz endpoint \u2014 raizo current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "raizo",
+      "flavor": "",
+      "netboot_path": "/debian-squash/releases/download/v17.26.07.19i-b3fb2bff/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "raizo"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "redorescue",
+      "name": "redorescue 4.0.0",
+      "description": "netboot.xyz endpoint \u2014 redorescue 4.0.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "4.0.0",
+      "os": "redorescue",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/4.0.0-67795393/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "redorescue"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "regolith-current",
+      "name": "regolith current ubuntu",
+      "description": "netboot.xyz endpoint \u2014 regolith current ubuntu (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "regolith",
+      "flavor": "ubuntu",
+      "netboot_path": "/ubuntu-squash/releases/download/1.2-e7db33e3/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "filesystem.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "regolith"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "rescatux",
+      "name": "rescatux current",
+      "description": "netboot.xyz endpoint \u2014 rescatux current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "rescatux",
+      "flavor": "",
+      "netboot_path": "/debian-squash/releases/download/0.72-beta8-0a34f075/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "rescatux"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "rescuezilla",
+      "name": "rescuezilla 2.6.1",
+      "description": "netboot.xyz endpoint \u2014 rescuezilla 2.6.1  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2.6.1",
+      "os": "rescuezilla",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2.6.1-123ed276/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "rescuezilla"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "septor",
+      "name": "septor current",
+      "description": "netboot.xyz endpoint \u2014 septor current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "septor",
+      "flavor": "",
+      "netboot_path": "/debian-squash/releases/download/2022-1f272eb6/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "septor"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "shredos-i686",
+      "name": "shredos 0.34_32-bit_20221231",
+      "description": "netboot.xyz endpoint \u2014 shredos 0.34_32-bit_20221231  (i686) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "i686",
+      "version": "0.34_32-bit_20221231",
+      "os": "shredos",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/0.34_32-bit_20221231-9e06d8ae/",
+      "netboot_files": [
+        "shredos"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "shredos"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "shredos-x86_64",
+      "name": "shredos 2025.11_31_x86-64_0.42",
+      "description": "netboot.xyz endpoint \u2014 shredos 2025.11_31_x86-64_0.42  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2025.11_31_x86-64_0.42",
+      "os": "shredos",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2025.11_31_x86-64_0.42-a3f5b3ae/",
+      "netboot_files": [
+        "shredos"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "shredos"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "sparky-rolling-gui",
+      "name": "sparky rolling xfce",
+      "description": "netboot.xyz endpoint \u2014 sparky rolling xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "rolling",
+      "os": "sparky",
+      "flavor": "xfce",
+      "netboot_path": "/debian-squash/releases/download/2026.03-314f0a50/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "sparky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "sparky-rolling-lxqt",
+      "name": "sparky rolling lxqt",
+      "description": "netboot.xyz endpoint \u2014 sparky rolling lxqt (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "rolling",
+      "os": "sparky",
+      "flavor": "lxqt",
+      "netboot_path": "/debian-squash/releases/download/2026.03-1a7f6c6a/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "sparky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "sparky-rolling-mingui",
+      "name": "sparky rolling xfce-min",
+      "description": "netboot.xyz endpoint \u2014 sparky rolling xfce-min (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "rolling",
+      "os": "sparky",
+      "flavor": "xfce-min",
+      "netboot_path": "/debian-squash/releases/download/2026.03-8a7a4cf8/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "sparky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "sparky-stable-gui",
+      "name": "sparky stable xfce",
+      "description": "netboot.xyz endpoint \u2014 sparky stable xfce (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "stable",
+      "os": "sparky",
+      "flavor": "xfce",
+      "netboot_path": "/debian-squash/releases/download/8.3.1-28fbf253/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "sparky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "sparky-stable-lxqt",
+      "name": "sparky stable lxqt",
+      "description": "netboot.xyz endpoint \u2014 sparky stable lxqt (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "stable",
+      "os": "sparky",
+      "flavor": "lxqt",
+      "netboot_path": "/debian-squash/releases/download/8.3-16df4761/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "sparky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "sparky-stable-mingui",
+      "name": "sparky stable xfce-min",
+      "description": "netboot.xyz endpoint \u2014 sparky stable xfce-min (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "stable",
+      "os": "sparky",
+      "flavor": "xfce-min",
+      "netboot_path": "/debian-squash/releases/download/8.3-d8df60d4/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "sparky"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "supergrubdisk",
+      "name": "supergrubdisk 2.06s4",
+      "description": "netboot.xyz endpoint \u2014 supergrubdisk 2.06s4  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2.06s4",
+      "os": "supergrubdisk",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2.06s4-7d8c9492/",
+      "netboot_files": [
+        "supergrub2-classic-x86_64.efi"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "supergrubdisk"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "systemrescue-amd64",
+      "name": "systemrescue 13.02",
+      "description": "netboot.xyz endpoint \u2014 systemrescue 13.02  (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "13.02",
+      "os": "systemrescue",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/13.02-ad4fca0b/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initrd",
+        "vmlinuz",
+        "archiso_pxe_http"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "systemrescue"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "systemrescue-i686",
+      "name": "systemrescue 9.03",
+      "description": "netboot.xyz endpoint \u2014 systemrescue 9.03  (i686) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "i686",
+      "version": "9.03",
+      "os": "systemrescue",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/9.03-0f19cc5c/",
+      "netboot_files": [
+        "airootfs.sfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "systemrescue"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-Budgie-squash",
+      "name": "ubuntu 20.04 Budgie",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 Budgie (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "Budgie",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-67d49334/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-KDE-squash",
+      "name": "ubuntu 20.04 KDE",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 KDE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "KDE",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-b70db93f/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-LXQT-squash",
+      "name": "ubuntu 20.04 LXQT",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 LXQT (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "LXQT",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.5-d8b36f04/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-MATE-squash",
+      "name": "ubuntu 20.04 MATE",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 MATE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "MATE",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-6bb01f2e/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-XFCE-squash",
+      "name": "ubuntu 20.04 XFCE",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 XFCE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "XFCE",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-09e46288/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-default-squash",
+      "name": "ubuntu 20.04 GNOME",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "GNOME",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-d37bfb5f/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-20.04-kylin-squash",
+      "name": "ubuntu 20.04 kylin",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04 kylin (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "20.04",
+      "os": "ubuntu",
+      "flavor": "kylin",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-3bddfc62/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-Budgie-squash",
+      "name": "ubuntu 22.04 Budgie",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 Budgie (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "Budgie",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-6741cfe6/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-KDE-squash",
+      "name": "ubuntu 22.04 KDE",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 KDE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "KDE",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-15476290/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-LXQT-squash",
+      "name": "ubuntu 22.04 LXQT",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 LXQT (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "LXQT",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-898ace36/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-MATE-squash",
+      "name": "ubuntu 22.04 MATE",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 MATE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "MATE",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-c6e8816b/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-XFCE-squash",
+      "name": "ubuntu 22.04 XFCE",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 XFCE (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "XFCE",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-c2dcb4c5/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-default-squash",
+      "name": "ubuntu 22.04 GNOME",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "GNOME",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-206d4f50/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-22.04-kylin-squash",
+      "name": "ubuntu 22.04 kylin",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04 kylin (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "22.04",
+      "os": "ubuntu",
+      "flavor": "kylin",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-ea089ee1/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-24.04-default-squash",
+      "name": "ubuntu 24.04 GNOME",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04 GNOME (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "24.04",
+      "os": "ubuntu",
+      "flavor": "GNOME",
+      "netboot_path": "/ubuntu-squash/releases/download/24.04.4-88542178/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz",
+        "minimal.standard.live.squashfs",
+        "minimal.standard.squashfs",
+        "minimal.squashfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-20.04-amd64",
+      "name": "ubuntu 20.04.6 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04.6 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "20.04.6",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.6-5e5212b4/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-20.04-arm64",
+      "name": "ubuntu 20.04.5 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 20.04.5 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "20.04.5",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/20.04.5-eeac4ce0/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-22.04-amd64",
+      "name": "ubuntu 22.04.5 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04.5 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "22.04.5",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-3b4b797c/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-22.04-arm64",
+      "name": "ubuntu 22.04.5 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 22.04.5 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "22.04.5",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/22.04.5-2850932c/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-24.04-amd64",
+      "name": "ubuntu 24.04.4 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "24.04.4",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/24.04.4-494663bf/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-24.04-arm64",
+      "name": "ubuntu 24.04.4 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "24.04.4",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/24.04.4-079b63cc/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-24.10-amd64",
+      "name": "ubuntu 24.10 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.10 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "24.10",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/24.10-835ab0cb/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-24.10-arm64",
+      "name": "ubuntu 24.10 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.10 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "24.10",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/24.10-f22a7742/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-25.04-amd64",
+      "name": "ubuntu 25.04 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.04 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "25.04",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/25.04-fa10ffe9/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-25.04-arm64",
+      "name": "ubuntu 25.04 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.04 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "25.04",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/25.04-63097bc7/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-25.10-amd64",
+      "name": "ubuntu 25.10 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.10 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "25.10",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/25.10-e5b10ff7/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-25.10-arm64",
+      "name": "ubuntu 25.10 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 25.10 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "25.10",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/25.10-2e341d3c/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-26.04-amd64",
+      "name": "ubuntu 26.04 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 26.04 netboot (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "26.04",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/26.04-c43af979/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-26.04-arm64",
+      "name": "ubuntu 26.04 netboot",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 26.04 netboot (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "26.04",
+      "os": "ubuntu",
+      "flavor": "netboot",
+      "netboot_path": "/ubuntu-squash/releases/download/26.04-d4149848/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-hwe-24.04-amd64",
+      "name": "ubuntu 24.04.4 netboot-hwe",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot-hwe (amd64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "amd64",
+      "version": "24.04.4",
+      "os": "ubuntu",
+      "flavor": "netboot-hwe",
+      "netboot_path": "/ubuntu-squash/releases/download/24.04.4-404ef3c5/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-netboot-hwe-24.04-arm64",
+      "name": "ubuntu 24.04.4 netboot-hwe",
+      "description": "netboot.xyz endpoint \u2014 ubuntu 24.04.4 netboot-hwe (arm64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "arm64",
+      "version": "24.04.4",
+      "os": "ubuntu",
+      "flavor": "netboot-hwe",
+      "netboot_path": "/ubuntu-squash/releases/download/24.04.4-8adb9c67/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "ubuntu-spins",
+      "name": "ubuntu-spins 0.0.5",
+      "description": "netboot.xyz endpoint \u2014 ubuntu-spins 0.0.5  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "0.0.5",
+      "os": "ubuntu-spins",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/0.0.5-72e9df9f/",
+      "netboot_files": [
+        "vmlinuz",
+        "initrd"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "ubuntu-spins"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "uefi-shell-x64",
+      "name": "uefi-shell-x64 edk2-stable202002",
+      "description": "netboot.xyz endpoint \u2014 uefi-shell-x64 edk2-stable202002  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "edk2-stable202002",
+      "os": "uefi-shell-x64",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/edk2-stable202002-f972d3ff/",
+      "netboot_files": [
+        "uefi-shell-x64.efi"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "uefi-shell-x64"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "uefishell",
+      "name": "uefi-shell edk2-stable202002",
+      "description": "netboot.xyz endpoint \u2014 uefi-shell edk2-stable202002  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "edk2-stable202002",
+      "os": "uefi-shell",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/edk2-stable202002-40a49dfd/",
+      "netboot_files": [
+        "uefi-shell-x64.efi",
+        "uefi-shell-aarch64.efi",
+        "uefi-shell-arm.efi"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "uefi-shell"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "vanilla-os",
+      "name": "vanilla-os 2-20240728",
+      "description": "netboot.xyz endpoint \u2014 vanilla-os 2-20240728  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "2-20240728",
+      "os": "vanilla-os",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/20240728-32e3ebb7/",
+      "netboot_files": [
+        "initrd",
+        "filesystem.squashfs",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "vanilla-os"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "vmware-photon-aarch64",
+      "name": "vmware-photon 4.0",
+      "description": "netboot.xyz endpoint \u2014 vmware-photon 4.0  (aarch64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "aarch64",
+      "version": "4.0",
+      "os": "vmware-photon",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/4.0-a41853eb/",
+      "netboot_files": [
+        "initrd.img",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "vmware-photon"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "vmware-photon-x86_64",
+      "name": "vmware-photon 4.0",
+      "description": "netboot.xyz endpoint \u2014 vmware-photon 4.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "4.0",
+      "os": "vmware-photon",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/4.0-7d7ef0f1/",
+      "netboot_files": [
+        "initrd.img",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "vmware-photon"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "voyager-bullseye-squash",
+      "name": "Voyager bullseye bullseye",
+      "description": "netboot.xyz endpoint \u2014 Voyager bullseye bullseye (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "bullseye",
+      "os": "Voyager",
+      "flavor": "bullseye",
+      "netboot_path": "/debian-squash/releases/download/bullseye-f7a68a8e/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "Voyager"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "voyager-focal-squash",
+      "name": "Voyager focal focal",
+      "description": "netboot.xyz endpoint \u2014 Voyager focal focal (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "focal",
+      "os": "Voyager",
+      "flavor": "focal",
+      "netboot_path": "/ubuntu-squash/releases/download/focal-594b12a7/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "Voyager"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "voyager-jammy-squash",
+      "name": "Voyager jammy jammy",
+      "description": "netboot.xyz endpoint \u2014 Voyager jammy jammy (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "jammy",
+      "os": "Voyager",
+      "flavor": "jammy",
+      "netboot_path": "/ubuntu-squash/releases/download/jammy-0d0397c9/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "Voyager"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "vyos-rolling",
+      "name": "vyos rolling rolling",
+      "description": "netboot.xyz endpoint \u2014 vyos rolling rolling (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "rolling",
+      "os": "vyos",
+      "flavor": "rolling",
+      "netboot_path": "/debian-squash/releases/download/2026.08.28-0255-rolling-fea15975/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "vyos"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "xcp-ng",
+      "name": "xcp-ng 8.2",
+      "description": "netboot.xyz endpoint \u2014 xcp-ng 8.2  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "8.2",
+      "os": "xcp-ng",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/8.3-55521b28/",
+      "netboot_files": [
+        "xen.gz",
+        "vmlinuz",
+        "install.img"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "xcp-ng"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "zeninstall",
+      "name": "zeninstall current",
+      "description": "netboot.xyz endpoint \u2014 zeninstall current  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "current",
+      "os": "zeninstall",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/2020.05.27-0d78d224/",
+      "netboot_files": [
+        "initrd",
+        "vmlinuz",
+        "airootfs.sfs"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "zeninstall"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "zfsbootmenu",
+      "name": "zfsbootmenu 3.1.0",
+      "description": "netboot.xyz endpoint \u2014 zfsbootmenu 3.1.0  (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "3.1.0",
+      "os": "zfsbootmenu",
+      "flavor": "",
+      "netboot_path": "/asset-mirror/releases/download/3.1.0-c05462cc/",
+      "netboot_files": [
+        "zfsbootmenu-recovery-x86_64.efi"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "zfsbootmenu"
+      ],
+      "ventoy_bootable": false
+    },
+    {
+      "id": "zorin-core-squash",
+      "name": "zorin 18.1 Core",
+      "description": "netboot.xyz endpoint \u2014 zorin 18.1 Core (x86_64) \u2014 squashfs/netboot (not Ventoy single ISO)",
+      "url": null,
+      "arch": "x86_64",
+      "version": "18.1",
+      "os": "zorin",
+      "flavor": "Core",
+      "netboot_path": "/ubuntu-squash/releases/download/18.1-13b843b3/",
+      "netboot_files": [
+        "filesystem.squashfs",
+        "initrd",
+        "vmlinuz"
+      ],
+      "netboot_iso_file": null,
+      "sha256": null,
+      "size_human": null,
+      "tags": [
+        "netboot",
+        "squashfs",
+        "zorin"
+      ],
+      "ventoy_bootable": false
+    }
+  ]
+}
