@@ -662,8 +662,9 @@ export function HomeView({
         throw new Error(err.error?.message ?? 'Import failed');
       }
       const data = await resp.json() as { project: { id: string } };
-      // Navigate to the newly imported project
-      window.location.hash = `#project/${data.project.id}`;
+      // Navigate via the app's workspace-aware opener (handles team/personal scope)
+      // instead of raw hash — see Gym 06:02 #3104: raw hash can land on 403 for team projects
+      onOpenProject(data.project.id);
     },
   });
   // Token paired with `workingDir` when picked through the desktop host's

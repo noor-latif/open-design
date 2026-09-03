@@ -181,7 +181,11 @@ export function ServerFolderPickerDialog({
       className={styles.dialog}
       data-testid="server-folder-picker-dialog"
     >
-      <DialogTitle className={styles.title}>Choose folder on server</DialogTitle>
+      <DialogTitle className={styles.title}>Open folder on server</DialogTitle>
+      <p className={styles.helper} data-testid="server-folder-picker-helper">
+        Shows folders on the server &mdash; not your browser. In Docker, host folders must be bind-mounted
+        first (<code>{`$\{HOME\}/dev:$\{HOME\}/dev:rw`}</code> &rarr; pick <code>/var/home/noor/dev/…</code>).
+      </p>
 
       <div className={styles.body}>
         {/* Path input */}
@@ -299,7 +303,7 @@ export function ServerFolderPickerDialog({
           disabled={!canSelect}
           data-testid="server-folder-picker-select"
         >
-          Select
+          Open folder
         </Button>
       </DialogFooter>
     </Dialog>

@@ -770,6 +770,9 @@ export function registerMediaRoutes(app: Express, ctx: RegisterMediaRoutesDeps) 
   });
 
   // Native OS folder picker dialog. Returns { path: string | null }.
+  // In headless/container (no zenity/DISPLAY) we return 200 with unavailable
+  // instead of 500 so the WebUI can silently fall back to the server browser
+  // without scary console errors (see ServerFolderPickerDialog).
   app.post('/api/dialog/open-folder', async (req, res) => {
     if (!isLocalSameOrigin(req, getResolvedPort())) {
       return res.status(403).json({ error: 'cross-origin request rejected' });
@@ -778,9 +781,16 @@ export function registerMediaRoutes(app: Express, ctx: RegisterMediaRoutesDeps) 
       const selected = await openNativeFolderDialog();
       res.json({ path: selected });
     } catch (err: any) {
-      res
-        .status(500)
-        .json({ error: String(err && err.message ? err.message : err) });
+      const msg = String(err && err.message ? err.message : err);
+      const code = err?.code;
+      const isZenityMissing =
+        code === 'ENOENT' ||
+        /ENOENT.*zenity|kdialog|osascript|spawn.*zenity|zenity.*not found|cannot open display|No such file/i.test(msg);
+      if (isZenityMissing) {
+        // Headless fallback: tell the client to use the web-native picker
+        return res.json({ path: null, unavailable: true, reason: msg });
+      }
+      res.status(500).json({ error: msg });
     }
   });
 
