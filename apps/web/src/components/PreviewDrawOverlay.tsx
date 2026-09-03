@@ -5,7 +5,12 @@ import { Icon } from './Icon';
 import { RemixIcon } from './RemixIcon';
 import { useT } from '../i18n';
 import type { PreviewVisualMarkKind } from '../types';
-import { requestPreviewSnapshot } from '../runtime/exports';
+import {
+  captureDaemonScreenshot,
+  captureViaDisplayMediaSnapshot,
+  getDaemonScreenshotHtml,
+  requestPreviewSnapshot,
+} from '../runtime/exports';
 import { isImeComposing } from '../utils/imeComposing';
 
 interface Point { x: number; y: number }
@@ -856,7 +861,7 @@ export function PreviewDrawOverlay({
     );
   }
 
-  async function requestSnapshot(): Promise<PreviewSnapshot | null> {
+  async function requestSnapshot(options: { full?: boolean } = {}): Promise<PreviewSnapshot | null> {
     if (captureSnapshot) {
       // The host's captureSnapshot is a compositor screenshot of the on-screen
       // region, which would otherwise include this overlay's own strokes +
@@ -865,20 +870,69 @@ export function PreviewDrawOverlay({
       flushSync(() => setCapturing(true));
       try {
         await waitForOverlayHidden();
-        return await captureSnapshot();
+        const snap = await captureSnapshot();
+        if (snap) return snap;
+        console.debug('[PreviewDrawOverlay] host capture returned null, falling through to displayMedia');
+      } catch (err) {
+        console.debug('[PreviewDrawOverlay] host capture error, falling through to displayMedia', err);
       } finally {
         flushSync(() => setCapturing(false));
       }
     }
+    // Tier 2: displayMedia — only in secure contexts, captures real pixels without tainting.
+    if (typeof window !== 'undefined' && window.isSecureContext) {
+      try {
+        const clipRect = snapshotFrameRect();
+        // Hide overlay for the on-screen capture so strokes/toolbar don't leak into the shot.
+        const needsHide = Boolean(clipRect);
+        if (needsHide) flushSync(() => setCapturing(true));
+        try {
+          if (needsHide) await waitForOverlayHidden();
+          const dmSnap = await captureViaDisplayMediaSnapshot(
+            clipRect
+              ? { left: clipRect.left, top: clipRect.top, width: clipRect.width, height: clipRect.height }
+              : null,
+          );
+          if (dmSnap) return dmSnap;
+          console.debug('[PreviewDrawOverlay] displayMedia capture returned null, falling through to daemon');
+        } finally {
+          if (needsHide) flushSync(() => setCapturing(false));
+        }
+      } catch (err) {
+        console.debug('[PreviewDrawOverlay] displayMedia capture error, falling through to daemon', err);
+      }
+    } else {
+      console.debug('[PreviewDrawOverlay] skipping displayMedia: not secure context');
+    }
+
+    // Tier 3: daemon off-screen renderer — same-origin html via outerHTML.
+    try {
+      const iframeForDaemon = snapshotHostIframe();
+      const html = iframeForDaemon ? getDaemonScreenshotHtml(iframeForDaemon) : null;
+      if (html) {
+        const daemonSnap = await captureDaemonScreenshot(
+          html,
+          options.full ? { full: true } : {},
+        );
+        if (daemonSnap) return daemonSnap;
+        console.debug('[PreviewDrawOverlay] daemon capture returned null, falling through to foreignObject');
+      } else {
+        console.debug('[PreviewDrawOverlay] daemon capture skipped: no same-origin html');
+      }
+    } catch (err) {
+      console.debug('[PreviewDrawOverlay] daemon capture error, falling through to foreignObject', err);
+    }
+
     const iframe = snapshotHostIframe();
     if (!iframe) return null;
     // Capture mode may still be swapping the srcDoc frame to full content when
     // the user submits, so retry with growing timeouts before giving up.
     const timeouts = [1500, 3000, 6000];
     for (const timeout of timeouts) {
-      const snapshot = await requestPreviewSnapshot(iframe, timeout);
+      const snapshot = await requestPreviewSnapshot(iframe, timeout, options);
       if (snapshot) return snapshot;
     }
+    console.debug('[PreviewDrawOverlay] foreignObject bridge failed after retries');
     return null;
   }
 

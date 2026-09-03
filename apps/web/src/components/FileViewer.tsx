@@ -151,6 +151,9 @@ import {
 } from '../providers/registry';
 import type { ProjectFilePreview } from '../providers/registry';
 import {
+  captureDaemonScreenshot,
+  captureHostIframeSnapshot,
+  captureViaDisplayMediaSnapshot,
   downloadImageDataUrl,
   exportAsHtml,
   exportAsJsx,
@@ -166,7 +169,7 @@ import {
   exportSnapshotAsPdf,
   exportReactComponentAsHtml,
   exportReactComponentAsZip,
-  captureHostIframeSnapshot,
+  getDaemonScreenshotHtml,
   imageDataUrlToBlob,
   isOpenDesignHostAvailable,
   openSandboxedPreviewInNewTab,
@@ -1637,12 +1640,55 @@ async function requestPreviewSnapshotWithRetry(
   iframe: HTMLIFrameElement,
   options?: { full?: boolean },
 ): Promise<Awaited<ReturnType<typeof requestPreviewSnapshot>>> {
+  // Tier 1: host compositor — real pixels, never tainted.
+  try {
+    const hostSnap = await captureHostIframeSnapshot(iframe);
+    if (hostSnap) return hostSnap;
+    console.debug('[FileViewer] host capture returned null, falling through to displayMedia');
+  } catch (err) {
+    console.debug('[FileViewer] host capture error, falling through to displayMedia', err);
+  }
+
+  // Tier 2: displayMedia — secure-context tab capture via getDisplayMedia.
+  if (typeof window !== 'undefined' && (window as unknown as { isSecureContext?: boolean }).isSecureContext) {
+    try {
+      const rect = iframe.getBoundingClientRect();
+      const clipRect =
+        rect.width >= 1 && rect.height >= 1
+          ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+          : null;
+      const dmSnap = await captureViaDisplayMediaSnapshot(clipRect);
+      if (dmSnap) return dmSnap;
+      console.debug('[FileViewer] displayMedia capture returned null, falling through to daemon');
+    } catch (err) {
+      console.debug('[FileViewer] displayMedia capture error, falling through to daemon', err);
+    }
+  } else {
+    console.debug('[FileViewer] skipping displayMedia: not secure context');
+  }
+
+  // Tier 3: daemon off-screen renderer — same-origin html via outerHTML.
+  try {
+    const html = getDaemonScreenshotHtml(iframe);
+    if (html) {
+      const daemonSnap = await captureDaemonScreenshot(html, options ?? {});
+      if (daemonSnap) return daemonSnap;
+      console.debug('[FileViewer] daemon capture returned null, falling through to foreignObject');
+    } else {
+      console.debug('[FileViewer] daemon capture skipped: no same-origin html');
+    }
+  } catch (err) {
+    console.debug('[FileViewer] daemon capture error, falling through to foreignObject', err);
+  }
+
+  // Tier 4: in-iframe SVG foreignObject bridge — retry with growing timeouts.
   const timeouts = [1500, 3000, 6000];
   for (const timeout of timeouts) {
     const snapshot = await requestPreviewSnapshot(iframe, timeout, options);
     if (snapshot) return snapshot;
     await waitForAnimationFrame();
   }
+  console.debug('[FileViewer] foreignObject bridge failed after retries');
   return null;
 }
 

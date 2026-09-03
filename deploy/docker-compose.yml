@@ -27,7 +27,8 @@ services:
       - /tmp
     security_opt:
       - no-new-privileges:true
-    mem_limit: ${OPEN_DESIGN_MEM_LIMIT:-384m}
+    mem_limit: ${OPEN_DESIGN_MEM_LIMIT:-2g} # playwright needs +512M, ensure host has >=2.5g
+    shm_size: 1gb # chromium shared memory (avoid /dev/shm too small crashes)
     pids_limit: 256
     healthcheck:
       test:

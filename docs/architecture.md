@@ -172,6 +172,29 @@ The host keeps URL and srcDoc frames mounted when switching render mode to
 avoid reload flashes. Message handlers validate the sending iframe, and
 signals that must come from the active frame re-check the active window.
 
+### 3.7 Screenshot capture tiers
+
+Preview annotations and Copy screenshot try captures in order, falling through
+on failure:
+
+1. **Host compositor** (`captureHostIframeSnapshot` / `captureSnapshot` prop) —
+   Electron `webContents.capturePage` with overlay hidden; real pixels, no taint.
+2. **DisplayMedia** (`captureViaDisplayMediaSnapshot`) — `getDisplayMedia`
+   with `preferCurrentTab`; real pixels but requires secure context and user
+   gesture; crops to the preview rect.
+3. **Daemon Playwright** (`getDaemonScreenshotHtml` → `captureDaemonScreenshot`
+   `POST /api/preview/screenshot`) — off-screen Chromium via same-origin
+   `outerHTML`; works without gesture but needs daemon, and 503 means renderer
+   unavailable (fall through).
+4. **foreignObject** (`requestPreviewSnapshot`) — in-iframe SVG
+   `<foreignObject>` rasterized via `<img>`; always available but tainted
+   canvas and often blank on real artifacts.
+
+Tradeoffs: (1)–(2) are pixel-perfect and untainted; (2) needs permission UI
+and secure context; (3) needs daemon and same-origin HTML; (4) is most
+compatible but least faithful. `PreviewDrawOverlay.requestSnapshot` and
+`FileViewer` share this ordering; see `apps/web/src/runtime/exports.ts`.
+
 ## 4. Generation data flow
 
 ### Filesystem execution profile

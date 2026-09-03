@@ -850,6 +850,7 @@ import { registerLiveArtifactRoutes } from './routes/live-artifact.js';
 import { registerDesignSystemToolRoutes } from './routes/design-system-tool.js';
 import { registerDeployRoutes, registerDeploymentCheckRoutes } from './routes/deploy.js';
 import { registerMediaRoutes } from './routes/media.js';
+import { registerPreviewScreenshotRoutes } from './routes/preview-screenshot.js';
 import { registerProjectRoutes, registerProjectArtifactRoutes, registerProjectFileRoutes, registerProjectUploadRoutes, createEnforceWorkspaceProjectMutation } from './routes/project/index.js';
 import { registerFsRoutes } from './routes/fs.js';
 import { registerVelaRoutes } from './routes/vela.js';
@@ -8800,6 +8801,8 @@ export async function startServer({
     authorizeProjectRequest,
     authorizeProjectToolRequest,
   });
+
+  registerPreviewScreenshotRoutes(app);
 
   registerVelaRoutes(app, {
     paths: { RUNTIME_DATA_DIR },

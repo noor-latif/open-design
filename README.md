@@ -400,6 +400,23 @@ using `Authorization: Bearer <OD_API_TOKEN>`.
 
 Details and the old `zenity` path → [`deploy/README.md`](deploy/README.md#host-filesystem-access-for-file-pickers).
 
+##### Screenshot capture (daemon Playwright)
+
+The daemon exposes `POST /api/preview/screenshot` backed by Playwright Chromium (`playwright-core@1.53.0`). The Docker image already bundles it (`node:24-bookworm-slim` + `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`, `shm_size: 1gb`, `mem_limit: 2g` — playwright needs +512M, ensure host has >=2.5g).
+
+- **Endpoint:** `POST /api/preview/screenshot` with `{ html, width?, height?, full?, selector? }` → `{ dataUrl, w, h }`.
+- **Health:** `GET /api/preview/screenshot/health` → `{ ok, available }`.
+- **Fallback tiers:** 1) Chromium returns PNG → 2) `503 screenshot_unavailable` if `playwright-core` not installed/failed → 3) `500 screenshot_timeout`/`screenshot_failed` on render error.
+
+Local dev (outside Docker) after `pnpm install`:
+
+```bash
+pnpm --filter @open-design/daemon exec npx playwright-core@1.53.0 install --with-deps chromium
+# or: npx --yes playwright@1.53.0 install --with-deps chromium
+```
+
+Full details → [`deploy/README.md`](deploy/README.md#screenshot-capture-daemon-playwright).
+
 ### 🚀 Deploy on Sealos
 
 [![Deploy on Sealos](https://sealos.io/Deploy-on-Sealos.svg)](https://sealos.io/products/app-store/open-design/)

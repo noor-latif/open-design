@@ -1722,3 +1722,111 @@ describe('exportAsImage', () => {
     expect(target?.filename).toBe('My-Design.png');
   });
 });
+
+describe('captureViaDisplayMediaSnapshot', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('returns null when not in a secure context', async () => {
+    const { captureViaDisplayMediaSnapshot } = await import('../../src/runtime/exports');
+    vi.stubGlobal('window', {
+      isSecureContext: false,
+      setTimeout: (fn: () => void) => setTimeout(fn, 0),
+    } as unknown as Window & typeof globalThis);
+    vi.stubGlobal('navigator', {
+      mediaDevices: { getDisplayMedia: vi.fn() },
+    } as unknown as Navigator);
+
+    const result = await captureViaDisplayMediaSnapshot(null);
+    expect(result).toBeNull();
+  });
+
+  it('returns null when getDisplayMedia is not available', async () => {
+    const { captureViaDisplayMediaSnapshot } = await import('../../src/runtime/exports');
+    vi.stubGlobal('window', {
+      isSecureContext: true,
+      setTimeout: (fn: () => void) => setTimeout(fn, 0),
+      innerWidth: 1920,
+      innerHeight: 1080,
+    } as unknown as Window & typeof globalThis);
+    vi.stubGlobal('navigator', {
+      mediaDevices: {},
+    } as unknown as Navigator);
+    vi.stubGlobal('document', {
+      createElement: vi.fn(),
+      body: { appendChild: vi.fn(), removeChild: vi.fn() },
+    } as unknown as Document);
+
+    const result = await captureViaDisplayMediaSnapshot({ left: 0, top: 0, width: 100, height: 100 });
+    expect(result).toBeNull();
+  });
+});
+
+describe('captureDaemonScreenshot', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('returns null on 503 (renderer unavailable)', async () => {
+    const { captureDaemonScreenshot } = await import('../../src/runtime/exports');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ error: 'renderer unavailable' }), { status: 503 })),
+    );
+    const result = await captureDaemonScreenshot('<html></html>');
+    expect(result).toBeNull();
+    expect(fetch).toHaveBeenCalledWith('/api/preview/screenshot', expect.objectContaining({ method: 'POST' }));
+  });
+
+  it('parses dataUrl success response', async () => {
+    const { captureDaemonScreenshot } = await import('../../src/runtime/exports');
+    const payload = { dataUrl: 'data:image/png;base64,abc', w: 320, h: 200 };
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(payload), { status: 200 })));
+    const result = await captureDaemonScreenshot('<html><body>hi</body></html>', { full: true });
+    expect(result).toEqual({ dataUrl: 'data:image/png;base64,abc', w: 320, h: 200 });
+    const body = JSON.parse((vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(body).toMatchObject({ html: '<html><body>hi</body></html>', full: true });
+  });
+
+  it('returns null when response dataUrl is invalid', async () => {
+    const { captureDaemonScreenshot } = await import('../../src/runtime/exports');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ dataUrl: 'http://example.com/a.png', w: 10, h: 10 }), { status: 200 })));
+    const result = await captureDaemonScreenshot('<html></html>');
+    expect(result).toBeNull();
+  });
+});
+
+describe('getDaemonScreenshotHtml', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns null on cross-origin access error', async () => {
+    const { getDaemonScreenshotHtml } = await import('../../src/runtime/exports');
+    const iframe = {} as HTMLIFrameElement;
+    Object.defineProperty(iframe, 'contentDocument', {
+      get() {
+        throw new DOMException('Blocked a frame with origin', 'SecurityError');
+      },
+      configurable: true,
+    });
+    expect(getDaemonScreenshotHtml(iframe)).toBeNull();
+  });
+
+  it('returns null when documentElement is missing', async () => {
+    const { getDaemonScreenshotHtml } = await import('../../src/runtime/exports');
+    const iframe = { contentDocument: { documentElement: null } } as unknown as HTMLIFrameElement;
+    expect(getDaemonScreenshotHtml(iframe)).toBeNull();
+  });
+
+  it('returns outerHTML for same-origin iframe', async () => {
+    const { getDaemonScreenshotHtml } = await import('../../src/runtime/exports');
+    const iframe = {
+      contentDocument: { documentElement: { outerHTML: '<html><body>hello</body></html>' } },
+    } as unknown as HTMLIFrameElement;
+    expect(getDaemonScreenshotHtml(iframe)).toBe('<html><body>hello</body></html>');
+  });
+});

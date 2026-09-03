@@ -10,6 +10,10 @@ services:
     # mkdir …/.od-skills on host-owned projects (trace 09f86193 gotaland).
     user: "0:0"
     cpus: '1.5'
+    # Preserve base shm_size for Chromium (1gb). Do not override or reset it;
+    # leaving it unset here inherits the base value. Explicitly re-declaring
+    # avoids accidental `!reset` breakage: keep 1gb for screenshot endpoint.
+    shm_size: 1gb
     ports: !reset []
     network_mode: host
     environment:

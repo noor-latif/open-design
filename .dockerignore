@@ -8,6 +8,11 @@
 .ocd
 node_modules
 dist
+**/dist
+**/.next
+**/out
+.tmp
+.tmp/**
 coverage
 *.log
 tsconfig.tsbuildinfo
@@ -18,3 +23,7 @@ deploy/**/*.tgz
 deploy/**/*.zip
 docs
 story
+.tmp/looper*
+.playwright
+test-results
+playwright-report

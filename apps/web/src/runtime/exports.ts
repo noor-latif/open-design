@@ -520,6 +520,192 @@ export async function captureHostIframeSnapshot(
   });
 }
 
+export function getDaemonScreenshotHtml(iframe: HTMLIFrameElement): string | null {
+  try {
+    const doc = iframe.contentDocument;
+    if (!doc?.documentElement) return null;
+    return doc.documentElement.outerHTML;
+  } catch {
+    return null;
+  }
+}
+
+export async function captureDaemonScreenshot(
+  html: string,
+  options?: { width?: number; height?: number; full?: boolean },
+): Promise<PreviewSnapshot | null> {
+  try {
+    const body: Record<string, unknown> = { html };
+    if (options?.width != null) body['width'] = options.width;
+    if (options?.height != null) body['height'] = options.height;
+    if (options?.full != null) body['full'] = options.full;
+    const resp = await fetch('/api/preview/screenshot', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      credentials: 'same-origin' as RequestCredentials,
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      // 503 means renderer unavailable — caller should fall through.
+      return null;
+    }
+    const json = (await resp.json()) as { dataUrl?: string; w?: number; h?: number };
+    if (
+      typeof json.dataUrl === 'string' &&
+      typeof json.w === 'number' &&
+      typeof json.h === 'number' &&
+      json.w >= 1 &&
+      json.h >= 1 &&
+      json.dataUrl.startsWith('data:')
+    ) {
+      return { dataUrl: json.dataUrl, w: json.w, h: json.h };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function captureViaDisplayMediaSnapshot(
+  clipRect: { left: number; top: number; width: number; height: number } | null,
+): Promise<PreviewSnapshot | null> {
+  try {
+    if (typeof window === 'undefined') return null;
+    if (!window.isSecureContext) return null;
+    const getDisplayMedia = navigator.mediaDevices?.getDisplayMedia as
+      | ((constraints: unknown) => Promise<MediaStream>)
+      | undefined;
+    if (typeof getDisplayMedia !== 'function') return null;
+
+    const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+      Promise.race([
+        promise,
+        new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error('timeout')), ms)),
+      ]);
+
+    const stream = await withTimeout(
+      (getDisplayMedia as unknown as (c: unknown) => Promise<MediaStream>).call(navigator.mediaDevices, {
+        video: { displaySurface: 'browser' },
+        preferCurrentTab: true,
+        audio: false,
+      } as unknown as MediaStreamConstraints),
+      8000,
+    );
+
+    const video = document.createElement('video');
+    video.muted = true;
+    // Keep off-screen but attached so layout/media pipeline runs.
+    video.style.position = 'fixed';
+    video.style.left = '-100000px';
+    video.style.top = '0';
+    video.style.width = '1px';
+    video.style.height = '1px';
+    video.autoplay = true;
+    // Must be in DOM for some browsers to fire loadedmetadata.
+    document.body.appendChild(video);
+
+    const cleanup = () => {
+      try {
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        // ignore
+      }
+      try {
+        video.pause();
+      } catch {
+        // ignore
+      }
+      video.srcObject = null;
+      video.remove();
+    };
+
+    try {
+      video.srcObject = stream;
+
+      await withTimeout(
+        new Promise<void>((resolve, reject) => {
+          const onLoaded = () => {
+            cleanupListeners();
+            resolve();
+          };
+          const onError = () => {
+            cleanupListeners();
+            reject(new Error('video load error'));
+          };
+          const cleanupListeners = () => {
+            video.removeEventListener('loadedmetadata', onLoaded);
+            video.removeEventListener('error', onError);
+          };
+          video.addEventListener('loadedmetadata', onLoaded, { once: true });
+          video.addEventListener('error', onError, { once: true });
+          // In case metadata already available.
+          if (video.readyState >= 1) {
+            cleanupListeners();
+            resolve();
+          } else {
+            void video.play().catch(() => {
+              // play may reject if not allowed, but loadedmetadata still fires
+            });
+          }
+        }),
+        8000,
+      );
+
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (!vw || !vh) return null;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = vw;
+      canvas.height = vh;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      ctx.drawImage(video, 0, 0, vw, vh);
+
+      // Stop capture immediately after paint so the permission indicator clears.
+      try {
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        // ignore
+      }
+      video.srcObject = null;
+      video.remove();
+
+      const fullDataUrl = canvas.toDataURL('image/png');
+      if (!clipRect || clipRect.width < 1 || clipRect.height < 1) {
+        return { dataUrl: fullDataUrl, w: vw, h: vh };
+      }
+
+      const winW = window.innerWidth || vw;
+      const winH = window.innerHeight || vh;
+      const scaleX = winW ? vw / winW : 1;
+      const scaleY = winH ? vh / winH : 1;
+      // Use uniform scale when possible to keep aspect, but respect separate axes.
+      const sx = Math.max(0, Math.round(clipRect.left * scaleX));
+      const sy = Math.max(0, Math.round(clipRect.top * scaleY));
+      const sw = Math.max(1, Math.round(clipRect.width * scaleX));
+      const sh = Math.max(1, Math.round(clipRect.height * scaleY));
+      const clampedW = Math.min(sw, Math.max(1, vw - sx));
+      const clampedH = Math.min(sh, Math.max(1, vh - sy));
+      if (clampedW < 1 || clampedH < 1 || sx + clampedW > vw || sy + clampedH > vh) {
+        return { dataUrl: fullDataUrl, w: vw, h: vh };
+      }
+      const cropped = document.createElement('canvas');
+      cropped.width = clampedW;
+      cropped.height = clampedH;
+      const cCtx = cropped.getContext('2d');
+      if (!cCtx) return { dataUrl: fullDataUrl, w: vw, h: vh };
+      cCtx.drawImage(canvas, sx, sy, clampedW, clampedH, 0, 0, clampedW, clampedH);
+      return { dataUrl: cropped.toDataURL('image/png'), w: clampedW, h: clampedH };
+    } catch {
+      cleanup();
+      return null;
+    }
+  } catch {
+    return null;
+  }
+}
+
 /** Convert a data-URL to a Blob without re-encoding through canvas. */
 function dataUrlToBlob(dataUrl: string): Blob {
   if (!dataUrl.startsWith('data:')) {

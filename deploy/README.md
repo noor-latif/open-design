@@ -55,7 +55,8 @@ Defaults:
   storage, you MUST read root [`AGENTS.md`](../AGENTS.md) → **Daemon data
   directory contract**. This README MUST NOT restate it.
 - Node heap cap: `--max-old-space-size=192`
-- Compose memory cap: `384m` (`OPEN_DESIGN_MEM_LIMIT=256m` to override)
+- Compose memory cap: `2g` (`OPEN_DESIGN_MEM_LIMIT=256m` to override) — playwright needs +512M, ensure host has >=2.5g for Chromium
+- Chromium shm: `shm_size: 1gb` (required for headless Chromium; base compose sets it, override inherits it — do not `!reset`)
 
 Do not publish the daemon directly on a public or shared LAN interface. The shared
 API token is single-tenant authentication, not user-level access control, and both
@@ -133,6 +134,35 @@ This fork's `deploy/docker-compose.override.yml` already mounts `${HOME}/dev`, `
 **Security:** `rw` gives every agent run write access to the host path. Mount only what you need, prefer `ro` where you can, and never mount `/` or host config writable.
 
 **Legacy path:** `POST /api/dialog/open-folder` still calls `zenity --file-selection --directory` on Linux (`apps/daemon/src/server.ts:openNativeFolderDialog`). It requires `zenity` in the image and a `DISPLAY` — unsuitable for headless Docker. The web picker (`/api/fs/browse`) is the default fallback when that 500s, and works without extra packages.
+
+### Screenshot capture (daemon Playwright)
+
+The daemon exposes `POST /api/preview/screenshot` backed by Playwright Chromium:
+
+```bash
+curl -s http://127.0.0.1:7456/api/preview/screenshot \
+  -H 'Content-Type: application/json' \
+  -d '{"html":"<h1>hello</h1>","width":1280,"height":800}' | jq .dataUrl
+```
+
+- Params: `html` (1 .. 2 MiB), `width`/`height` (1..3000), `full` (bool), `selector` (CSS, optional).
+- Returns `{ dataUrl: "data:image/png;base64,…", w, h }` (PNG) or JSON error with `reason`.
+- Health: `GET /api/preview/screenshot/health` → `{ ok, available: true|false }`.
+
+Fallback tiers:
+1. **Available** — Playwright Chromium launched (`--no-sandbox`) and returns PNG.
+2. **Unavailable** — `503 screenshot_unavailable` if `playwright-core` not installed or launch fails.
+3. **Timeout/failure** — `500 screenshot_timeout` / `screenshot_failed` on render error (10 s budget).
+
+Docker image already bundles Chromium (`node:24-bookworm-slim` + `npx --yes playwright-core@1.53.0 install --with-deps chromium`, `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`, `shm_size: 1gb`, `mem_limit: 2g`). Local dev (outside Docker) needs one manual step after `pnpm install`:
+
+```bash
+pnpm --filter @open-design/daemon exec npx playwright-core@1.53.0 install --with-deps chromium
+# or, if you use the full playwright package:
+npx --yes playwright@1.53.0 install --with-deps chromium
+```
+
+No code change required — the route lazy-imports `playwright-core` and degrades to 503 when missing.
 
 ## Linux: mounting host agent CLIs
 
