@@ -4,6 +4,11 @@ name: open-design
 
 services:
   open-design:
+    # Run as root inside the container so bind-mounted host folders
+    # (~/dev owned 1000:1000 on Fedora) are writable via rootless podman's
+    # root→host-user mapping. Without this, open-design (1001) gets EACCES
+    # mkdir …/.od-skills on host-owned projects (trace 09f86193 gotaland).
+    user: "0:0"
     cpus: '1.5'
     ports: !reset []
     network_mode: host
