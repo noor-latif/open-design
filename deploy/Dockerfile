@@ -1,5 +1,5 @@
-ARG NODE_IMAGE=docker.io/library/node:24-bookworm-slim
-ARG RUNTIME_IMAGE=docker.io/library/node:24-bookworm-slim
+ARG NODE_IMAGE=docker.io/library/node:24-alpine
+ARG RUNTIME_IMAGE=docker.io/library/node:24-alpine
 
 FROM ${NODE_IMAGE} AS build
 
@@ -17,19 +17,11 @@ ENV https_proxy=${https_proxy}
 ENV no_proxy=${no_proxy}
 ENV NO_PROXY=${NO_PROXY}
 ENV CI=true
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Use bookworm-slim by default because `playwright install --with-deps` requires
-# apt (Debian) and Playwright's bundled Chromium is glibc-linked (incompatible
-# with Alpine musl). Alpine alternative would be `apk add --no-cache chromium
-# nss freetype harfbuzz ca-certificates ttf-freefont` plus `executablePath`
-# overrides, but the glibc/apt path is smaller-maintenance. Override back to
-# alpine via --build-arg NODE_IMAGE=... if needed.
-RUN if command -v apk >/dev/null 2>&1; then \
-      apk add --no-cache python3 make g++; \
-    else \
-      apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*; \
-    fi
+# Alpine is the proven base for this repo (cf800 2.4GB healthy). Use system
+# Chromium via `apk chromium` (musl-compatible) instead of Playwright's
+# glibc-bundled build that requires bookworm+apt and 400MB download.
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -42,12 +34,6 @@ COPY e2e/package.json ./e2e/package.json
 RUN corepack enable && \
     corepack prepare pnpm@10.33.2 --activate && \
     pnpm install --frozen-lockfile
-
-# Playwright Chromium for daemon screenshot endpoint (POST /api/preview/screenshot).
-# Matches daemon dep `playwright-core@1.53.0` (browser is same for `playwright` package).
-# Placed after pnpm install and before pnpm build so the layer caches until lockfile changes.
-# Use `playwright` binary (not `playwright-core` binary) — `playwright-core: not found` otherwise.
-RUN npx --yes playwright@1.53.0 install --with-deps chromium
 
 COPY apps ./apps
 RUN pnpm --filter @open-design/daemon build && \
@@ -102,22 +88,12 @@ COPY plugins/_official ./plugins/_official
 
 FROM ${RUNTIME_IMAGE}
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-# Runtime deps: tini, poppler-utils, bash, git. Handle both Alpine (apk) and Debian (apt).
-# Then install Playwright Chromium for the screenshot endpoint. Using the same
-# PLAYWRIGHT_BROWSERS_PATH as the build stage keeps the runtime browser outside
-# /root/.cache and makes it readable for the non-root daemon user.
-RUN if command -v apk >/dev/null 2>&1; then \
-      apk add --no-cache tini poppler-utils bash git ca-certificates freetype harfbuzz nss ttf-freefont && \
-      addgroup -S -g 1001 open-design && adduser -S -D -H -u 1001 -G open-design open-design; \
-    else \
-      apt-get update && apt-get install -y --no-install-recommends tini poppler-utils bash git ca-certificates && \
-      rm -rf /var/lib/apt/lists/* && groupadd -r -g 1001 open-design && useradd -r -u 1001 -g open-design -d /home/open-design -m open-design; \
-    fi && \
-    npx --yes playwright@1.53.0 install --with-deps chromium && \
-    chmod -R 755 /ms-playwright 2>/dev/null || true; \
-    chown -R open-design:open-design /ms-playwright 2>/dev/null || chmod -R 755 /ms-playwright
+# Runtime deps: tini, poppler-utils, bash, git + system Chromium for screenshots.
+# Uses Alpine `apk chromium` (musl) - no Playwright bundled download, smaller and
+# proven with better-sqlite3 musl build. Daemon will launch with executablePath
+# fallback to /usr/bin/chromium-browser.
+RUN apk add --no-cache tini poppler-utils bash git ca-certificates chromium nss freetype harfbuzz ttf-freefont && \
+    addgroup -S -g 1001 open-design && adduser -S -D -H -u 1001 -G open-design open-design
 
 WORKDIR /app
 COPY --from=build --chown=open-design:open-design /app/deploy/daemon ./apps/daemon

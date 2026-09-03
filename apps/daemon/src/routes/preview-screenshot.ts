@@ -32,8 +32,40 @@ async function getBrowser(): Promise<Browser> {
   if (browserPromise) return browserPromise;
   browserPromise = (async () => {
     const chromium = await getChromium();
+    // Prefer system Chromium on Alpine (apk) to avoid 400MB bundled download.
+    // Fall back to Playwright's bundled path if system binary missing.
+    const systemPaths = [
+      process.env.CHROMIUM_PATH,
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      '/usr/bin/google-chrome',
+    ].filter(Boolean) as string[];
+    let lastErr: any = null;
+    for (const exe of systemPaths) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const { promises: fs } = await import('node:fs');
+        // eslint-disable-next-line no-await-in-loop
+        await fs.access(exe);
+        const b: Browser = await chromium.launch({
+          executablePath: exe,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        });
+        try {
+          b.on('disconnected', () => {
+            browser = null;
+            browserPromise = null;
+          });
+        } catch {}
+        browser = b;
+        return b;
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    // Fallback to bundled Playwright chromium (bookworm / non-Alpine).
     const b: Browser = await chromium.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
     // Reset singleton if browser disconnects/crashes so next request can relaunch.
     try {
